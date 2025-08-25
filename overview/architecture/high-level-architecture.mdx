@@ -1,0 +1,141 @@
+---
+title: "How uBO Scope Works: Architecture Overview"
+description: "See a high-level diagram of the extension’s main components: background analysis, popup UI, and data integration. Understand how your browser’s web requests are monitored and summarized for effective, real-time reporting."
+---
+
+# How uBO Scope Works: Architecture Overview
+
+## Introduction
+
+Understanding how uBO Scope operates behind the scenes provides clarity on how it captures, analyzes, and presents network request data to you. This page offers a high-level view of the extension’s main components and how they collaborate to deliver real-time insights about remote server connections initiated by the browser.
+
+Whether you are a privacy enthusiast, developer, or filter list maintainer, this overview explains the seamless flow from raw network events to actionable user information.
+
+---
+
+## Core Components of uBO Scope
+
+uBO Scope's architecture revolves around three essential components working together smoothly:
+
+- **Background Analysis Service** — The engine that listens to your browser's network traffic and processes request outcomes.
+- **Popup User Interface (UI)** — The visual dashboard that displays summarized and categorized live data.
+- **Data Integration and Storage** — Mechanisms that organize, store, and transmit data between the background service and UI.
+
+
+### Background Analysis Service
+
+At the heart of uBO Scope lies the background script, functioning as a dedicated observer of all network requests your browser issues.
+
+- It registers listeners to the browser's `webRequest` API to monitor every network event of interest — including redirects, errors, and successful responses.
+- For each request, it extracts crucial details, such as the URL, domain, request type, and tab context.
+- It classifies network requests into three outcome categories:
+  - **Allowed**: Successfully completed requests.
+  - **Blocked**: Requests that failed or were actively blocked.
+  - **Stealth-blocked**: Subtle redirects or requests that may evade direct detection.
+
+The background service keeps live, organized records of distinct connected domains and hostnames per browser tab session, ensuring precise tracking.
+
+### Popup User Interface
+
+The frontend popup acts as your window into the monitored network activity:
+
+- Upon opening, it queries the background service for the latest network data relevant to the active browser tab.
+- It dynamically renders a detailed domain breakdown, showing counts for allowed, blocked, and stealth-blocked connections.
+- It leverages Unicode normalization for domain names to ensure clarity, including internationalized domain names.
+- Summary metrics, such as the total number of distinct third-party domains connected, are prominently displayed for immediate insight.
+
+This user-centric panel enables rapid, intuitive review without overwhelming technical detail.
+
+### Data Integration and Storage
+
+Seamless communication and data persistence are key:
+
+- The extension uses message passing between the background script and popup UI, delivering serialized tab-specific data on demand.
+- Session storage persists data for tab network activity to maintain state continuity, even if the popup is opened and closed multiple times.
+- Public suffix list parsing facilitates accurate domain extraction from hostnames, supporting consistent classification.
+
+Together, these systems guarantee that your experience remains smooth, responsive, and accurate.
+
+---
+
+## How uBO Scope Monitors Network Requests
+
+The extension watches your browser’s outbound connections and interprets the outcome of each request, relying entirely on details reported by the `webRequest` API.
+
+<ul>
+<li>**Event Types Tracked**: redirects, errors, and successful responses.</li>
+<li>**Mapping to Tabs**: Requests are grouped by browser tab IDs so you can analyze activity per tab.</li>
+<li>**Outcome Recording**: Each request is categorized into allowed, blocked, or stealth-blocked sets based on its event status.</li>
+<li>**Badge Updates**: The toolbar icon shows the count of distinct third-party domains connected for an active tab, updated in near real-time.</li>
+</ul>
+
+This approach ensures you see a comprehensive, truthful picture of actual network connections happening behind the scenes.
+
+---
+
+## Data Flow Diagram
+
+```mermaid
+flowchart TD
+    subgraph Browser Environment
+        User["User Opens Browser"]
+        TabManager["Browser Tabs"]
+        WebRequests["Network Requests"]
+    end
+
+    subgraph uBO_Scope_Extension
+        Background["Background Analysis Service"]
+        Storage["Session & Public Suffix Data Storage"]
+        Popup["Popup User Interface"]
+    end
+
+    User -->|Navigates| TabManager
+    TabManager -->|Sends Requests| WebRequests
+    WebRequests -->|Notify Events| Background
+    Background -->|Classify + Aggregate| Storage
+    Popup -->|Request Data| Background
+    Background -->|Send Serialized Tab Data| Popup
+    Popup -->|Render UI| User
+
+    classDef component fill:#f9f9f9,stroke:#333,stroke-width:1px
+    class Browser Environment, uBO_Scope_Extension component
+```
+
+---
+
+## Practical Workflow Scenario
+
+1. You load a webpage that triggers multiple network connections to various domains.
+2. The background service detects each connection event, distinguishing whether the request succeeded, failed, or redirected stealthily.
+3. It updates its internal maps tracking domains per tab session, ensuring no duplicates inflate counts.
+4. When you click the extension’s toolbar icon, the popup requests the current tab’s network data.
+5. The popup receives structured data, decodes it, and presents a clean view showing the number of connected domains subdivided by request outcomes.
+6. The toolbar badge number dynamically reflects the count of allowed third-party connections, helping you gauge the web page’s external communications at a glance.
+
+---
+
+## Best Practices and Considerations
+
+- **Browser Compatibility**: uBO Scope relies fully on browsers supporting the `webRequest` API with sufficient permission scopes.
+- **Limitations**: Network requests outside the `webRequest` API coverage, such as browser internal connections or certain service worker requests, are not visible.
+- **Performance**: The architecture batches network events to avoid performance degradation during heavy browsing sessions.
+- **Data Accuracy**: Using the public suffix list ensures domain extraction is correct even with complex hostnames, avoiding misleading counts.
+
+---
+
+## Summary
+
+By breaking down complex browser network activity into digestible information, uBO Scope empowers you with transparent, actionable visibility into your online connections. Its modular design—background monitoring, precise data management, and user-friendly interface—ensures reliability and ease of use.
+
+To deepen your understanding and usage, refer to the documentation on [What is uBO Scope?](/overview/introduction/what-is-ubo-scope) and [Understanding the Popup Panel](/getting-started/first-run-experience/understanding-popup-panel).
+
+---
+
+## Learn More
+
+- [How to Interpret Toolbar Badge and Popup Data](/guides/getting-started-essentials/understanding-popup-and-badge)
+- [Common Network Request Outcome Types Explained](/overview/introduction/core-concepts-and-terms)
+- [Installation and Configuration Instructions](/getting-started/prerequisites-installation/installing-browser-extension)
+
+
+<Source url="https://github.com/gorhill/uBO-Scope" branch="main" paths={[{"path": "js/background.js", "range": "1-182"},{"path": "js/popup.js", "range": "1-71"}]} />
