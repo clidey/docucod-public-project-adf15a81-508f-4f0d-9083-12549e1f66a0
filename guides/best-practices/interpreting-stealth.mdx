@@ -1,0 +1,132 @@
+---
+title: "Best Practices: Interpreting Stealth and Blocked Connections"
+description: "Explains the nuances of stealth connections, how to read the outcome of request attempts, and what users and maintainers should look for to diagnose unexpected behaviors or filter gaps."
+---
+
+# Best Practices: Interpreting Stealth and Blocked Connections
+
+## Overview
+This guide helps users and filter list maintainers understand the distinctions and subtleties behind stealth-blocked and blocked network connections as reported by uBO Scope. It explains how to accurately read the connection outcomes, recognizes the implications of stealth blocking, and identifies signs of unexpected behaviors or filtering gaps. Mastering this knowledge enables users to confidently audit and diagnose third-party connection activity on webpages.
+
+---
+
+## Prerequisites
+- uBO Scope extension installed and active in a supported browser.
+- Basic familiarity with the uBO Scope popup interface, including domain lists and badge counts.
+- Understanding of core terminology such as `allowed`, `blocked`, and `stealth-blocked` connections. See [Core Concepts & Terminology](https://example.com/overview/core_concepts_architecture/core_concepts) for details.
+
+---
+
+## Understanding Connection Outcomes
+
+uBO Scope classifies every third-party network request into one of three categories in its popup UI:
+
+- **Not Blocked (Allowed):** Connections that successfully completed.
+- **Blocked:** Failures due to explicit blocking or network errors.
+- **Stealth-Blocked:** Requests where the blocking is invisible to the webpage, typically performed by content blockers employing stealth techniques.
+
+### What Does Each Outcome Mean?
+
+| Outcome       | Description                                                                                  |
+|---------------|----------------------------------------------------------------------------------------------|
+| Allowed       | The browser successfully fetched resources from the remote server.                          |
+| Stealth-Blocked | Blocking performed covertly so the webpage cannot detect it; the request never reaches its target. |
+| Blocked       | The browser reports an error for the network request, visible in webRequest API as an error.|
+
+Stealth blocking is commonly used by modern content blockers to avoid breakage or detection by webpages and to maintain privacy.
+
+---
+
+## How uBO Scope Detects Outcomes
+
+- The extension listens to browser network events using the native `webRequest` API.
+- When a request is redirected or silently blocked, uBO Scope marks it as stealth-blocked.
+- When a request explicitly results in an error (e.g., blocked by the content blocker or network failure), it is marked as blocked.
+- Successful requests are marked allowed.
+
+This detection is independent of the blocking method used in the browser, so uBO Scope ensures transparent visibility on what actually happened at the network level.
+
+---
+
+## Practical Workflow: Diagnosing Unexpected Behaviors or Filter Gaps
+
+### Step 1: Open the uBO Scope Popup
+1. Click the uBO Scope toolbar icon to open the popup interface.
+2. Examine the sections "not blocked", "stealth-blocked", and "blocked" domain lists.
+3. The "domains connected" count in the summary shows distinct allowed third-party domains.
+
+### Step 2: Identify Suspicious Stealth Connections
+- If domains appear in the stealth-blocked list, it means the extension or content blocker blocked these requests stealthily.
+- Stealth listing without the corresponding blocking rules may hint at:
+  - Custom or stealth rules by your content blocker.
+  - Filter list maintainers should verify if filters cover these domains appropriately.
+
+### Step 3: Investigate Blocked Domains
+- Blocked domains indicate failed attempts to connect, likely due to explicit blocking.
+- Unexpected blocked domains might suggest over-blocking or unintended filter behavior.
+
+### Step 4: Verify Badge Count Consistency
+- The badge reflects the number of distinct third-party allowed domains.
+- A very low count with many stealth or blocked domains can indicate effective blocking.
+- A high count despite many blocked entries suggests potential filter gaps or incomplete blocking.
+
+### Step 5: Research Domains and Adjust Filters
+- Confirm domain ownership or function (CDN, tracker, ad network, analytics).
+- Modify or update filter lists accordingly to improve privacy or reduce false positives.
+
+---
+
+## Tips & Best Practices
+
+- **Stealth blocking is a positive sign** of effective, less detectable blocking methods and does not always imply filter failures.
+- **Blocked connections reflect overt blocking** and might be visible to some webpage scripts.
+- **Use the domain counts in each category** to gauge overall blocking effectiveness.
+- **Regularly update your filter lists** to minimize stealth-blocked domains leaking through.
+- **Compare multiple browsing sessions** to detect pattern changes or new connections.
+
+---
+
+## Common Pitfalls & How to Avoid Them
+
+- **Misinterpreting stealth-blocked domains as allowed:** Stealth-blocked means the connection was blocked invisibly; these are not allowed connections.
+- **Confusing blocked errors for connection failures unrelated to blocking:** Some blocked errors could be due to real network issues unrelated to content blocking.
+- **Ignoring the difference between hostname and domain:** uBO Scope groups counts by base domain for clarity—understand this grouping.
+
+---
+
+## Troubleshooting
+
+### Issue: Stealth-blocked domains unexpectedly high
+- **Cause:** Could be due to aggressive or experimental blocking filters.
+- **Action:** Temporarily disable some filters to check impact and adjust accordingly.
+
+### Issue: Blocked domains appear in allowed list
+- **Cause:** May happen due to redirects or mixed outcomes on same domain.
+- **Action:** Consult domain details and network logs; blocking might be partial or bypassed.
+
+### Issue: Badge count not updating after filtering changes
+- **Cause:** Session data or extension cache delay.
+- **Action:** Reload the active tab or restart the browser to refresh data.
+
+---
+
+## Summary
+By correctly interpreting stealth and blocked connection outcomes, users gain full transparency into how third-party connections are handled during web browsing. This empowers privacy-conscious users and filter list maintainers alike to validate content blocker behavior, optimize filter lists, and troubleshoot unexpected network behaviors.
+
+---
+
+## Next Steps & Related Documentation
+- **Understanding Connection Data and Badge Count:** Learn how uBO Scope calculates and reports connections. [Guide here](https://example.com/guides/analyzing-connections/understanding-data)
+- **Using the Popup: Domain Lists and Details:** Detailed usage of uBO Scope popup UI. [Guide here](https://example.com/guides/analyzing-connections/using-popup)
+- **Common Workflows and Real-World Examples:** Practical auditing methods. [Guide here](https://example.com/guides/analyzing-connections/example-workflows)
+- **Best Practices: Filter List Maintainers Guide:** For advanced tuning and diagnostics. [Guide here](https://example.com/guides/best-practices/filter-lists-diagnostics)
+
+---
+
+## Reference
+Source code and detailed behavior can be explored on the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+---
+
+*© 2024 Raymond Hill
+
