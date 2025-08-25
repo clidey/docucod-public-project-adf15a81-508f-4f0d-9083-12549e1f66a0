@@ -1,0 +1,215 @@
+---
+title: "Understanding Connection Data and Badge Count"
+description: "Demystifies how the badge count is calculated, what 'distinct third-party servers' means, and explains the significance of different connection outcomes using practical browser examples."
+---
+
+# Understanding Connection Data and Badge Count
+
+## Overview
+
+This guide demystifies how uBO Scope calculates the badge count displayed on the browser toolbar, clarifies what is meant by 'distinct third-party servers,' and explains the meaning behind the various connection outcomes reported in the popup UI. Through practical examples based on typical browser network behavior, you will learn how to interpret these key data points to better understand the connections your browser makes on each page.
+
+## What This Guide Helps You Accomplish
+
+- Understand the exact basis for the badge count on the uBO Scope icon.
+- Learn how uBO Scope defines and distinguishes "distinct third-party servers."
+- Interpret the different connection outcomes (allowed, stealth-blocked, blocked).
+- Apply this knowledge to real-world browsing scenarios for more insightful privacy awareness.
+
+## Prerequisites
+
+- uBO Scope installed and activated in your supported browser.
+- Familiarity with opening the uBO Scope popup UI by clicking the extension icon.
+- Basic understanding of domains and hostnames (no technical knowledge required).
+
+## Expected Outcome
+
+After completing this guide, you will be able to:
+- Confidently interpret the number shown on the badge for any active tab.
+- Differentiate between first-party and third-party connections as counted by uBO Scope.
+- Understand what connection outcome categories mean and how they relate to network requests.
+
+## Time Estimate
+
+Approximately 10-15 minutes to read and internalize the concepts, plus additional time when applying this knowledge during regular browsing.
+
+## Difficulty Level
+
+Beginner to Intermediate
+
+---
+
+## How the Badge Count Is Calculated
+
+The badge count shown on the uBO Scope toolbar icon represents the **number of distinct third-party domains** your browser connected to on the currently active tab. It does **not** count every individual request, but unique domains only, providing a clearer view of third-party network exposure.
+
+### Key points about the badge count:
+
+- **Third-party domains only**: Domains different from the main website’s primary domain.
+- **Count of unique domains**: Multiple requests to the same third-party domain count as one toward the badge.
+- **Represents allowed connections**: Only connections that successfully resulted in a network response or were otherwise allowed.
+
+### Practical example:
+
+Imagine visiting example.com, which loads resources from:
+
+- `example.com` (first-party, not counted)
+- `cdn.example.net` (third-party)
+- `ads.tracker.com` (third-party)
+- `cdn.example.net` again (already counted once)
+
+**Badge count = 2** because there are two distinct third-party domains: `cdn.example.net` and `ads.tracker.com`.
+
+---
+
+## What Are "Distinct Third-Party Servers"?
+
+### Definition:
+
+A third-party server is any remote server with a domain **different** from the main webpage’s domain.
+
+#### Domain vs. Hostname
+- **Hostname**: The full specific subdomain used in the URL (e.g., `images.ads.example.com`).
+- **Domain**: The primary registered domain name, extracted using the public suffix list logic (e.g., `example.com`).
+
+uBO Scope uses the public suffix list to normalize hostnames to their effective registered domain when counting distinct third-party domains.
+
+### Why this matters:
+
+- Multiple subdomains under the same domain are counted as one third-party server.
+- Helps focus on separate legal or organizational entities rather than technical subdomains alone.
+
+### Practical examples:
+
+- Requests to `assets.examplecdn.com` and `static.examplecdn.com` count as **one** third-party domain: `examplecdn.com`.
+- Requests to `tracker1.adnetwork.com` and `tracker2.adnetwork.com` count as **one** third-party domain: `adnetwork.com`.
+- Requests to `example.com` or any subdomain inside it are considered **first-party** and do not contribute to badge count.
+
+---
+
+## Understanding Connection Outcomes
+
+uBO Scope categorizes network connections into three distinct outcomes, each shown in separate sections in the popup UI with practical meaning for your browsing session.
+
+### 1. Allowed Connections ("Not Blocked")
+- These are requests that successfully connected to a third-party server and were not blocked.
+- Represent resources actually loaded or connections made, which can include legitimate content delivery networks (CDNs) or third-party services.
+- Shown as **green** entries in the popup.
+
+### 2. Stealth-Blocked Connections ("Stealth")
+- These are requests that were blocked by stealth mechanisms (often by content blockers) to remain hidden from the website.
+- The browser or network attempt was made, but the connection was deliberately prevented.
+- They are considered more aggressive blocks that help prevent tracking but aim not to break web pages.
+- Shown as **red** entries, distinct from simple blocks.
+
+### 3. Blocked Connections ("Blocked")
+- Requests that were blocked due to errors or by the content blocker but not stealthily.
+- Typically represent domains that were explicitly blocked or failed due to network errors, censorship, or other causes.
+- Also shown as **red** entries but with subtle differentiation from stealth blocks.
+
+### Interpreting the Three Outcomes Together
+- Allowed connections indicate the number of third-party servers your browser actually connected to.
+- Stealth and blocked connections show attempts that were prevented, giving you insight into active blocking effectiveness.
+- The badge count only reflects the **allowed** connection count to avoid misleading block totals.
+
+---
+
+## Real Browser Scenarios
+
+### Scenario 1: Visiting a Privacy-Respecting News Site
+- Badge shows **3**.
+- Popup shows 3 allowed third-party domains (e.g., a CDN, analytics provider, and social widget).
+- Stealth-blocked and blocked sections are empty.
+
+**Interpretation:** The site uses a few third parties, none of which are blocked; your browsing is transparent.
+
+### Scenario 2: Visiting a Site with Aggressive Content Blocking
+- Badge shows **5**.
+- Popup shows 5 allowed domains, 8 stealth-blocked, and 2 blocked.
+
+**Interpretation:** You are connecting to 5 third-party sites, but blocking many tracking attempts stealthily.
+
+### Scenario 3: Visiting a Test Page That Fakes Connections
+- Badge shows 1.
+- Popup shows 1 allowed domain, 0 stealth, and 99 blocked.
+
+**Interpretation:** Most connections are blocked; the number of blocked connection attempts is high but does not affect the badge.
+
+---
+
+## Tips and Best Practices
+
+- **Focus on the badge count for the actual third-party exposure**, not the number of blocked requests.
+- Remember the badge count resets per tab and reflects current session data.
+- Use the popup UI to see domain details categorized by outcome for a fine-grained view.
+- Legitimate third-party domains like CDNs usually have low counts and are not inherently suspicious.
+- Watch out for unexpectedly high badge counts or many allowed domains — this could indicate trackers or excess third-party exposure.
+
+---
+
+## Troubleshooting Common Questions
+
+<AccordionGroup title="Troubleshooting Connection Data and Badge Counts">
+<Accordion title="Why does my badge sometimes show zero despite seeing network activity?">
+uBO Scope counts distinct third-party domains only. If all connections are first-party or blocked/stealth-blocked successfully, the badge will be blank or zero.
+</Accordion>
+<Accordion title="Why is the badge count lower than the number of requests I expect?">
+uBO Scope normalizes multiple requests to the same domain as one count. Many network requests to the same domain count once towards the badge.
+</Accordion>
+<Accordion title="What if the badge does not update after loading a page?">
+Check if the extension is properly installed and has permissions. Also, the badge updates asynchronously with a small delay; waiting a few seconds or refreshing the page usually solves it.
+See the Troubleshooting Common Setup Issues guide.
+</Accordion>
+<Accordion title="Can I rely on the badge count to measure content blocker efficacy?">
+No. Badge count shows allowed third-party domains, not block counts or effectiveness directly. A content blocker that blocks stealthily may have fewer allowed domains but higher block counts. Use uBO Scope's categorized domain lists and outcomes for true insights.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps & Related Content
+
+- Consult the [First Steps and Basic Usage guide](/guides/getting-started/first-steps) to learn how to use the popup UI effectively.
+- For deeper understanding of terms, see [Core Concepts & Terminology](/overview/core_concepts_architecture/core_concepts).
+- Visit [Basic Configuration](/getting-started/configuration-and-validation/basic-configuration) to understand permissions and configuration.
+- Learn about interpreting stealth and blocked connections more thoroughly in [Best Practices: Interpreting Stealth and Blocked Connections](/guides/best-practices/interpreting-stealth).
+
+---
+
+## Quick Recap
+
+| Concept               | Explanation                                                       |
+|-----------------------|------------------------------------------------------------------|
+| Badge Count           | Number of unique third-party domains connected (allowed only)   |
+| Distinct Third-Party  | Domains different from the main site domain, normalized by PSL   |
+| Connection Outcomes   | Allowed (not blocked), Stealth (blocked stealthily), Blocked     |
+
+---
+
+With these insights, uBO Scope empowers you to monitor the true scope of third-party connections, giving you control and visibility over your browser’s network interactions.
+
+
+---
+
+# Sample Output from the uBO Scope Popup
+
+```plaintext
+Tab domain: example.com
+
+Badge count: 4
+
+Allowed (not blocked):
+- cdn.examplecdn.net (10 requests)
+- fonts.gstatic.com (5 requests)
+- api.weather.com (2 requests)
+- analytics.tracker.com (1 request)
+
+Stealth-blocked:
+- ads.tracker.com (3 blocked requests)
+- pixel.othertracker.net (4 blocked requests)
+
+Blocked:
+- unwantedads.badnetwork.com (2 blocked requests)
+```
+
+---
