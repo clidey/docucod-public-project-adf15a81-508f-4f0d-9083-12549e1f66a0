@@ -1,0 +1,181 @@
+---
+title: "Why Is My Badge Count Zero?"
+description: "Explains scenarios where network activity isn’t being tracked—such as incompatible browser versions, inactive tabs, or webRequest limitations—and how to address them for accurate connection visibility."
+---
+
+# Why Is My Badge Count Zero?
+
+Understanding why the toolbar badge count in uBO Scope might show zero is crucial to ensure you're receiving accurate and meaningful insights about your browser's network connections. This guide explains common scenarios where network activity isn't tracked, how browser and extension interactions affect data collection, and what you can do to restore correct badge visibility.
+
+---
+
+## 1. Overview: What the Badge Count Represents
+
+The badge count on the uBO Scope toolbar icon reflects the **number of distinct third-party domains to which your browser has successfully established network connections** on the active tab. A zero count means uBO Scope didn’t detect or track any such connections for that tab.
+
+If you see the badge count always at zero despite activity, it indicates uBO Scope is not receiving network event data for your current browsing context.
+
+---
+
+## 2. Common Causes for a Zero Badge Count
+
+### 2.1 Incompatible Browser Version
+
+uBO Scope requires a compatible browser version to fully access the browser's `webRequest` API, which powers its network monitoring capabilities.
+
+- **Chrome**: Version 122 or higher is required.
+- **Firefox**: Version 128 or higher is required.
+- **Safari**: Version 18.5 or higher is required.
+
+If your browser version is below these, the extension cannot observe network requests properly and the badge will show zero.
+
+<Tip>
+Make sure your browser is updated to at least the minimum supported version. You can check your browser version in its About section.
+</Tip>
+
+### 2.2 Active Tab Not Generating Network Activity
+
+uBO Scope tracks network activity per active browser tab. If the current tab:
+
+- Has not made any network connections yet,
+- Is displaying a blank page or static content without remote calls,
+- Is a newly opened tab with no loaded webpage,
+
+then uBO Scope correctly shows zero badge count because there are no connections to report.
+
+<Check>
+Load a well-known website that makes external connections (e.g., https://example.com) and observe if the badge count updates.
+</Check>
+
+### 2.3 Limitations and Restrictions of the `webRequest` API
+
+Some network requests may be invisible to the `webRequest` API due to browser security policies or technical restrictions, which limits uBO Scope’s coverage:
+
+- **Requests Made Outside the Browser Process**: Some browser features or platform-specific optimizations bypass `webRequest` listeners, leading to missing data.
+- **Private or Incognito Windows**: Depending on your browser, extensions may have limited or no access to network events in private mode.
+- **Non-HTTP(S) Protocols**: uBO Scope primarily tracks HTTP, HTTPS, WS, and WSS protocols. Other protocols may not be captured.
+
+<Warning>
+These limitations are imposed by browser internals; uBO Scope cannot override them.
+</Warning>
+
+### 2.4 Permissions or Installation Issues
+
+uBO Scope requires explicit permissions to monitor web requests. Common issues include:
+
+- Extension was installed but permissions were not granted or were denied.
+- The extension is disabled or not running correctly.
+- Conflicts with other extensions interfering with permissions.
+
+<Steps>
+<Step title="Verify Extension is Enabled">
+1. Open your browser’s extensions or add-ons page.
+2. Ensure uBO Scope is enabled.
+</Step>
+<Step title="Check Permissions">
+1. Review uBO Scope permissions in your browser settings.
+2. Confirm that permissions include access to web requests on all HTTP and WS URLs.
+</Step>
+</Steps>
+
+### 2.5 Inactive or Background Tabs
+
+uBO Scope updates badge counts based on the currently active browser tab. If you switch to a tab without recorded connections or where browsing activity is limited, the badge shows zero.
+
+<Tip>
+Switch back to a tab with active browsing and remote connections to see badge updates.
+</Tip>
+
+### 2.6 Extension Internal Errors or Data Reset
+
+Though rare, internal errors or manual data resets could clear all connection records, temporarily leading to zero badge counts.
+
+You can try:
+
+- Reloading the extension.
+- Restarting the browser.
+- Waiting a few moments to allow the extension to process new network events.
+
+---
+
+## 3. How to Diagnose and Resolve Zero Badge Counts
+
+### Step 1: Confirm Browser Compatibility
+
+- Verify your browser version meets minimum requirements:
+  - Chrome 122+
+  - Firefox 128+
+  - Safari 18.5+
+- Update your browser if needed.
+
+### Step 2: Validate uBO Scope Installation and Permissions
+
+- Go to your browser’s extensions page.
+- Confirm uBO Scope is enabled.
+- Reinstall the extension if necessary using official sources.
+- Ensure the extension has permission to monitor web requests across relevant hostnames.
+
+### Step 3: Test with Active Network Activity
+
+- Open a popular website known to connect to multiple remote domains.
+- Watch the uBO Scope badge for an updated connection count.
+
+### Step 4: Avoid Private/Incognito Mode for Testing
+
+- Test uBO Scope functionality in a normal browser window.
+- Note that functionality can be limited or disabled in private browsing modes.
+
+### Step 5: Restart Extension and Browser
+
+- Disable and re-enable uBO Scope.
+- Restart your browser fully to clear internal state.
+
+### Step 6: Review Browser Console for Errors
+
+- Open browser developer tools console.
+- Look for errors or warnings related to uBO Scope.
+
+<Tip>
+If you encounter errors or persistent zero counts despite taking these steps, consult the uBO Scope community forums or GitHub repository for support.
+</Tip>
+
+---
+
+## 4. Understanding uBO Scope's Network Monitoring Mechanics
+
+uBO Scope relies on browser APIs to observe network requests:
+
+- The extension listens to three main webRequest events:
+  - `onBeforeRedirect`
+  - `onErrorOccurred`
+  - `onResponseStarted`
+
+- These events enable tracking connection outcomes as **allowed**, **stealth-blocked**, or **blocked**.
+
+- The badge count represents the number of distinct third-party domains with allowed connections on the current tab.
+
+- If the extension cannot receive these events due to browser or permissions limits, the badge count stays at zero.
+
+---
+
+## 5. Additional Resources
+
+For a deeper dive into installation, usage, and troubleshooting, consult the following documentation pages:
+
+- [Supported Browsers & System Requirements](../installation-basics/system-requirements)
+- [Installing uBO Scope](../installation-basics/install-extension)
+- [Launching and Using the Toolbar Popup](../first-steps/launching-ubo-scope)
+- [Validating Your Setup](../first-steps/first-validation)
+- [Resolving Common Installation Issues](./common-problems)
+
+---
+
+## Summary
+
+Encountering a zero badge count means uBO Scope currently detects no active third-party network connections on the focused tab. This may arise from browser version incompatibility, lack of network activity in the tab, permission or installation problems, or inherent browser API limitations. Following the diagnostic and resolution steps above ensures you restore accurate badge reporting to gain full visibility of your browser’s external connections.
+
+---
+
+<Tip>
+Understanding why the badge is zero is your first step to trusting the extension's insights and reaping its transparency benefits over third-party network exposure.
+</Tip>
