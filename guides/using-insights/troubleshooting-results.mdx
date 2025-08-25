@@ -1,0 +1,177 @@
+---
+title: "Troubleshooting and Interpreting Unusual Results"
+description: "Find solutions to common issues, such as missing or unexpected domain counts, and understand edge cases where the webRequest API may not capture all traffic. Discover how to ensure the extension is working as intended across browsers."
+---
+
+# Troubleshooting and Interpreting Unusual Results
+
+## Overview
+This guide helps you diagnose and resolve common issues that may cause uBO Scope to show missing, incomplete, or unexpected domain counts and connection details. It also clarifies specific edge cases related to browser APIs and explains how to ensure uBO Scope is functioning correctly across different browsers.
+
+By following this guide, you can verify that uBO Scope accurately tracks network connections and understand the limitations of the underlying technologies.
+
+---
+
+## 1. Common Issues and Their Solutions
+
+### Issue: Toolbar Badge Shows No Count or Blank
+
+**Cause:**
+- The extension may not have the required permissions.
+- The active tab is not detected or hasn't generated connection data yet.
+- Browser compatibility issues.
+
+**Steps to Resolve:**
+1. Verify uBO Scope is installed and enabled in your browser.
+2. Confirm that the extension has permissions to access the webRequest API and host URLs. These include permissions like `webRequest`, `activeTab`, and host permissions for `http://*/*`, `https://*/*`.
+3. Refresh the active tab or open a new tab with network activity.
+4. Wait a few seconds as network requests are processed asynchronously.
+5. Restart the browser if the badge still does not appear.
+
+<Check>
+Ensure you have granted all permissions at installation or in browser settings.
+</Check>
+
+---
+
+### Issue: Popup Panel Displays 'NO DATA' or Empty Domain Lists
+
+**Cause:**
+- No network requests recorded for the active tab.
+- A race condition where data has not yet been processed.
+- The active tab is a browser internal page or special URL not tracked by the extension.
+
+**Steps to Resolve:**
+1. Make sure you are on a webpage with network activity.
+2. Try a normal website (e.g., https://example.com) instead of internal browser pages.
+3. Close and reopen the popup to refresh the data.
+4. Wait a few seconds for information to populate.
+
+<Note>
+Sites such as `about:blank`, `chrome://extensions`, or internal browser pages are generally not tracked by uBO Scope due to API limitations.
+</Note>
+
+---
+
+### Issue: Unexpected High or Low Domain Counts
+
+**Understanding Causes:**
+- uBO Scope counts only distinct third-party remote servers contacted.
+- Some network requests may not be visible due to browser API limitations.
+- The `webRequest` API does not have visibility into requests not made through typical browser networking stack, such as prerendered frames or specialized browser features.
+
+**Recommendations:**
+- Use the badge count as a general privacy indicator, not an absolute metric.
+- Consult the popup panel for detailed domain categorization: allowed, stealth-blocked, and blocked.
+
+<Info>
+A lower badge count generally indicates better privacy, as fewer third-party connections are established.
+</Info>
+
+---
+
+## 2. Edge Cases and webRequest API Limitations
+
+### Network Requests Outside webRequest API Scope
+
+Certain types of network traffic are invisible to uBO Scope because they do not pass through the browser's `webRequest` API, including:
+
+- Requests made by browser extensions themselves.
+- Some prerendered or speculative network requests.
+- Connections initiated by native messaging hosts or external apps.
+
+### Handling Redirects and Failures
+
+uBO Scope detects redirects and errors (such as failed requests) and categorizes them as stealth-blocked or blocked connections accordingly. However, some redirects might not be network-related and thus not counted.
+
+---
+
+## 3. Verifying uBO Scope Operation Across Browsers
+
+### Supported Browsers and Versions
+
+- **Chromium-based browsers:** Chrome 122+, and compatible browsers.
+- **Firefox:** Version 128+.
+- **Safari:** Version 18.5+.
+
+Make sure your browser is updated to a supported version to ensure full `webRequest` API coverage.
+
+### Permission Checks
+Verify that all these permissions are granted in your browser, as shown in the extension's manifest:
+
+- `webRequest`
+- `activeTab`
+- `storage`
+- Host permissions e.g., `http://*/*` and `https://*/*` (and websocket variants on Chromium and Firefox).
+
+### Extension Background Processing
+The extension uses background scripts or service workers to aggregate network request data. Since these can be evicted or delayed by the browser, allow some time after loading a page for the data to be processed and the badge to update.
+
+---
+
+## 4. Step-by-Step Troubleshooting Workflow
+
+<Steps>
+<Step title="Step 1: Confirm Installation and Permissions">
+Open your browser's extensions page and ensure uBO Scope is installed and enabled. Check if the required permissions are active.
+</Step>
+<Step title="Step 2: Reload Active Tab with Network Activity">
+Visit a site with known network requests (e.g., news site or social media).
+</Step>
+<Step title="Step 3: Open the uBO Scope Popup Panel">
+Click the uBO Scope icon and observe the domains connected sections. Wait a few seconds for data to load.
+</Step>
+<Step title="Step 4: Check Toolbar Badge">
+Verify if the badge number updates to reflect distinct third-party domain counts.
+</Step>
+<Step title="Step 5: Refresh or Restart Browser if Issues Persist">
+Try refreshing the tab or restarting the browser to reset session data.
+</Step>
+</Steps>
+
+---
+
+## 5. Practical Tips and Best Practices
+
+- **Give the extension a few seconds after page load** as network requests are processed asynchronously in batches.
+- **Avoid testing on browser-internal pages** where network requests are limited or absent.
+- **Understand that some requests won’t be reported** due to browser API constraints, so interpret counts as indicative, not definitive.
+- **Use the popup panel details** to analyze allowed, stealth-blocked, or blocked domains for better context.
+- **Keep your browser updated** to the latest supported version to minimize missing data.
+
+---
+
+## 6. Additional Troubleshooting Resources
+
+For persistent or unusual problems, consult these related guides:
+
+- [Troubleshooting Setup Issues](/getting-started/first-steps-usage/troubleshooting-setup): Solutions for setup and permission problems.
+- [Your First Run: What to Expect](/getting-started/first-steps-usage/first-run-overview): Understanding initial data visibility and behavior.
+- [Interpreting the Popup & Badge](/getting-started/first-steps-usage/interpreting-the-popup): Detailed explanations of UI elements and their meanings.
+
+---
+
+## 7. Summary
+
+uBO Scope relies on the browser's `webRequest` API to deliver real-time visibility into your browsing network connections. While it offers valuable insights, some edge cases and API limitations mean data may sometimes be incomplete or unexpected. This guide equips you with actionable troubleshooting steps and clear explanations to ensure you get the most accurate picture from the tool.
+
+
+---
+
+## Appendix: Understanding Data Processing and Timing
+
+uBO Scope batches network events (successes, errors, redirects) and processes them asynchronously to update the session data and UI. This design means there's often a short delay between network activity and when data appears in the popup or badge.
+
+For developers and advanced users, this queuing and processing mechanism can be observed in the background script (`background.js`), which listens to network events and updates tab-specific details before saving session state.
+
+This asynchronous approach balances accuracy with performance but requires user patience after loading pages or tabs.
+
+---
+
+# End of Guide
+
+---
+
+##### This documentation is part of the uBO Scope help system.
+
+For more information and in-depth coverage, visit the [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) or consult related documentation sections.
