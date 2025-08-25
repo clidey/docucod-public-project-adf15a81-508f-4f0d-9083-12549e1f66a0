@@ -1,0 +1,116 @@
+---
+title: "Compatibility & Integration with Content Blockers"
+description: "Understand how uBO Scope integrates with and complements existing content blockers—regardless of brand—and how it leverages browser APIs for reporting. Learn its interaction boundaries: what the tool can and cannot observe or report, ensuring accurate expectations for users working alongside existing security/privacy tools."
+---
+
+# Compatibility & Integration with Content Blockers
+
+Understanding how uBO Scope works alongside other content blockers is key to getting accurate and insightful network connection data. This page clarifies how uBO Scope integrates with existing privacy and security tools, what you can expect from its reporting capabilities, and the boundaries of its observation within the browser environment.
+
+---
+
+## 1. How uBO Scope Integrates with Content Blockers
+
+uBO Scope is designed as a complementary, transparent tool that reports all network connections initiated by web pages — whether or not they are affected by other content blockers.
+
+- **Independent Operation:** uBO Scope operates independently of any specific content blocker brand or implementation. It does not block but merely measures and displays network request outcomes.
+- **Universal Visibility:** Because it listens to browser `webRequest` events, uBO Scope can observe network requests regardless of whether other blockers allow or block them.
+- **Accurate Outcome Categorization:** It categorizes requests into three outcome groups:
+  - **Allowed:** Requests that were successfully made.
+  - **Blocked:** Requests that failed or were explicitly blocked.
+  - **Stealth-blocked:** Requests that failed to be outright blocked but were redirected or concealed.
+
+This integration approach ensures that uBO Scope gives an unfiltered, accurate snapshot of third-party connections from your browser session.
+
+## 2. How uBO Scope Uses Browser APIs
+
+uBO Scope leverages the browser’s native `webRequest` API to monitor network requests in real-time and collate outcomes per browser tab. This API enables the extension to:
+
+- Detect every HTTP(S) and WebSocket request made from tabs.
+- Receive events for request redirects, errors, and successful responses.
+- Access request metadata such as URLs and frame context.
+
+Since it relies on browser APIs, uBO Scope's reporting is as precise as the browser’s reporting capabilities allow.
+
+## 3. Boundaries and Limitations of Observation
+
+While uBO Scope reports extensive connection details, it's important to understand what it can and cannot observe:
+
+- **Cannot Track Requests Outside Browsers' `webRequest` Scope:**
+  - Requests made by the OS or other apps outside the browser ecosystem aren't visible.
+  - Some browser internal APIs or sandboxed iframes might bypass `webRequest` event hooks.
+
+- **No Influence on Other Blockers:**
+  - uBO Scope does not block or modify network requests.
+  - It will not interfere with other content blockers' filtering decisions.
+
+- **Accuracy Depends on Browser Reporting:**
+  - If the browser does not report a network request event, uBO Scope cannot include it.
+  - For example, certain encrypted or service-worker-based requests may elude direct observation.
+
+## 4. Working Alongside Other Content Blockers
+
+uBO Scope is fully compatible with any content blocker installed — including uBlock Origin itself or other third-party blockers:
+
+- **Comprehensive Diagnosis:** It provides a true assessment of how many and which remote servers your browser connects to, independent of content blocker UI metrics.
+- **Enhanced Transparency:** Users can verify whether a content blocker is truly effective by comparing actual allowed connections versus what blockers report.
+- **Myth Debunking:** Helps identify misconceptions such as equating block counts with effectiveness.
+
+### Use Case Example
+Consider a scenario where your content blocker shows a high block count but uBO Scope shows many distinct third-party servers allow connections. This reveals potential stealth allowances by the blocker, enabling deeper evaluation and tuning.
+
+## 5. Practical Tips for Users
+
+- **Check the Toolbar Badge First:** The badge shows the number of distinct allowed third-party domains; a lower number signals fewer active connections.
+- **Open the Popup for Details:** See which domains are allowed, stealth-blocked, or fully blocked for the active tab.
+- **Combine Insights with Filter List Management:** Use uBO Scope data to refine filter lists and enhance content blocking quality.
+
+## 6. Common Pitfalls to Avoid
+
+- **Relying Solely on Block Counts:** Do not trust other extensions' block counts without validating distinct server connections shown by uBO Scope.
+- **Ignoring Network Requests Outside the Browser:** uBO Scope only observes browser network activity.
+- **Expecting uBO Scope to Block:** This extension reports data; it does not modify network traffic.
+
+---
+
+## 7. Summary
+
+uBO Scope acts as a trustworthy observer that complements existing content blockers by providing clear, domain-focused visibility into all network connections a browser tab initiates. Leveraging browser APIs, it offers detailed, real-time insights without interference, helping users understand the true landscape of third-party connections.
+
+For deeper context on how uBO Scope tracks, categorizes, and presents network data, and how to interpret it in relation to content blockers, refer to the detailed architecture and workflow documentation.
+
+---
+
+## See Also
+
+- [Terminology & Core Concepts](/overview/architecture-core-concepts/core-terminology-and-concepts) — Understand key definitions like "allowed", "blocked", and "stealth".
+- [How uBO Scope Works (Architecture Diagram)](/overview/architecture-core-concepts/how-ubo-scope-works-diagram) — Visualize the extension's components and their collaboration.
+- [Interpreting the Toolbar Badge & Popup Panel](/guides/workflows/interpreting-badge-data) — Learn to read uBO Scope's UI indicators effectively.
+
+---
+
+## Source Code & Contribution
+
+Explore the full source to understand integration details:
+
+```javascript
+// Example: Message listener forwarding tab data
+runtime.onMessage.addListener((msg, sender, callback) => {
+    if (msg?.what === 'getTabData') {
+        const tabDetails = session.tabIdToDetailsMap.get(msg.tabId);
+        callback(serialize(tabDetails));
+        return true;
+    }
+});
+```
+
+Access the repository at: [uBO-Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+
+---
+
+<Info>
+Remember, uBO Scope enhances your privacy insights by reporting connection details, not enforcing blocking policies.
+Use it alongside blockers to gain full clarity of your browsing network activity.
+</Info>
+
+---
