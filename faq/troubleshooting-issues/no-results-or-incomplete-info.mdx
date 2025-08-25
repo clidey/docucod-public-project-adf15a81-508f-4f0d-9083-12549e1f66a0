@@ -1,0 +1,142 @@
+---
+title: "Why am I seeing no results or incomplete data?"
+description: "Outlines reasons why uBO Scope might not display expected results, such as browser and version limitations, the webRequest API's reach, or third-party blockers interfering with reporting. Advice is provided for resolving these issues."
+---
+
+# Why am I seeing no results or incomplete data?
+
+When using uBO Scope, you expect to see detailed information about the network connections each browser tab makes. However, sometimes the popup panel or badge may show no data or fewer domains than anticipated. This guide empowers you to understand why this occurs and how to resolve it, ensuring you get reliable insights every time.
+
+---
+
+## 1. Understanding the Core Causes
+
+### 1.1 Browser and Version Limitations
+
+uBO Scope relies heavily on the browser's `webRequest` API to observe network requests. However, support for this API varies across browsers and their versions:
+
+- **Supported browsers:** Chromium (version 122+), Firefox (version 128+), Safari (version 18.5+).
+- Older browser versions or unsupported browsers won't provide data.
+
+If you run uBO Scope on unsupported or outdated browsers, no results or incomplete data will appear.
+
+### 1.2 The `webRequest` API's Coverage
+
+The extension can only report network requests processed through the browser's `webRequest` API. Some requests may be invisible to uBO Scope due to:
+
+- Requests made by non-browser processes or underlying OS services.
+- Network requests bypassing the browser's network stack.
+- Browsers blocking or restricting API access due to privacy or security.
+
+This limitation means some legitimate connections may not show up in the extension.
+
+### 1.3 Third-Party Content Blockers and Privacy Tools
+
+Other extensions or system-level blockers may interfere with the network requests that uBO Scope can observe:
+
+- Certain blockers might silently block requests *before* the `webRequest` API triggers.
+- VPNs or DNS-based filters could impact traffic visibility.
+- Some privacy or security tools restrict Chrome or Firefox APIs.
+
+These factors can lead to missing or incomplete results in uBO Scope.
+
+---
+
+## 2. Troubleshooting Steps to Restore Full Visibility
+
+### 2.1 Verify Browser Compatibility and Version
+
+Ensure your browser is one supported by uBO Scope and meets the minimum version requirements:
+
+- Chromium 122 and above
+- Firefox 128 and above
+- Safari 18.5 and above
+
+Update your browser if necessary. See the [System Requirements](https://github.com/gorhill/uBO-Scope/blob/main/getting-started/installation-setup/system-requirements.md) documentation for detailed info.
+
+### 2.2 Inspect Extension Permissions
+
+uBO Scope needs permissions to monitor active tabs and network requests. Without these, it cannot collect data.
+
+- Confirm that permissions for `activeTab`, `webRequest`, and `storage` are granted.
+- Check your browser’s extension management page to ensure no permission warnings or restrictions exist.
+
+### 2.3 Disable Potentially Conflicting Extensions Temporarily
+
+To check for interference:
+
+- Temporarily disable other privacy or ad-blocking extensions.
+- Test if uBO Scope shows complete data after disabling.
+- If it does, re-enable blockers one by one to identify the conflict.
+
+### 2.4 Understand `webRequest` API Limitations with Secure WebSockets
+
+Encrypted WebSocket requests (`wss://`) and HTTP/2 or HTTP/3 traffic may behave differently depending on browser support.
+
+- Some browsers or their versions might not expose all events for these protocols.
+- This can result in stealth-blocking or missing domains in the popup.
+
+### 2.5 Reload the Tab and Extension
+
+Refreshing the active tab and reopening the extension helps in:
+
+- Triggering fresh network requests for updated data.
+- Resetting the extension's session data.
+
+Use the browser tab reload button and then open the uBO Scope popup again.
+
+---
+
+## 3. Additional Tips
+
+### 3.1 Interpreting an Empty or Minimal Popup
+
+- An empty popup might indicate either no network activity on the tab or an issue with data collection.
+- Check if the site you are on indeed generates network requests.
+- Confirm if stealth-blocked or blocked domains sections appear — if not, this may indicate incomplete tracking.
+
+### 3.2 Badge Count Not Updating
+
+- The badge count reflects distinct allowed third-party domains for the active tab.
+- If it stays empty or zero, verify permissions and confirm you are on a tab with outgoing connections.
+
+### 3.3 Clearing Browser and Extension Data
+
+Sometimes stale session data causes inaccurate reports.
+
+- Clear browser cache and cookies.
+- Disable and re-enable uBO Scope.
+
+### 3.4 Checking Browser Console for Errors
+
+- Open the browser’s developer console on the popup page.
+- Look for errors that may impair the extension’s operation.
+- Report persistent issues including console logs for support.
+
+---
+
+## 4. When to Seek Further Help
+
+If after these steps the extension still does not display expected data:
+
+- Ensure your browser adheres to the latest MV3 manifest standards.
+- Review the [Troubleshooting Setup](https://github.com/gorhill/uBO-Scope/blob/main/getting-started/first-steps-usage/troubleshooting-setup.md) guide.
+- Consult community forums or submit an issue at the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope/issues).
+
+---
+
+## 5. Summary
+
+| Problem                      | Cause                         | Solution                         |
+| ---------------------------- | -----------------------------| --------------------------------|
+| No data in popup             | Unsupported browser/version   | Update browser to supported version |
+| Sparse data or missing blocks| Others blocked traffic early  | Disable conflicting blockers temporarily |
+| Badge count not updating     | Missing permissions or tab with no connections | Verify extension permissions; reload tab |
+
+---
+
+By following this guide, you will regain full visibility of your browser’s network activity through uBO Scope, enabling accurate monitoring of remote server connections with confidence.
+
+---
+
+[Back to table of contents](../../README.md) | [Installation & Setup](../../getting-started/installation-setup/installing-ubo-scope.md) | [Interpreting the Popup & Badge](../../getting-started/first-steps-usage/interpreting-the-popup.md) | [Network Connection Analysis](../../guides/using-insights/analyzing-connections.md)
