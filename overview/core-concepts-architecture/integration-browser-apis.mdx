@@ -1,0 +1,159 @@
+---
+title: "Integration with Browser APIs & Ecosystem"
+description: "See how uBO Scope integrates tightly with browser APIs (notably webRequest), platform manifests, and works across major browsers. Learn how it operates independently of content blockers, providing an extended, consistent perspective on network activity."
+---
+
+# Integration with Browser APIs & Ecosystem
+
+uBO Scope seamlessly integrates with core browser APIs, platform manifests, and manifests platform compatibility to deliver an independent and reliable view of network activity. This page guides you through how uBO Scope leverages browser capabilities across different ecosystems to monitor network requests, operate alongside various content blockers, and maintain consistent behavior on major browsers.
+
+---
+
+## Why Integration Matters
+
+Every time you browse the web, your browser communicates with numerous remote servers. Understanding these connections clearly and independently is crucial for privacy-conscious users and filter list maintainers. uBO Scope harnesses browser APIs designed for network monitoring in a way that guarantees accurate insights without interference, ensuring that you get a full, unfiltered perspective of your browser’s network traffic.
+
+
+## How uBO Scope Works with Browser APIs
+
+At its core, uBO Scope depends on the browser's `webRequest` API to monitor network requests in real-time:
+
+- The `webRequest` listeners tap into the detailed lifecycle of each network request, tracking when requests start, redirect, succeed, or fail.
+- This API provides visibility for both HTTP(s) and WebSocket protocols (`http://`, `https://`, `ws://`, `wss://`), covering a comprehensive set of network traffic.
+
+Unlike content blockers that inject code or rely on filter list mechanisms, uBO Scope operates independently, collecting data based on the browser’s own network event reporting mechanisms.
+
+### Benefits of Using the `webRequest` API
+
+- **Independence from Content Blockers**: No matter which content blocker you use or whether DNS-based blocking is active, uBO Scope reports all connection attempts and outcomes reported by the browser.
+- **Wide Protocol Coverage**: Supports a broad spectrum of request types, including WebSocket connections often exploited for tracking.
+- **Consistent Data Across Browsers**: Since `webRequest` is standardized, uBO Scope works consistently on Chromium-based browsers, Firefox, and Safari (with platform-specific nuances).
+
+## Cross-Browser Platform Manifest Integration
+
+uBO Scope adapts to each major browser’s extension platform requirements through tailored platform manifests that specify permissions, background scripts, and host permissions.
+
+### Permissions and Host Permissions
+
+- All manifests explicitly state permissions to use `webRequest`, storage, and active tab access.
+- Host permissions ensure that uBO Scope has visibility into all web requests, not limited by domain scope.
+
+### Platform-Specific Adaptations
+
+| Browser    | Manifest Highlights                                             | Minimum Version   |
+|------------|-----------------------------------------------------------------|-------------------|
+| Chromium   | Uses Manifest V3 with a service worker background script, specifies host permissions for HTTP, HTTPS, WS, WSS | Chrome 122+       |
+| Firefox    | Manifest V3 with module background script, includes similar host permissions with Gecko-specific IDs         | Firefox 128+      |
+| Safari     | Manifest V3 specifying scripts and minimum strict version, limited to HTTP and HTTPS host permissions          | Safari 18.5+      |
+
+This ensures optimal compatibility and functionality regardless of your browser, automatically respecting each platform's rules and providing the same core user experience.
+
+## Distinctive Independence from Content Blockers
+
+uBO Scope’s design principle is to provide extended network visibility regardless of any content blocking that may be in place.
+
+- While traditional content blockers modify or block requests at the network or content level, uBO Scope observes and reports outcomes without influencing requests.
+- It captures three outcome categories:
+  - **Allowed**: Connections permitted and successfully established.
+  - **Blocked**: Requests blocked by filters or browser rules.
+  - **Stealth-blocked**: Requests that were redirected or otherwise hidden by stealth techniques used by content blockers.
+
+This approach means you can confidently compare what your content blockers are doing versus the actual network requests your browser is making.
+
+## How uBO Scope Manages Network Requests: Flow Overview
+
+Here’s how uBO Scope tracks and processes network requests using browser APIs:
+
+1. **Listening to Network Events**: Using the `webRequest` API, it listens to key network events such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`.
+2. **Queueing Requests Efficiently**: Requests are collected in a journal allowing the extension to batch process and update the state without performance degradation.
+3. **Tab-Specific Tracking**: Requests are linked to specific browser tabs, enabling tab-focused reporting and badge updates.
+4. **Outcome Classification**: Each request is classified according to its final outcome - allowed, blocked, or stealth-blocked.
+5. **Badge Updates**: The extension updates the toolbar badge with the count of distinct third-party domains connected.
+
+<Mermaid>
+flowchart TD
+    WR_onBeforeRedirect["webRequest.onBeforeRedirect"] -->|Queue redirect event| Queue["Network Request Journal"]
+    WR_onErrorOccurred["webRequest.onErrorOccurred"] -->|Queue error event| Queue
+    WR_onResponseStarted["webRequest.onResponseStarted"] -->|Queue success event| Queue
+    Queue -->|Batch process every 1s| Process["Process Network Request Journal"]
+    Process -->|Update Tab Data| TabDetails["Tab Details Map"]
+    TabDetails -->|Update UI Badge| Badge["Toolbar Badge"]
+    TabDetails -->|Store Results| Storage["Session Storage"]
+    Badge --> UI["Popup UI"]
+
+    style WR_onBeforeRedirect fill:#f9f,stroke:#333,stroke-width:1px
+    style Queue fill:#bbf,stroke:#33f
+    style Process fill:#afa,stroke:#070
+    style TabDetails fill:#faf,stroke:#a0a
+    style Badge fill:#ffd,stroke:#aa0
+    style Storage fill:#eee,stroke:#aaa
+    style UI fill:#ddf,stroke:#44a
+</Mermaid>
+
+## Practical Implications for Users
+
+- You receive accurate, up-to-date visibility into all network requests your browser makes, regardless of content blockers or DNS-based filtering.
+- The toolbar badge succinctly conveys how many distinct third-party domains are connected to every active tab.
+- Insights enable better privacy decisions and filter list verifications.
+
+## Best Practices & Tips
+
+- **Permission Settings**: Make sure uBO Scope has the necessary host permissions granted, as reflected in the manifests, to monitor all URL schemes.
+- **Browser Version**: Use up-to-date browsers (Chromium 122+, Firefox 128+, Safari 18.5+) to ensure optimal compatibility.
+- **Expect Differences**: Some network requests, initiated outside the browser or by browser internals invisible to the `webRequest` API, may not be reported.
+
+## Common Pitfalls
+
+<AccordionGroup title="Common Integration Pitfalls">
+<Accordion title="Badge Count Does Not Update">
+This can happen when the extension lacks proper webRequest permissions or host permissions in the manifest. Verify your browser version and check extension permissions to ensure full network monitoring access.
+</Accordion>
+<Accordion title="Inconsistent Behavior Across Browsers">
+uBO Scope aims for consistency, but platform-specific manifest requirements or API limitations might cause slight behavior variation. Always ensure you are running a supported browser version matching the manifest minimum requirements.
+</Accordion>
+<Accordion title="Network Requests Missing in Report">
+Requests made by browser features outside webRequest API scope (such as certain service workers or native DNS queries) will not appear in uBO Scope’s reporting.
+</Accordion>
+</AccordionGroup>
+
+## Getting Started / Next Steps
+
+To make full use of uBO Scope’s powerful integration:
+
+- Review **[System Requirements & Supported Browsers](/getting-started/installation-basics/system-requirements)** to ensure your environment supports all APIs.
+- Follow the **[Installing uBO Scope](/getting-started/installation-basics/installing-extension)** guide tailored to your browser.
+- Explore the **[Feature Tour & Main Workflow](/overview/features-quickstart/feature-tour)** to learn how to use the data captured.
+
+
+---
+
+Explore related pages for deeper insights:
+
+- **[What is uBO Scope?](/overview/product-intro-value/what-is-ubo-scope)** for foundational understanding.
+- **[Architecture Overview](/overview/core-concepts-architecture/architecture-overview)** for a big-picture view of internal workings.
+- **[Understanding the Toolbar Badge](/overview/features-quickstart/badge-interpretation)** for decoding badge meanings.
+
+
+---
+
+## Additional Resources
+
+- Source code and full manifest examples for Chromium, Firefox, and Safari can be found in the repository.
+- The integrated service worker background script (`background.js`) demonstrates how real-time network requests are safely captured and processed.
+
+
+---
+
+By tightly integrating with standard browser APIs and adapting to each platform’s manifest system, uBO Scope ensures reliable, consistent, and extended visibility into all network activity — empowering users with transparency beyond typical content blockers.
+
+
+---
+
+### Related Repository File References
+
+- [`platform/chromium/manifest.json`](https://github.com/gorhill/uBO-Scope/blob/main/platform/chromium/manifest.json)
+- [`platform/firefox/manifest.json`](https://github.com/gorhill/uBO-Scope/blob/main/platform/firefox/manifest.json)
+- [`platform/safari/manifest.json`](https://github.com/gorhill/uBO-Scope/blob/main/platform/safari/manifest.json)
+- [`js/background.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js)
+
+---
