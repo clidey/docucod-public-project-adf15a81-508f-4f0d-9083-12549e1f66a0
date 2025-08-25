@@ -1,0 +1,187 @@
+---
+title: "Verifying Functionality"
+description: "Outlines simple checks and example scenarios to confirm uBO Scope is correctly revealing remote server connections and tallying third-party servers, helping users spot any basic misconfiguration."
+---
+
+# Verifying Functionality of uBO Scope
+
+This guide details practical checks and example scenarios to confirm that uBO Scope is working correctly. You will learn how to validate that the extension accurately reveals remote server connections and correctly tallies distinct third-party servers. These verification steps help you spot basic misconfigurations early and ensure uBO Scope delivers reliable insights into your browser’s network activities.
+
+---
+
+## 1. Understand What uBO Scope Reveals
+
+Before diving into verification, keep in mind uBO Scope’s core value:
+
+- It reports the number of distinct third-party remote servers your browser connects to for the current tab.
+- The toolbar badge count shows the unique count of these third-party domains (lower numbers generally indicate better privacy).
+- The popup panel categorizes these connections as **not blocked (allowed)**, **stealth-blocked**, or **blocked**.
+
+Knowing this will help you interpret verification results and spot inconsistencies.
+
+## 2. Preliminary Checks
+
+### Step 2.1: Confirm Extension Installation and Activation
+
+- Verify that uBO Scope is installed from the official store for your browser:
+  - **Chrome:** [Chrome Web Store Link](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+  - **Firefox:** [Firefox Add-ons Link](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+- Ensure the browser toolbar displays the uBO Scope icon.
+- The icon should be clickable and open the popup panel.
+
+### Step 2.2: Observe Toolbar Badge Behavior
+
+- When browsing a website, the toolbar icon badge should show a numeric count representing distinct third-party domains contacted.
+- If no connections to third-party domains occur, the badge should be blank.
+
+<Tip>
+If the badge never updates or always stays blank, uBO Scope may not be functioning correctly.
+Check browser permissions and ensure no conflicting privacy extensions block its background processes.
+</Tip>
+
+## 3. Validate Network Connection Reporting
+
+### Step 3.1: Open a Simple Website
+
+- Navigate to a common, well-known site, such as [https://example.com](https://example.com).
+- Click the uBO Scope icon to open the popup panel.
+
+### Step 3.2: Interpret Popup Panel Data
+
+- The panel header shows the current tab’s hostname and domain.
+- The **domains connected** summary displays the count of unique third-party domains contacted.
+- There are three outcome sections:
+  - **Not blocked:** Remote domains contacted successfully.
+  - **Stealth-blocked:** Domains covertly blocked with stealth techniques.
+  - **Blocked:** Domains blocked outright by your content blocker or browser.
+
+### Step 3.3: Cross-Check Known Connections
+
+- The list under each section shows domains and connection counts for each.
+- Expected:
+  - A small count of mostly legitimate CDNs or third parties (e.g., cloudflare.net, googleapis.com).
+  - No unexpected or suspicious domains.
+
+<Tip>
+Popup panel lists domains in Unicode form to display internationalized domain names (IDNs) clearly.
+You can hover over domain names in some browsers to see the ASCII representation.
+</Tip>
+
+### Step 3.4: Test with Diverse Websites
+
+- Test uBO Scope on several sites (news, shopping, social media) to observe differing third-party domains.
+- Verify the badge count reflects distinct domains accurately (the number should change based on site complexity).
+
+## 4. Spotting Basic Misconfiguration
+
+If verification steps reveal:
+
+- The badge count never updates or always shows zero.
+- The popup panel displays “NO DATA” or is empty.
+- The domains list contains domain names that do not match typical external servers.
+
+Then, consider these troubleshooting tips:
+
+<AccordionGroup title="Troubleshooting Misconfiguration">
+<Accordion title="Check Extension Permissions">
+Ensure the extension has permission to access all HTTP, HTTPS, WS, and WSS URLs according to your browser’s manifest:
+
+```json
+"host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+]
+```
+
+Lack of permissions may block network request monitoring.
+</Accordion>
+<Accordion title="Verify Browser Version Compatibility">
+uBO Scope requires:
+- Chrome 122.0 or later
+- Firefox 128.0 or later
+- Safari 18.5 or later
+
+Older versions may not support necessary APIs.
+</Accordion>
+<Accordion title="Examine Conflicting Extensions">
+Other privacy or security extensions with aggressive network blocking might interfere with uBO Scope’s ability to detect network requests.
+Temporarily disable such extensions to verify interoperability.
+</Accordion>
+<Accordion title="Check Background Script Functionality">
+uBO Scope records network events through a background service worker / script listening to the browser’s `webRequest` API.
+Confirm that the background script isn’t being blocked or failing to run.
+</Accordion>
+</AccordionGroup>
+
+## 5. Example Verification Scenario
+
+Follow this end-to-end quick scenario as a practical test:
+
+### Step 5.1: Start With a Clean Browser Profile
+
+- Disable other extensions temporarily.
+- Install uBO Scope freshly from official source.
+- Confirm icon presence.
+
+### Step 5.2: Visit a Basic Website
+
+- Open [https://example.com](https://example.com).
+- Wait a few seconds for network activity to settle.
+
+### Step 5.3: Open uBO Scope Popup
+
+- Click the toolbar icon.
+- Verify badge shows a low number (most likely zero or 1).
+- Check domains connected section to see if expected domains appear under **not blocked**.
+
+### Step 5.4: Visit a More Complex Site
+
+- Navigate to a site like [https://www.wikipedia.org](https://www.wikipedia.org).
+- Observe the badge count increase reflecting multiple distinct third-party domains.
+- Open uBO Scope popup.
+- Review allowed, stealth, and blocked domains.
+
+### Step 5.5: Confirm Data Persists Correctly
+
+- Switch tabs or reload current tab.
+- Observe badge clears or updates correctly and popup data resets as expected.
+
+## 6. What Success Looks Like
+
+- Toolbar badge dynamically updates with the count of unique third-party domains contacted.
+- Popup panel lists connected domains categorized as allowed, stealth, or blocked.
+- Domains correspond to expected third-party servers, including CDNs or analytics providers.
+- No persistent errors, no “NO DATA” without explanation.
+
+<Tip>
+A lower badge count is generally better as it means fewer third-party connections were allowed.
+Use the popup domain lists to understand exactly which servers were contacted.
+</Tip>
+
+## 7. Next Steps
+
+- After verifying functionality, explore related guides:
+  - [Understanding the Popup Panel](https://docs.uboscope.io/getting-started/first-run-experience/understanding-popup-panel)
+  - [Launching and Accessing uBO Scope](https://docs.uboscope.io/getting-started/first-run-experience/launching-extension)
+- Troubleshoot activation or blocking issues using common issues documentation.
+- Use uBO Scope routinely to assess your web privacy posture and the effectiveness of your content blockers.
+
+---
+
+For deeper technical understanding or to contribute, visit the official [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+---
+
+## Appendix: Understanding Outcome Categories
+
+| Outcome         | Description                                                                 | User Impact                       |
+|-----------------|-----------------------------------------------------------------------------|---------------------------------|
+| Not Blocked     | Network requests that succeeded without being blocked                      | Shows third parties actually contacted |
+| Stealth-Blocked | Requests blocked by stealth techniques to avoid detection by the webpage   | Hidden blocking, may cause anomalies |
+| Blocked         | Requests explicitly blocked by content blockers or the browser             | No connection made to these domains |
+
+Refer to the core concepts documentation for definitions and examples.
+
+---
