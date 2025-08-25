@@ -1,0 +1,148 @@
+---
+title: "Analyzing Allowed, Blocked, and Stealth Request Outcomes"
+description: "Gain a deeper understanding of the differences between allowed, blocked, and stealth-blocked requests as reported by uBO Scope. Learn how these categories are detected, why they matter, and what they reveal about your privacy or filter efficacy."
+---
+
+# Analyzing Allowed, Blocked, and Stealth Request Outcomes
+
+## Workflow Overview
+
+### Task Description
+This guide helps you understand how uBO Scope categorizes network requests into three outcome groups: **allowed**, **blocked**, and **stealth-blocked**. You will learn the detection mechanisms, the implications of each category for your privacy or filtering effectiveness, and how to interpret these insights in the popup panel and badge.
+
+### Prerequisites
+- uBO Scope extension must be installed and active in your supported browser (Chromium 122+, Firefox 128+, Safari 18.5+).
+- Familiarity with basic extension usage, including opening the popup panel and recognizing the toolbar badge.
+- A web page loaded in an active tab to analyze network request outcomes.
+
+### Expected Outcome
+By following this guide, you will be able to:
+- Distinguish between allowed, blocked, and stealth-blocked network requests as reported by uBO Scope.
+- Comprehend how uBO Scope detects these categories.
+- Apply this knowledge to assess your privacy and filter performance more effectively.
+
+### Time Estimate
+Approximately 10-15 minutes, depending on your familiarity with the extension and network request concepts.
+
+### Difficulty Level
+Intermediate — requires a foundational understanding of network requests and browser content blocking.
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Access the uBO Scope Popup Panel
+- Click the uBO Scope toolbar icon in your browser to open the popup panel.
+- The panel displays connection data for the active browser tab, segmented by request outcomes.
+
+### 2. Recognize Outcome Categories
+Within the popup, observe three distinct sections:
+- **Not Blocked (Allowed):** Lists third-party domains for which network requests succeeded.
+- **Stealth-Blocked:** Shows network requests that were blocked in a stealthy manner, meaning the blocking occurred silently without triggering typical block responses.
+- **Blocked:** Displays requests that were outright blocked, evident from explicit network failures or errors.
+
+### 3. Understand How uBO Scope Detects Each Outcome
+- **Allowed Requests:** Network requests completing successfully with positive status codes and resolved IP information.
+- **Blocked Requests:** Requests that resulted in errors or explicit network failures, as captured through the browser's `webRequest` API error events.
+- **Stealth-Blocked Requests:** Requests redirected in ways that conceal the blocking (e.g., redirects to data URLs or empty responses) that do not raise errors but effectively prevent resource loading.
+
+#### Details:
+- uBO Scope listens for network request events such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`.
+- Redirects that do not lead to a valid network resource counted as stealth-blocked.
+- Errors caught by the API mark requests as blocked.
+- Successfully completed requests mark as allowed.
+
+### 4. Interpret Domain Counts
+- Each category aggregates results by the domain, counting how many requests were recorded for each.
+- The badge on the toolbar icon reflects the number of distinct allowed third-party domains for the active tab.
+- A lower badge count indicates fewer allowed third-party connections, which is generally desirable for privacy.
+
+### 5. Correlate Outcomes to Privacy and Filtering
+- **Allowed:** These are active connections your browser made, which can impact privacy depending on the third-party domain's trustworthiness.
+- **Blocked:** Represents content or connections your filters successfully prevented.
+- **Stealth-Blocked:** Indicates more advanced blocking techniques that do not reveal blocking through errors but remain effective.
+
+### 6. Use Practical Examples
+- Visit a popular website and open uBO Scope’s popup.
+- Compare the number of allowed, blocked, and stealth-blocked domains.
+- Notice how well your content blocker is preventing unwanted connections by examining the blocked and stealth-blocked lists.
+
+### 7. Verify and Refresh
+- Reload the active tab to update network request data.
+- Observe changes in the popup and toolbar badge reflecting new request outcomes.
+
+---
+
+## Examples & Visualization
+
+### Example: Popup Panel Layout
+The popup splits request outcomes into three sections as follows:
+
+| Section         | Description                                               | Example Domain Types            |
+|-----------------|-----------------------------------------------------------|--------------------------------|
+| **Allowed**     | Successfully completed connections to third-party domains | Content Delivery Networks (CDNs), analytics providers |
+| **Stealth-Blocked** | Requests blocked silently without error messages          | Ads or trackers blocked using redirect tricks       |
+| **Blocked**     | Requests blocked with network errors                      | Known ad servers, malicious domains                  |
+
+### Example Scenario
+You visit an online newspaper:
+- Allowed: cdn.examplecdn.com, fonts.googleapis.com
+- Stealth-blocked: tracker.adsnetwork.com
+- Blocked: adserver.example.com
+
+This shows some legitimate third-party services allowed, while trackers and ads are blocked or stealth-blocked.
+
+---
+
+## Troubleshooting & Tips
+
+### Common Issues
+- **No data in popup:** Ensure uBO Scope is installed with required permissions (`webRequest`, `storage`) and the tab has loaded network activity.
+- **Badge count not updating:** Reload the page or restart the browser to refresh session data.
+- **Unexplained allowed domains:** Check if those domains are essential for website functionality or content delivery.
+
+### Best Practices
+- Regularly review allowed vs blocked domains to fine-tune your content blocking rules.
+- Understand that stealth-blocking aims to reduce detection and web breakage, so some sites may appear to ‘allow’ more but are in fact stealth-blocked.
+- Use uBO Scope’s detailed categorization as a complement to your content blocker’s own UI.
+
+### Performance Considerations
+- uBO Scope batches network requests for analysis, updating the popup data and badge every second to balance performance and responsiveness.
+
+---
+
+## Next Steps & Related Content
+
+- **Understanding Network Connections Per Tab:** Dive deeper with the [Monitoring Network Connections Per Tab](https://docs.example.com/guides/workflows/monitor-network) guide to manage and observe requests effectively.
+- **Interpreting Badge and Popup Data:** Learn how to accurately read the badge and panel with the [Interpreting the Toolbar Badge & Popup Panel](https://docs.example.com/guides/workflows/interpreting-badge-data) page.
+- **Content Blocker Integration:** Explore how uBO Scope interacts with content blockers in [Using uBO Scope with Any Content Blocker](https://docs.example.com/guides/insights-advanced/using-ubo-scope-with-content-blockers).
+
+---
+
+## Diagram: Network Request Outcome Flow
+
+```mermaid
+flowchart TD
+    Start([Network Request Initiated]) --> CheckEvent{Request Event Type}
+
+    CheckEvent -->|redirect| RedirectEvent[Record as Stealth-Blocked]
+    CheckEvent -->|error| ErrorEvent[Record as Blocked]
+    CheckEvent -->|success| SuccessEvent{Valid Response?}
+
+    SuccessEvent -->|Yes| AllowedEvent[Record as Allowed]
+    SuccessEvent -->|No| ErrorEvent
+
+    RedirectEvent --> UpdateBadge[Update Toolbar Badge]
+    ErrorEvent --> UpdateBadge
+    AllowedEvent --> UpdateBadge
+
+    UpdateBadge --> End([Update Session & UI])
+
+    classDef blocked fill:#f99,stroke:#900,stroke-width:2px;
+    classDef stealth fill:#faa,stroke:#a00,stroke-width:2px;
+    classDef allowed fill:#9f9,stroke:#090,stroke-width:2px;
+
+    class RedirectEvent,stealth;
+    class ErrorEvent,blocked;
+    class AllowedEvent,allowed;
+```
