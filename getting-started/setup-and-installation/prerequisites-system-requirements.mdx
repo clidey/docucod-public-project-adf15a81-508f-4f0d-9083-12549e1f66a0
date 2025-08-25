@@ -1,0 +1,138 @@
+---
+title: "Prerequisites & System Requirements"
+description: "Learn what is needed before installing uBO Scope, including supported browsers, versions, and any limitations that may affect visibility of network requests. Clarifies scope of extension support across Chrome, Firefox, and Safari."
+---
+
+# Prerequisites & System Requirements for uBO Scope
+
+Before installing and using uBO Scope, it’s essential to understand the platforms supported, browser version requirements, and limitations that impact the visibility of network requests. This ensures you have an optimal experience monitoring your browser’s network connections.
+
+---
+
+## 1. Supported Browsers and Minimum Versions
+
+uBO Scope is designed to work across mainstream browsers supporting the WebExtensions API with Manifest V3 compliance.
+
+- ### Chromium-based browsers (e.g., Google Chrome, Microsoft Edge)
+  - Minimum Chrome version: **122.0**
+  - Uses a service worker as a background script (`background.service_worker`)
+  - Requires host permissions covering HTTP, HTTPS, WS, and WSS schemes
+
+- ### Mozilla Firefox
+  - Minimum Firefox version: **128.0**
+  - Uses a module background script (`background.scripts` with `type: 'module'`)
+  - Requires host permissions for HTTP, HTTPS, WS, and WSS schemes
+
+- ### Apple Safari
+  - Minimum Safari version: **18.5**
+  - Uses a module background script
+  - Requires host permissions for HTTP and HTTPS schemes
+
+<Tip>
+To verify your browser version, usually check the "About" section in your browser’s settings. Ensuring your browser meets or exceeds the minimum version prevents compatibility issues.
+</Tip>
+
+## 2. Required Browser Permissions
+
+uBO Scope relies on several browser permissions to function correctly:
+
+- `webRequest`: To observe and react to network requests made by webpages
+- `storage`: To persist session data and Public Suffix List cache
+- `activeTab`: To interact with the currently active tab and retrieve tab-specific data
+
+These permissions are requested during extension installation and are critical to capturing comprehensive network activity.
+
+<Warning>
+Declining any required permissions will limit uBO Scope’s ability to report on network connections accurately.
+</Warning>
+
+## 3. Host Permissions
+
+Due to the nature of tracking network requests, uBO Scope requires broad host permissions:
+
+- For Chromium and Firefox: 
+  - `http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*`
+- For Safari: 
+  - `http://*/*`, `https://*/*`
+
+These permissions allow monitoring of virtually all network connections initiated by webpages.
+
+## 4. Limitations and Scope of Network Visibility
+
+Understanding what uBO Scope can and cannot monitor will set clear expectations:
+
+- **Visibility is constrained to requests accessible via the browser's `webRequest` API.** 
+- Network requests originating from:
+  - Extensions themselves
+  - Browser internal pages
+  - Some OS-level network activities
+  - Network requests blocked or redirected before hitting the browser API
+
+  cannot be seen or reported by uBO Scope.
+
+- **Content blocking through DNS or external proxies that do not notify the browser's `webRequest` API will not be reflected properly.**
+
+- uBO Scope counts distinct third-party domains contacted but explicitly clarifies that not all third-party servers are malicious or undesirable.
+
+## 5. System Requirements
+
+- A modern desktop or laptop computer capable of running one of the supported browser versions.
+- Internet access to fetch and update the Public Suffix List used internally for domain classification.
+
+<Info>
+Since uBO Scope is a browser extension, no additional hardware resources or external dependencies are required beyond having a compatible browser and internet connectivity.
+</Info>
+
+## 6. Additional Notes
+
+- The extension uses an up-to-date Public Suffix List retrieved from https://publicsuffix.org/ to accurately determine domain and subdomain relationships.
+- Storage for session data and the Public Suffix List is managed internally by the browser's `storage.session` or persistent local storage mechanisms.
+- The extension badge on the toolbar uses domain counts to represent the number of distinct third-party remote servers contacted.
+
+<Note>
+Browsers might occasionally evict or suspend the background service worker for resource management. uBO Scope handles these scenarios by batching and recovering network request data.
+</Note>
+
+---
+
+## Troubleshooting Prerequisite Issues
+
+If you encounter problems after installation, verify:
+
+- Your browser is updated and meets minimum version requirements.
+- Permissions for `webRequest`, `storage`, and `activeTab` were granted.
+- Host permissions cover the needed URL schemes.
+- Network connectivity allows access to the public suffix list endpoint.
+
+<Tip>
+Reinstalling or updating your browser and extension can often resolve unforeseen permission conflicts or API changes.
+</Tip>
+
+---
+
+## Summary
+- Use browsers that support Manifest V3 and have the required minimal versions.
+- Accept all required permissions during extension setup.
+- Understand the inherent limitations of monitoring network requests via browser APIs.
+- Ensure internet connectivity to allow data synchronization.
+
+Visit the [Installing the Extension](/getting-started/setup-and-installation/install-extension) and [Initial Configuration](/getting-started/setup-and-installation/initial-configuration) for next steps.
+
+
+---
+
+## Related Resources
+
+- [uBO Scope Overview and Value Proposition](https://github.com/gorhill/uBO-Scope#readme)
+- [Core Concepts & Terminology](/overview/architecture-core-concepts/core-terms-and-concepts)
+- [System Architecture and Data Flow](/overview/architecture-core-concepts/system-architecture-diagram)
+- Manifest files defining supported platforms:
+  - [Chromium Manifest](platform/chromium/manifest.json)
+  - [Firefox Manifest](platform/firefox/manifest.json)
+  - [Safari Manifest](platform/safari/manifest.json)
+
+---
+
+For full source code and latest updates, visit the official GitHub repository:
+
+[https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)

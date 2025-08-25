@@ -1,0 +1,162 @@
+---
+title: "System Architecture and Data Flow"
+description: "A visual (mermaid diagram) walkthrough of how browser requests are intercepted, categorized, persisted, and surfaced to the UI. Follows the journey from network request across extension components to the user-facing view."
+---
+
+# System Architecture and Data Flow
+
+Understanding how uBO Scope monitors and reports network activity starts with tracing the journey of web requests through the extension’s internal components, from interception to the final user interface display. This page provides a visual walkthrough, using a Mermaid diagram, that illustrates how network requests are intercepted by the browser’s APIs, categorized based on their outcome, persisted in session storage, and surfaced for user inspection in the pop-up UI.
+
+---
+
+## The Journey of a Network Request
+
+When you navigate the web, your browser continuously makes network requests to load resources. uBO Scope hooks into these requests via the browser's `webRequest` API to track connections, regardless of blocking by content filters or DNS-level rules.
+
+This monitoring involves several key steps:
+
+1. **Intercepting Requests:** uBO Scope listens to network events such as redirects, errors, and successful responses.
+2. **Categorizing Outcomes:** Each request is classified as allowed (successful), stealth-blocked (redirected invisibly), or blocked (errored).
+3. **Persisting Data:** Outcomes are aggregated and saved per browser tab in memory and session storage.
+4. **Updating the UI:** Connection counts and detailed domain listings are presented in the browser toolbar badge and popup window.
+
+This flow gives users real-time insight into all third-party remote servers contacted by the active page.
+
+---
+
+## Visual Architecture Diagram
+
+```mermaid
+flowchart TD
+
+    subgraph Browser
+        NetworkRequests[("Network Requests")]
+        webRequestAPI["webRequest API Listeners"]
+    end
+
+    subgraph uBO_Scope_Extension
+        BackgroundWorker["Background Service Worker (background.js)"]
+        SessionStore[("Session Data Storage")]
+        PublicSuffixList[("Public Suffix List")]
+        MessageHandler["Runtime Message Handler"]
+        UI_Popup["Popup UI (popup.html + popup.js)"]
+    end
+
+    %% Data Flow
+    NetworkRequests --> webRequestAPI
+    webRequestAPI --> BackgroundWorker
+    BackgroundWorker -->|Interprets requests, determines outcome| BackgroundWorker
+    BackgroundWorker -->|Updates tab-specific data| SessionStore
+    BackgroundWorker -->|Reads Public Suffix List for domain parsing| PublicSuffixList
+    BackgroundWorker -->|Updates toolbar badge count| Browser
+    UI_Popup -->|Sends message 'getTabData' with tab ID| MessageHandler
+    MessageHandler -->|Fetches serialized tab data| SessionStore
+    MessageHandler --> UI_Popup
+
+    %% User Interactions
+    UI_Popup -->|Renders detailed domains by outcome| User
+
+    %% Notes
+    click BackgroundWorker "js/background.js"
+    click UI_Popup "js/popup.js"
+    click SessionStore "js/ext.js"
+
+    classDef storage fill:#f9f,stroke:#333,stroke-width:2px;
+    class NetworkRequests webRequestAPI BackgroundWorker SessionStore PublicSuffixList MessageHandler UI_Popup storage;
+
+```
+
+---
+
+## Key Components Explained
+
+### 1. Browser and Network Requests
+
+- The browser generates network requests for all page resource loads including scripts, images, and websockets.
+- uBO Scope attaches `webRequest` listeners to intercept these events for all HTTP/S and WS/S traffic.
+
+### 2. Background Service Worker (`background.js`)
+
+- Acts as the core engine, processing intercepted requests asynchronously.
+- Determines the outcome for each request based on network events:
+   - **Allowed:** Successful responses with valid IP or status code.
+   - **Stealth:** Redirect chains that evade explicit blocking.
+   - **Blocked:** Requests delivering errors or no valid response.
+- Records domain and hostname statistics associated with each outcome, updating per-tab details.
+- Manages the session storage and updates the browser action badge with the count of distinct allowed domains.
+
+### 3. Session Storage
+
+- Maintains a map (`tabIdToDetailsMap`) of per-tab connection data, persisted using the browser's session storage APIs.
+- Stores serializable data about domains and hostnames for allowed, stealth, and blocked outcomes.
+- Ensures persistent and recoverable state across extension service worker lifecycles.
+
+### 4. Public Suffix List (`public_suffix_list.dat`)
+
+- Used to correctly determine registrable domains from hostnames.
+- Essential for grouping third parties logically by domain, improving the accuracy of distinct host counting.
+
+### 5. Runtime Message Handler
+
+- Bridges background data with the popup UI by responding to `getTabData` requests.
+- Sends serialized per-tab connection data on demand to the UI.
+
+### 6. Popup UI (`popup.html` + `popup.js`)
+
+- Presents detailed lists of contacted domains grouped by outcome category:
+   - Not Blocked
+   - Stealth Blocked
+   - Blocked
+- Converts punycode domain names to Unicode for easier reading.
+- Shows summary counts and domain-specific request hits to aid user inspection.
+
+---
+
+## User Flow Summary
+
+1. **Load a Webpage:** Network requests start flowing for various resources.
+2. **Request Interception:** uBO Scope background script intercepts requests.
+3. **Outcome Categorization:** Each request's success or failure is noted.
+4. **Data Aggregation:** Unique domains per outcome are stored and counted per tab.
+5. **Badge Update:** The toolbar icon badge reflects the number of allowed distinct third-party domains.
+6. **Open Popup:** User opens the popup to view detailed domain information.
+7. **Data Retrieval:** Popup requests current tab data from background.
+8. **Display:** Popup renders domains and counts by request outcome, letting user analyze third-party network connections.
+
+---
+
+## Practical Tips
+
+- **Interpreting Badge Count:** A lower badge number indicates fewer distinct third-party servers contacted, typically implying tighter privacy.
+- **Popup Insights:** Use the popup’s allowed, stealth, and blocked sections to understand network behavior in detail.
+- **Session Persistence:** Closing tabs clears that tab’s data; browsing multiple tabs keeps their data segregated.
+- **Latency Consideration:** Requests are processed and aggregated with a 1-second delay to balance performance and data accuracy.
+
+---
+
+## Troubleshooting Common Issues
+
+- **No Data in Popup:** Ensure you have navigated a webpage with network activity. The extension cannot capture requests made outside the `webRequest` API's scope.
+- **Badge Not Updating:** Confirm your browser version supports Manifest V3 and the extension has `webRequest` permission.
+- **Inaccurate Domain Counts:** May occur with sites employing complex DNS or multi-layer redirections; understand that stealth-blocked categories attempt to catch such cases.
+
+---
+
+By visually mapping out how uBO Scope captures network requests from browser events to user-facing displays, this page empowers you to grasp how your browsing connections are tracked and reported, improving your ability to interpret, trust, and benefit from the extension’s insights.
+
+---
+
+For detailed installation and practical usage guidance, visit the [Getting Started](../getting-started) section. To understand who benefits most from uBO Scope, explore [Who Is It For and Why Use It?](../introduction-core-value/value-prop-and-use-cases). To see features overview, consult [Key Features at a Glance](../introduction-core-value/feature-overview).
+
+---
+
+*Diagram generated based on current manifest and source files as of the main branch.*
+
+---
+
+### Source Code References
+
+- Background processing: [js/background.js](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js)
+- Popup UI: [js/popup.js](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+- Manifest and permissions: [platform/chromium/manifest.json](https://github.com/gorhill/uBO-Scope/blob/main/platform/chromium/manifest.json)
+- Public suffix parsing: [assets/thirdparties/publicsuffix.org/list/public_suffix_list.dat](https://github.com/gorhill/uBO-Scope/blob/main/assets/thirdparties/publicsuffix.org/list/public_suffix_list.dat)
