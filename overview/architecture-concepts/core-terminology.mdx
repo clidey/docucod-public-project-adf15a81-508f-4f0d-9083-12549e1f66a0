@@ -1,0 +1,163 @@
+---
+title: "Core Concepts & Terminology"
+description: "Defines essential terms such as 'third-party remote server', 'connection outcome', 'badge count', and 'webRequest API'. Helps users interpret what the extension reports and why certain details are important for privacy assessment."
+---
+
+# Core Concepts & Terminology
+
+Understanding uBO Scope’s terminology is essential to fully grasp what the extension reports and why these details matter, especially when assessing your online privacy. This page explains fundamental terms such as **third-party remote server**, **connection outcome**, **badge count**, and the **webRequest API** — all key concepts that help you interpret the data uBO Scope presents.
+
+---
+
+## Third-Party Remote Server
+
+A **third-party remote server** is any external server a web page connects to that is outside the domain you explicitly visit. For example, when you open `example.com`, connections to domains like `cdn.google.com` or `tracker.example.net` are considered third-party because they originate from a different organizational domain than the one you intended to visit.
+
+**Why does this matter?**
+
+Third-party servers often serve content like advertisements, analytics scripts, or trackers that can monitor your browsing behavior. uBO Scope identifies and reports these connections, giving you insight into the hidden network activity occurring behind the scenes of your browsing experience.
+
+**Example:**
+
+Visiting a news site might show connections to a video host as first-party, but when you see connections to multiple ad servers or analytics platforms, those are third-party remote servers which could imply tracking or data sharing.
+
+---
+
+## Connection Outcome
+
+Every network request your browser makes results in an **outcome**, which uBO Scope categorizes as one of three states:
+
+- **Not Blocked (allowed):** The connection was successful and the resource was fetched without interference.
+- **Stealth-Blocked:** The connection was redirected or blocked stealthily, usually by content blockers employing non-obtrusive methods to avoid webpage breakage or detection.
+- **Blocked:** The connection attempt failed or was explicitly blocked, often by content blockers or network policies.
+
+These outcomes provide transparent feedback on how your content blockers or browser security settings influence network traffic.
+
+**How uBO Scope uses this:**
+
+It records the number of unique hostnames and domains in each outcome category per tab. This data is then displayed in the popup panel and summarized via the toolbar badge.
+
+---
+
+## Badge Count
+
+The **badge count** is the number shown on the browser toolbar icon for uBO Scope. It represents the number of **distinct third-party remote servers that successfully connected** (i.e., connection outcome "Not Blocked").
+
+This count helps you quickly gauge how many unique external entities your current webpage is communicating with.
+
+**Key points about badge count:**
+
+- A **lower badge count** is better, indicating fewer third-party servers accessed.
+- The badge count reflects **connections allowed** by any content blocker, regardless of their internal blocking count.
+- It does **not** reflect all blocked or stealth-blocked connections — only those that were actually established.
+
+Using the badge count as a privacy metric provides a realistic, user-centric measure of external exposure.
+
+---
+
+## webRequest API
+
+uBO Scope relies heavily on your browser's built-in **webRequest API**, which allows extensions to monitor, intercept, and analyze network requests made by webpages.
+
+**What does this mean for you as a user?**
+
+- It captures detailed information about each request, such as the URL requested, the request type, the event outcome (success, redirect, error), and more.
+- This API works even if other content blockers are active and regardless of how they block or modify requests.
+- uBO Scope can report on requests that are within the webRequest API’s scope but cannot see network requests made outside this scope (e.g., some low-level browser network calls).
+
+**Why is this important?**
+
+Understanding that uBO Scope uses webRequest API clarifies why it can provide comprehensive and accurate insight into remote server connections and how it remains independent of other content blocking technologies.
+
+---
+
+## Additional Essential Terms
+
+### Domain vs. Hostname
+- **Hostname:** The full server name, such as `ads.tracker.example.com`.
+- **Domain:** The registered parent domain determined by the public suffix list, such as `example.com`.
+
+uBO Scope groups connections by domain to give a cleaner overview of distinct third-party entities rather than every subdomain.
+
+### Public Suffix List (PSL)
+The extension uses the **Public Suffix List** to accurately determine the domain part of hostnames. PSL is a globally recognized list of domain suffixes (like `.com`, `.co.uk`) which helps differentiate between registrable domains and subdomains.
+
+### Network Request Types
+uBO Scope tracks different network request types (`main_frame`, `sub_frame`, `script`, `image`, `websocket`, etc.) to group and present network connections appropriately. The focus is on requests with network relevance (HTTP, HTTPS, WebSocket).
+
+---
+
+## How These Concepts Fit Into Your Use of uBO Scope
+
+When you use uBO Scope’s popup panel or view its toolbar badge:
+
+- **You see a count of unique third-party domains contacted.**
+- **You see which connections were allowed, stealth blocked, or blocked.**
+- **You understand what "third-party" means in the privacy context — external domains the page relies on or contacts.**
+- **You appreciate that connections reported come from actual browser network requests via the webRequest API, ensuring accuracy.**
+
+Armed with this terminology, you can effectively interpret uBO Scope's reports, improving your awareness of privacy exposures and the effectiveness of your content blocking strategy.
+
+---
+
+## Practical Tips
+
+- Pay attention to the **domains** rather than just hostnames to understand third-party relationships more clearly.
+- Use the badge count as a quick metric: when it spikes, investigate which new third parties are contacted.
+- Recognize that **stealth blocking** implies subtle blocking which might not be obvious but still prevents connections.
+- Understand the limitations: uBO Scope depends on the webRequest API, so some browser traffic falling outside this cannot be reported.
+
+## Common Pitfalls
+
+- Don’t confuse connection counts with block counts; a high block count doesn’t imply fewer third-party connections.
+- Avoid assuming all third-party connections are malicious; many are legitimate CDNs or services.
+- Misunderstanding the distinction between hostname and domain can lead to the impression that many more parties are contacted than really are.
+
+---
+
+## Summary Diagram
+
+```mermaid
+flowchart TD
+    User["User Browsing Webpage"] -->|Page Requests| Browser["Web Browser"]
+    Browser -->|Network Requests (webRequest API)| uBO["uBO Scope Extension"]
+
+    subgraph Outcomes
+      allowed["Not Blocked (Allowed)"]
+      stealth["Stealth Blocked"]
+      blocked["Blocked"]
+    end
+
+    uBO -->|Categorizes Requests| allowed
+    uBO --> stealth
+    uBO --> blocked
+
+    allowed --> Badge["Badge Count: Unique Third-Party Domains Allowed"]
+    allowed --> Popup["Popup Panel Shows Allowed Connections"]
+    stealth --> Popup
+    blocked --> Popup
+
+    Browser -.->|External Servers| ThirdParty["Third-Party Remote Servers"]
+
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style Browser fill:#bbf,stroke:#333,stroke-width:2px
+    style uBO fill:#bfb,stroke:#333,stroke-width:2px
+    style ThirdParty fill:#ffb,stroke:#333,stroke-width:2px
+
+```
+
+---
+
+## Next Steps
+
+To leverage these foundational terms effectively, proceed to:
+
+- [Using the Popup Panel](/overview/feature-glance/popup-overview) to see these terms in the UI context.
+- [How uBO Scope Works](/overview/architecture-concepts/how-it-works) for deeper understanding of data processing.
+- [Quickstart & Installation Links](/overview/feature-glance/quickstart-install) to ensure the extension is properly installed.
+
+Understanding core concepts empowers you to make informed choices about your web privacy and filter usage.
+
+---
+
+For detailed privacy impact and myth busting, see the [Key Value & Use Cases](/overview/product-intro/value-prop) page.
