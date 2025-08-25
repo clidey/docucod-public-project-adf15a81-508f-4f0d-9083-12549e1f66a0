@@ -1,0 +1,141 @@
+---
+title: "Key Concepts and Terminology"
+description: "Defines crucial terms such as 'third-party connection', 'distinct remote server', 'allowed', 'blocked', and 'stealth' requests. Explains how uBO Scope counts connections and the significance for interpreting toolbar badge indicators versus traditional block counts."
+---
+
+# Key Concepts and Terminology
+
+Understanding uBO Scope starts with knowing the core concepts and specific terminology it uses. This page defines the critical terms you encounter when using the extension and explains how uBO Scope measures third-party connections, helping you interpret the badge counts accurately compared to traditional block counters.
+
+---
+
+## What Is a Third-Party Connection?
+
+A **third-party connection** occurs when a webpage loads resources or communicates with a remote server whose domain is different from the domain of the main webpage you visit (the "first-party"). 
+
+### Why This Matters
+
+Webpages often load content—such as advertisements, analytics scripts, fonts, or tracking pixels—from other domains. These third-party connections can affect privacy, performance, and security. uBO Scope reveals these connections explicitly to help you gain visibility.
+
+
+## Distinct Remote Server: Domains and Hostnames
+
+uBO Scope reports third-party connections based on **distinct remote servers** identified by their domain names rather than individual URLs or IP addresses.
+
+- **Hostname**: The full server name from a URL (e.g., `cdn.example.com`).
+- **Domain**: The main registered domain derived from the hostname, determined using the Public Suffix List (e.g., `example.com`).
+
+Counting distinct domains rather than raw hostnames avoids inflating connection counts by differentiating between servers under the same overarching domain.
+
+
+## Allowed, Blocked, and Stealth Connections
+
+uBO Scope categorizes third-party connections into three outcomes based on what happens to each network request:
+
+- **Allowed**: Network requests to third-party domains that successfully connected and retrieved resources.
+- **Blocked**: Requests to third-party domains that were actively blocked by a content blocker or network policy.
+- **Stealth**: Requests that were silently prevented or redirected in a way that avoids detection by webpages or that use stealthy blocking techniques (e.g., stealth blocking by uBlock Origin), which may not appear in traditional blocked counts.
+
+These outcomes help you understand not just whether a request was blocked, but also the nature of that blocking and which third parties were effectively neutralized.
+
+
+## How uBO Scope Counts Connections
+
+- **Network Requests Tracking**: uBO Scope listens to all network requests made by the browser using the `webRequest` API.
+- **Outcome Determination**: Each request is classified as allowed, blocked, or stealth based on its success, failure, or redirection status.
+- **Per-Tab Aggregation**: Counts are collected and maintained separately for each browser tab.
+- **Domain-Based Counting**: The number of distinct allowed domains forms the core count shown on the toolbar badge.
+
+
+## Understanding the Toolbar Badge Indicator
+
+The badge on uBO Scope’s toolbar icon shows the **number of distinct third-party remote domains from which content was successfully loaded (allowed)** for the active browser tab.
+
+### Why This Is Different From Traditional Block Counts
+
+Traditional content blockers often show how many requests they have blocked. This block count alone does not provide a clear picture of real exposure to third parties. For example:
+
+- A *high block count* could coexist with many allowed third-party connections, indicating limited actual blocking.
+- A *low block count* paired with fewer allowed connections often reflects better blocking effectiveness.
+
+uBO Scope reframes this by focusing on the number of **distinct third-party servers contacted**, an indicator more relevant to privacy and trustworthiness.
+
+
+## The Role of the Public Suffix List (PSL)
+
+Determining what constitutes a distinct domain is non-trivial. uBO Scope leverages the **Public Suffix List (PSL)** to:
+
+- Identify the effective registered domain behind any hostname.
+- Avoid counting subdomains of the same registered domain as separate third parties.
+
+This ensures that the counting reflects realistic boundaries for third-party servers.
+
+
+## Example Scenario
+
+Imagine visiting a news website `https://news.example.com`.
+
+- The page loads images from `cdn.example.com` and scripts from `ads.tracker.io`.
+- uBO Scope identifies `example.com` as the first-party domain.
+- It records third-party connections:
+  - `cdn.example.com` → domain `example.com` (same registered domain, might be first-party or treated with context).
+  - `ads.tracker.io` → domain `tracker.io` (distinct third-party).
+- If the tracker domain's requests are blocked or stealth blocked, this is reflected accordingly.
+- The toolbar badge shows the count of third-party domains allowed by the current tab, giving you a quick gauge of external connections.
+
+
+## Best Practices for Interpreting Terms
+
+- **Focus on allowed domains count** to assess exposure to third parties rather than just block counts.
+- Use the categorized popup interface to see exactly which domains fall into allowed, blocked, or stealth categories.
+- Remember that some stealth blocking techniques can hide connections from webpages but are reported by uBO Scope for your insight.
+
+
+## Troubleshooting Common Confusions
+
+<AccordionGroup title="Common Questions and Clarifications">
+<Accordion title="Why isn't the badge count the same as the number of requests blocked?">
+The badge shows distinct allowed third-party domains, not block counts. A site may block many requests but still contact several distinct third-party servers, or vice versa.
+</Accordion>
+<Accordion title="What if some allowed connections seem surprising?">
+Some third-party servers are legitimate, like content delivery networks (CDNs) or analytics trusted by the site. Review the domain listings in the popup to identify if unexpected domains are present.
+</Accordion>
+<Accordion title="Why do stealth connections appear, and what are they?">
+Stealth connections are network requests that were intercepted or modified silently (e.g., redirect-based blocking) and might not be visible in traditional block logs but are captured by uBO Scope.
+</Accordion>
+</AccordionGroup>
+
+
+---
+
+## Related Concepts and Next Steps
+
+To gain a more complete understanding of how uBO Scope works and how to best leverage it, continue to:
+
+- Read **[What is uBO Scope?](/overview/introduction-value/what-is-ubo-scope)** to see the big picture.
+- Explore **[Feature Highlights](/overview/introduction-value/quick-feature-overview)** for an overview of capabilities.
+- Get started with **Installation and Setup** to use uBO Scope effectively.
+
+
+---
+
+<u>By mastering these concepts and terminology, you are equipped to interpret uBO Scope’s data accurately, empowering you to analyze third-party connections with confidence and precision.</u>
+
+---
+
+## Technical Glossary Recap
+
+| Term                | Definition                                                      |
+|---------------------|----------------------------------------------------------------|
+| Third-Party Connection | A network request to a domain different from the main webpage. |
+| Hostname            | The full server name extracted from a URL (e.g., `sub.domain.com`). |
+| Domain              | The registered domain from a hostname using the Public Suffix List (e.g., `domain.com`). |
+| Allowed             | Requests that successfully fetched resources.                   |
+| Blocked             | Requests prevented by blockers.                                 |
+| Stealth             | Requests blocked or redirected silently, often hidden from webpages. |
+| Toolbar Badge       | The number of distinct allowed third-party domains for the active tab. |
+
+---
+
+
+**For more detailed examples and how to interpret your browsing sessions, explore the popup interface and guides linked above.**
