@@ -1,0 +1,194 @@
+---
+title: "Workflows for Filter List Maintainers"
+description: "Practical tips and workflows for filter list maintainers or advanced users who want to audit remote connections—especially on restricted devices. Outlines methods for session data review, remote domain analysis, and interpreting stealthy network activities."
+---
+
+# Workflows for Filter List Maintainers
+
+uBO Scope offers powerful insights tailored for filter list maintainers and advanced users who audit remote connections. This guide walks you through practical workflows to efficiently analyze session data, investigate remote domains, and decode stealthy network activities—especially useful for users working on devices with restricted browser tooling.
+
+---
+
+## 1. Workflow Overview
+
+### Purpose
+This page helps filter list maintainers systematically review and interpret data collected by uBO Scope to improve filter accuracy. It guides users to leverage session snapshots, domain categorization, and stealth connection analysis to refine filtering rules.
+
+### Who Should Use This
+- Filter list maintainers updating or verifying domain rules
+- Privacy researchers auditing third-party connections
+- Users on constrained or remote devices lacking browser developer tools
+
+### Expected Outcomes
+- Understand how to extract and analyze session data
+- Identify suspicious or new third-party domains
+- Distinguish between allowed, blocked, and stealth-blocked connections
+- Apply findings to improve filter list precision
+
+### Time Estimate
+15 to 30 minutes per audit session depending on website complexity and data volume.
+
+### Skill Level
+Intermediate to advanced users familiar with domain structures and browser networking.
+
+---
+
+## 2. Preparing Your Environment
+
+Before starting your audit:
+
+- Ensure uBO Scope is installed in your supported browser (see [Supported Browsers & Prerequisites](https://github.com/gorhill/uBO-Scope))
+- Verify extension is active and recording data by visiting a target website
+- Familiarize yourself with the popup interface and toolbar badge (see [Understanding the Toolbar Badge and Popup Data](https://github.com/gorhill/uBO-Scope))
+
+---
+
+## 3. Step-by-Step Audit Process
+
+### Step 1: Open uBO Scope Popup on Target Tab
+- Click the uBO Scope icon in your browser toolbar to open the popup.
+- Confirm the tab hostname and domain shown at the top match the site under analysis.
+- Note the domains connected count in the summary section.
+
+### Step 2: Review Connection Categories
+- Explore the three sections listing third-party domains:
+  - **Not Blocked**: Domains contacted successfully.
+  - **Stealth-Blocked**: Domains contacted but blocked in a way invisible to the webpage.
+  - **Blocked**: Domains explicitly blocked.
+
+### Step 3: Identify Newly Contacted or Unexpected Domains
+- Sort or scan domain lists for unfamiliar entries.
+- Use the public suffix concept to identify registrable domains and subdomains.
+- Flag suspicious or unclassified domains for further investigation.
+
+### Step 4: Analyze Stealth-Blocked Domains
+- Stealth blocking may indicate attempts to hide blocking from scripts.
+- Investigate stealth-blocked domains to understand their purpose and content.
+- Consider if they should be added to blocklists or explicitly allowed.
+
+### Step 5: Export and Review Session Data (Advanced)
+Although the extension doesn't provide an export UI, advanced maintainers can review stored session data directly:
+
+- Access session storage via browser developer tools.
+- Locate `sessionData` key to find serialized connection records.
+- Use the serialization format to deserialize and analyze data programmatically.
+
+Refer to [source code in background.js](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js) for `sessionRead`, `sessionWrite`, and data structures.
+
+### Step 6: Use Domain Categorization Techniques
+- Leverage the internal Public Suffix List (PSL) to determine base domains.
+- Understand that uBO Scope uses PSL to aggregate counts by registrable domain.
+- Use this insight to tune filter rules that target domains rather than hostnames.
+
+### Step 7: Iterate Based on Findings
+- Modify filter lists to add or remove rules for specific domains.
+- Reload or revisit the website and observe changes reflected in uBO Scope.
+- Verify if stealth-blocked or blocked domains align with filtering goals.
+
+---
+
+## 4. Practical Tips & Best Practices
+
+- **Focus on Registrable Domains:** uBO Scope reports domains aggregated by registrable domain, avoiding overly granular subdomain noise.
+
+- **Look for Patterns:** Domains appearing consistently in stealth or blocked sections often indicate legitimate targets for filter lists.
+
+- **Clear Data When Testing:** Restart sessions or clear browser data to ensure fresh results when testing new rules.
+
+- **Combine with Other Tools:** Use uBO Scope alongside network monitoring or content blockers for richer context.
+
+- **Watch for Redirects:** Redirect events can cause stealth blocking; analyze redirects carefully to verify actual connections.
+
+---
+
+## 5. Troubleshooting Common Issues
+
+### Popup Shows "NO DATA"
+- Confirm uBO Scope is running and has permission to monitor network requests.
+- Reload the browser tab to generate fresh network events.
+- Check that the domain uses HTTP(S) or WebSocket schemes supported by uBO Scope.
+
+### Badge Count is Zero or Not Updating
+- Ensure browser supports `webRequest` API fully (Chromium v122+, Firefox v128+, Safari 18.5+).
+- Disable conflicting extensions that might interfere with `webRequest`.
+- Restart the browser or extension to reset internal session.
+
+### Stealth-Blocked Connections Not Visible Externally
+- Understand stealth blocking hides blocking from page scripts.
+- This is by design to avoid webpage breakage and detection.
+- Use uBO Scope to detect these stealthy connections regardless of blocker tricks.
+
+---
+
+## 6. Understanding uBO Scope Internal Data Handling (For Advanced Users)
+
+The background script maintains per-tab records as objects with separated maps for allowed, blocked, and stealth-blocked hostnames and domains. Domains are resolved using the public suffix list for precise aggregation.
+
+Key concepts:
+- **`allowed`**, **`blocked`**, and **`stealth`** categories indicate the outcome of each network request.
+- Each category tracks both hostnames and domains with request counts.
+- Hit counts help identify frequent or uncommon connections.
+
+For programmatic access or customization, see [background.js source](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js).
+
+---
+
+## 7. Next Steps & Advanced Topics
+
+- Explore [Workflows for Filter List Maintainers](https://github.com/gorhill/uBO-Scope/blob/main/guides/real-world-scenarios-and-best-practices/filter-list-maintainers.mdx) for deeper maintenance techniques.
+- Review [Comparing Content Blockers with uBO Scope](https://github.com/gorhill/uBO-Scope/blob/main/guides/real-world-scenarios-and-best-practices/comparing-content-blockers.mdx) for evaluating blocking efficacy.
+- Understand [Core Terminology and Concepts](https://github.com/gorhill/uBO-Scope/blob/main/overview/architecture-and-concepts/core-terminology.mdx) to sharpen your interpretation skills.
+
+---
+
+## References & Resources
+
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- [Supported Browsers & Prerequisites](https://github.com/gorhill/uBO-Scope/blob/main/getting-started/installing-ubo-scope/supported-browsers-and-requirements.mdx)
+- [Installing uBO Scope](https://github.com/gorhill/uBO-Scope/blob/main/getting-started/installing-ubo-scope/installation-guides.mdx)
+- [Interpreting Network Insights](https://github.com/gorhill/uBO-Scope/blob/main/getting-started/first-run-setup/understanding-the-popup.mdx)
+
+
+---
+
+<CardGroup cols={2}>
+<Card title="Public Suffix List (PSL)">
+The [Public Suffix List](https://publicsuffix.org) enables uBO Scope to identify registrable domains, helping grouping network requests by the logical domain entity.
+</Card>
+<Card title="Data Persistence">
+uBO Scope uses session storage to preserve observations between tab reloads, useful for extended audits and filter list validation.
+</Card>
+</CardGroup>
+
+---
+
+## Appendix: Sample Code to Deserialize Session Data
+
+For advanced users who want to programmatically analyze session data, here is a simplified example outlining the deserialization approach used internally:
+
+```javascript
+import { deserialize } from './lib/s14e-serializer.js';
+import { sessionRead } from './ext.js';
+
+async function getSessionData() {
+  const serialized = await sessionRead('sessionData');
+  if (!serialized) {
+    console.warn('No session data found');
+    return null;
+  }
+  const session = deserialize(serialized);
+  return session;
+}
+
+getSessionData().then(session => {
+  if (session) {
+    for (const [tabId, details] of session.tabIdToDetailsMap.entries()) {
+      console.log(`Tab ${tabId}:`, details);
+    }
+  }
+});
+```
+
+This snippet accesses the current session data and logs domain connection details by tab for deeper auditing.
+
+---
