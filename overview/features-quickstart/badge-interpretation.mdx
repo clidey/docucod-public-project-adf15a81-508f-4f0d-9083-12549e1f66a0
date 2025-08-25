@@ -1,0 +1,118 @@
+---
+title: "Understanding the Toolbar Badge"
+description: "Learn how to read and interpret the toolbar badge: it displays the count of unique third-party remote servers that the current tab has contacted. Discover why a lower count reflects stronger privacy and tighter content blocking, but also why not all third parties are problematic."
+---
+
+# Understanding the Toolbar Badge
+
+The toolbar badge in uBO Scope is your at-a-glance indicator of third-party network activity on the active browser tab. It displays the count of unique third-party remote servers the current tab has contacted, giving you instant insight into the page’s privacy footprint without opening the detailed popup.
+
+---
+
+## What Does the Badge Count Represent?
+
+The badge number quantifies *distinct* third-party domains your browser connected to during the lifetime of the current tab. Specifically, it counts unique third-party **remote servers** involved in network requests initiated by the webpage.
+
+A "third-party" in this context is any remote server that is *not* the main domain (or its subdomains) of the website you're visiting. For example, if you are on `example.com` and the page loads resources or makes connections to `cdn.example.com`, that is typically considered first-party or same-party. However, `analytics.com` or `ads.net` would be third-party domains.
+
+<u>Key Point:</u> The badge reflects only *third-party* domains contacted, not the total number of connections or requests.
+
+
+## Why Lower Badge Counts Mean Stronger Privacy
+
+A lower badge count directly correlates with fewer distinct third-party connections, which generally means tighter content blocking and less exposure to external trackers or advertisers.
+
+- **Fewer third-party connections = stronger privacy** because your browser interacted with fewer external parties.
+- **A zero or very low badge count indicates highly restricted third-party content**, effectively minimizing tracking and potential privacy risks.
+
+However, it's essential to understand that a non-zero count is not automatically bad. Many sites legitimately rely on a small set of trusted third-party services like Content Delivery Networks (CDNs), which are common and pose minimal privacy concerns.
+
+## What the Badge Does NOT Tell You
+
+- It does *not* count every network request — only unique third-party domains.
+- It does not distinguish between malicious or benign third parties; it simply counts them.
+- It does not indicate which content blockers are active or which requests were blocked or allowed.
+
+
+## How Does uBO Scope Track These Connections?
+
+Behind the scenes, the extension listens to browser network events through the `webRequest` API. This allows it to track all network requests made by the browser regardless of which content blocker is currently in use.
+
+It classifies network requests into outcomes:
+
+- **Allowed**: Requests that completed successfully.
+- **Blocked**: Requests that were prevented from completing.
+- **Stealth-blocked**: Requests that appear to have been silently interrupted or redirected.
+
+Only the *allowed* third-party servers contribute to the toolbar badge count.
+
+
+## Real-World Scenario: Interpreting the Badge
+
+Imagine you visit a news website:
+
+1. The main page loads from `news.example.com`.
+2. It fetches images and scripts from `cdn.exampleassets.com` (a CDN).
+3. The site also contacts trackers at `tracker.adsnetwork.com` and `analytics.reporter.com`.
+4. Your content blocker blocks some tracker requests.
+
+- The badge shows `2` because only the distinct allowed third-party servers (`cdn.exampleassets.com` and whichever trackers got through) are counted.
+- If your content blocker improved and blocked all trackers, the badge would reflect `1`, only counting the CDN.
+
+
+## Practical Tips for Users
+
+- **Use the badge as a quick privacy indicator.** Lower is better, signifying fewer third-party connections.
+- **Don’t assume a zero count means the site is tracker-free.** Some trackers could be first-party or embedded differently.
+- **Recognize legitimate third parties.** Not all third-party connections are harmful—CDNs and essential services often appear.
+- **Compare badge counts across sites and over time** to see how your content blocking settings impact your privacy.
+
+
+## Best Practices for Effective Badge Interpretation
+
+- Always cross-reference the badge with uBO Scope's popup for detailed lists of allowed, blocked, and stealth-blocked domains.
+- Use the badge in conjunction with your content blocking tools rather than as a standalone privacy metric.
+- Remember that some network requests may happen outside of the browser’s reported range and won’t be counted.
+
+
+## Troubleshooting Badge Count Issues
+
+If the badge count seems abnormally high or low, consider:
+
+- Ensuring uBO Scope is correctly installed and has the required permissions (e.g., `webRequest`).
+- Checking if other browser extensions or network settings interfere with request reporting.
+- Confirming you are looking at the active tab that has loaded a webpage with network activity.
+- Reloading the tab to refresh network data.
+
+
+---
+
+## Summary
+
+The toolbar badge in uBO Scope distills complex network activity into a simple metric: the total distinct third-party remote servers contacted by the current tab. This empowers you to gauge the strength of your privacy defenses instantly. Understanding what the badge counts — and what it omits — enables smarter, more informed decisions about privacy and content blocking.
+
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](/overview/product-intro-value/what-is-ubo-scope) — Learn about the fundamental purpose and capabilities of uBO Scope.
+- [Core Concepts & Terminology](/overview/core-concepts-architecture/core-concepts-terminology) — Dive deeper into definitions around third-party connections and request outcomes.
+- [Feature Tour & Main Workflow](/overview/features-quickstart/feature-tour) — Step-by-step user journey including how to use the popup for insights.
+- [Using the Popup: Viewing and Interpreting Results](/guides/getting-started-ubo-scope/popup-ui-overview) — Explore the detailed lists behind the badge count.
+
+
+---
+
+## Next Steps
+
+After mastering badge interpretation, explore these guides to expand your use of uBO Scope:
+
+- Analyze a page’s privacy by comparing allowed and blocked domains.
+- Use stealth-block detection to identify hidden third-party activity.
+- Compare content blockers’ effectiveness with real-time network data.
+
+
+---
+
+*For source code and development details, visit the uBO Scope repository on GitHub:* [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
