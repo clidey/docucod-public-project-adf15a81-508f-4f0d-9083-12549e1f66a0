@@ -1,0 +1,146 @@
+---
+title: "Core Concepts & Terminology"
+description: "Get familiar with essential terms: 'third-party server', 'webRequest listener', 'badge count', 'stealth blocking', and 'tab session'. Each term is defined with user-facing relevance, helping demystify what users see in the popup."
+---
+
+# Core Concepts & Terminology
+
+Understanding the key concepts behind uBO Scope is essential to making the most of its features. This page demystifies the core terms you’ll encounter in the extension’s popup and reports, framing them around your experience as a user.
+
+---
+
+## Third-Party Server
+
+**What it means:** A third-party server is any remote server that is different from the main website you are visiting.
+
+- When you open a webpage, it often loads resources like images, scripts, or stylesheets from servers other than the site’s own.
+- These external servers are known as third parties.
+
+**Why you care:**
+- uBO Scope counts and reports connections made to these third-party servers because they impact your privacy and browsing experience.
+- A higher number of third-party connections often suggests more external tracking or advertising.
+- However, some third parties (like Content Delivery Networks, CDNs) are legitimate and common.
+
+**Example:**
+- Visiting example.com may connect to `cdn.example.net` (first party) and `ads.tracker.com` (third party).
+
+---
+
+## webRequest Listener
+
+**What it means:**
+- A `webRequest listener` is a background process in your browser that watches every network request the browser tries to make.
+- It tracks the fate of these requests — whether they are allowed, blocked, or redirected.
+
+**Why you care:**
+- uBO Scope uses `webRequest` listeners to detect and log every remote connection made by the browser.
+- This means it can show you exactly which servers were contacted and how the requests were handled.
+
+**How it works in uBO Scope:**
+- Whenever a network request happens, the extension detects it and notes if it succeeded or was blocked.
+- This detection works regardless of other content blockers or DNS methods, as long as the browser reports web requests.
+
+---
+
+## Badge Count
+
+**What it means:**
+- The badge count is the number displayed on uBO Scope’s toolbar icon.
+- It represents the number of **distinct third-party remote servers** your current tab has connected to.
+
+**Why you care:**
+- This count gives you an immediate, at-a-glance indication of how many unique third-party servers a webpage contacts.
+- A lower badge count generally suggests fewer external connections and potential tracking.
+- Note: The badge does *not* count the number of blocked requests, only the number of allowed third-party domains.
+
+**Practical tip:**
+- Remember, not all third parties are harmful or unwanted.
+- Use the badge as a summary indicator, but explore the popup for detailed insights.
+
+---
+
+## Stealth Blocking
+
+**What it means:**
+- Stealth blocking refers to network requests that were redirected or altered so that the browser’s `webRequest` API reports them differently.
+- These requests are not outright blocked but are intercepted or hidden in a way that changes their behavior.
+
+**Why you care:**
+- uBO Scope categorizes these requests separately to show that they were affected by stealth tactics.
+- This helps you understand if a content blocker is silently interfering without fully blocking requests.
+
+**User-facing impact:**
+- These stealth-blocked connections may still happen but are camouflaged or redirected.
+- This distinction helps advanced users or filter list maintainers analyze blocking behaviors.
+
+---
+
+## Tab Session
+
+**What it means:**
+- A tab session is the collection of network request data that uBO Scope maintains per browser tab.
+- For each tab, the extension tracks allowed, stealth blocked, and blocked third-party domains and hostnames.
+
+**Why you care:**
+- When you switch tabs, the badge and popup update to reflect the current tab’s session data.
+- This per-tab data helps you focus on the remote connections specific to the page you are viewing.
+
+**Behind the scenes:**
+- uBO Scope maintains this session data in-memory and uses browser session storage to persist it for the tab’s lifetime.
+- When a tab is closed, its session data is cleared, ensuring up-to-date measurements.
+
+---
+
+## Bringing It All Together
+
+When you look at uBO Scope’s popup and badge, you’re viewing a live summary of the current tab’s **third-party server** connections, tracked via the browser’s **webRequest listener**, organized within that tab’s **session**. You’ll see the **badge count**, instantly telling you how many distinct third parties have been contacted, and the **stealth blocking** category, letting you understand hidden blocking activity.
+
+---
+
+### Quick User Flow Example:
+
+1. You open `example.com` in a new tab.
+2. The browser makes network requests to:
+   - `example.com` (first party)
+   - `cdn.example.net` (third party, allowed)
+   - `ads.trackersite.com` (third party, blocked)
+   - `analytics.spy.com` (third party, stealth-blocked via redirect)
+3. uBO Scope’s background script notes all requests and their outcomes.
+4. The tab session is updated with these details.
+5. The toolbar badge shows **1**, representing the one allowed third-party: `cdn.example.net`.
+6. When you open the popup, you see a breakdown into:
+   - Not blocked: `cdn.example.net`
+   - Stealth-blocked: `analytics.spy.com`
+   - Blocked: `ads.trackersite.com`
+
+---
+
+## Best Practices & Tips
+
+- Use the **badge count** as a quick privacy health indicator but dive into the popup for details.
+- Understand that **stealth blocking** may indicate subtle blocking methods; use this to gauge your content blocker’s behavior.
+- Remember that legitimate third parties like CDNs can appear frequently and are necessary for many sites to work smoothly.
+- If a tab’s badge count seems unusually high, investigate the popup to identify potential privacy issues.
+- Keep in mind uBO Scope monitors only requests reported via the `webRequest` API, limitations of browser APIs may impact coverage.
+
+---
+
+## Troubleshooting
+
+- **No badge or popup data:** Ensure you’ve granted necessary permissions during installation and reload your browser.
+- **High badge count despite content blocking:** Some third-party servers might be necessary or stealth-blocked, review popup details.
+- **Popup doesn’t update:** Try switching tabs or reopening the popup to refresh the data.
+
+---
+
+## Learn More
+
+To deepen your understanding, explore:
+- [How uBO Scope Works](/overview/architecture-concepts/highlevel-architecture) for architecture and data flow
+- [Key Features Overview](/overview/architecture-concepts/features-summary) to see what you can do with these concepts
+- [Debunking Toolbar Badge Myths](/guides/real-world-usage-strategies/debunking-badge-myths) to avoid common misunderstandings
+
+
+---
+
+_For source code, contribution details, and the latest updates, visit the [official uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope)._
