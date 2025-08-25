@@ -1,0 +1,196 @@
+---
+title: "Troubleshooting and Investigating Content Blocker Behavior"
+description: "Step-by-step examples for using uBO Scope to diagnose why certain third-party requests are allowed or blocked, how content blockers interact with network requests, and how to gather actionable insights even across different blocking solutions or browser settings."
+---
+
+# Troubleshooting and Investigating Content Blocker Behavior with uBO Scope
+
+## Overview
+
+This guide helps you use uBO Scope effectively to diagnose why certain third-party requests in your browser are allowed, stealth-blocked, or fully blocked. It provides practical, step-by-step examples that reveal how various content blockers interact with network requests and how you can gather actionable insights — even when multiple blocking solutions or browser settings influence network traffic.
+
+Understanding these behaviors empowers privacy-conscious users, developers, and filter list maintainers to accurately assess and troubleshoot network requests and optimize blocking configurations.
+
+---
+
+## 1. Understanding Connection Outcomes in uBO Scope
+
+uBO Scope classifies network request outcomes into three categories you see in the popup panel:
+
+- **Allowed (not blocked):** The request to a remote third-party server completed successfully or was allowed to proceed.
+- **Stealth-blocked:** The request was intercepted or rerouted in a way that is hidden from the page, often through redirection or DNS-based blocking, without explicit error.
+- **Blocked:** The request failed outright due to blocking by a content blocker or network policy, showing as errors.
+
+This separation helps distinguish between what your browser actually fetched (allowed), what was stealthily prevented (stealth), and what was obviously blocked (blocked).
+
+---
+
+## 2. Preparing to Investigate
+
+### Prerequisites
+
+- Have uBO Scope installed and enabled on a supported browser (Chromium-based, Firefox 128+, or Safari 18.5+).
+- Open a web page you wish to investigate in the active tab.
+- Click the uBO Scope toolbar icon to open the popup panel.
+
+### What You Will See
+
+- The **toolbar badge** shows a count of distinct third-party domains your active tab connected to.
+- The popup displays the hostname of the tab and domain.
+- Lists of third-party domains under "not blocked", "stealth-blocked", and "blocked" categories with counts of requests.
+
+---
+
+## 3. Step-by-Step Investigative Workflow
+
+<Steps>
+<Step title="Open the uBO Scope Popup Panel">
+Click the uBO Scope toolbar icon while on the tab you want to analyze. The popup panel will load connection data for the current tab, showing distinct third-party domains by outcome category.
+</Step>
+
+<Step title="Review Allowed Connections">
+Look under the **not blocked** section to identify all third-party domains your active tab has connected to successfully. These are the remote servers where resources were fetched without intervention.
+
+_Check if the domains listed are expected or legitimate third parties (e.g., CDNs, analytics services).
+</Step>
+
+<Step title="Examine Stealth-Blocked Domains">
+The "stealth-blocked" list reveals requests that were redirected or intercepted invisibly by content blockers or DNS filters. These requests never completed, but their blocking might be subtle and not visible to the web page.
+
+_Use this information to check for filters silently blocking resource loads, which might cause partial breakage._
+</Step>
+
+<Step title="Investigate Blocked Domains">
+Domains listed under "blocked" represent requests that failed and were actively stopped by your content blocker or blocking policies.
+
+_Consider these domains if you want to understand which requests are explicitly prevented from loading._
+</Step>
+
+<Step title="Analyze Request Counts and Domain Frequency">
+For each domain listed, note the number of requests made to it (displayed as a badge with counts).
+
+High request counts to a third-party might indicate tracking or resource-heavy components.
+</Step>
+
+<Step title="Cross-Reference With Browser Settings or Other Blockers">
+If you use multiple content blockers or DNS-based filtering, understanding stealth-blocked entries can help identify conflicts or gaps.
+
+Check if certain domains appear allowed in one blocker but stealth-blocked in another.
+</Step>
+
+<Step title="Use Punycode Decoding for International Domains">
+uBO Scope decodes internationalized domain names using Punycode to show readable text. This ensures you correctly identify non-ASCII domains.
+</Step>
+
+<Step title="Use Toolbar Badge for Quick Privacy Assessment">
+Remember, the badge shows the number of distinct allowed third-party domains. A lower badge count generally indicates better privacy protection.
+
+_Use this count as a quick reference to your tab's privacy exposure._
+</Step>
+</Steps>
+
+---
+
+## 4. Practical Examples
+
+### Example 1: Diagnosing Why a Third-Party Request Was Allowed
+
+Suppose you notice a suspicious domain like `tracker.example.com` under **not blocked**, unexpectedly.
+
+1. Open the popup panel and see `tracker.example.com` listed in the allowed section.
+2. Realize this may indicate your content blocker does not block this tracker.
+3. Verify your blocking rules for this domain or update your filter lists.
+4. After updating, reload the page and check the popup to confirm the domain moves to blocked or stealth categories.
+
+### Example 2: Understanding Stealth Blocking Impact
+
+You find a domain `ads.example.net` under **stealth-blocked** with multiple requests.
+
+1. It indicates your content blocker or DNS filter redirects or nullifies these requests silently.
+2. This might explain subtle page breaking or missing content caused by hidden blocking.
+3. Adjust your blocker's settings if you want more explicit blocking or to allow these requests.
+
+### Example 3: Investigating Cross-Blocking with Multiple Extensions
+
+Using uBO Scope alongside another blocker, you observe:
+
+- `cdn.example.org` is allowed in uBO Scope.
+- The same domain is stealth-blocked or blocked by another tool.
+
+This situation may arise due to order of extension execution or browser API reporting limitations.
+
+_uBO Scope records what the browser's webRequest API reports, helping clarify actual network outcomes independent of UI indicators._
+
+---
+
+## 5. Common Pitfalls & Troubleshooting
+
+### The Badge Count Does Not Update
+
+- Ensure you're viewing the popup while on an active tab.
+- Verify uBO Scope has necessary permissions (e.g., access to the active tab and webRequest API).
+- Reload the page and reopen the popup panel to refresh data.
+
+### Popup Shows 'NO DATA' or Empty Lists
+
+- Wait a few seconds after loading the web page to allow data collection.
+- Confirm your browser supports the required webRequest events.
+- Disable and re-enable the extension to reset the session.
+
+### Domains You Expect to See Are Missing or Misclassified
+
+- Some browser network requests are not observable by webRequest API (e.g., due to browser internals or non-HTTP protocols).
+- Large or complex network activity might delay data processing; give it a moment.
+
+### International Domains Are Hard to Read
+
+- uBO Scope decodes Punycode automatically, but some rare domains might still be unfamiliar.
+- Use domain lookup tools for further validation.
+
+---
+
+## 6. Best Practices for Effective Investigation
+
+- Regularly monitor the popup panel after visiting new or privacy-critical sites.
+- Combine insights from allowed, stealth-blocked, and blocked domains for a full privacy picture.
+- Use the data to fine-tune your content blockers or adjust whitelist/blacklist settings.
+- Remember that stealth-blocked domains signify subtle blocking useful for stealth or DNS filters.
+- Consider the badge count as a core privacy metric – fewer allowed third-party domains signify better protection.
+
+---
+
+## 7. Additional Resources
+
+- [Understanding Badge Counts and Reports](../getting-started/introduction-overview/understanding-badge-and-reports)
+- [Your First Look: Using the Popup Panel](../getting-started/first-steps-usage/your-first-look)
+- [Integration with Content Blockers & Browsers](../overview/integration-context/ecosystem-integration)
+- [Debunking 'Block Count' Myths in Content Blocking](../guides/advanced-usage-patterns/debunking-block-count-myths)
+- [Troubleshooting Installation Issues](../getting-started/first-steps-usage/troubleshooting-installation-issues)
+
+---
+
+## 8. Next Steps
+
+- Use this guide as a starting point to review your browsing sessions and identify unexpected third-party connections.
+- Refer to related guides to deepen your understanding of badge counts, filter list maintenance, and content blocker comparisons.
+- Engage with community discussions, GitHub issues, or developer resources for advanced troubleshooting and feature requests.
+
+---
+
+## Appendix: Understanding the Popup Panel UI Components
+
+- **Hostname Header:** Shows the Unicode-decoded hostname and domain of the current active tab.
+- **Domains Connected Count:** Displays the total unique third-party domains allowed to connect.
+- **Sections:** Separate lists:
+  - Not Blocked: Domains your browser connected to successfully.
+  - Stealth-Blocked: Silently blocked or redirected domains.
+  - Blocked: Domains where requests failed due to active blocking.
+- **Domain Rows:** Each domain name shows a count of how many requests were made.
+
+<Tip>
+Always interpret stealth-blocked entries carefully, as they indicate blocking that the web page may not easily detect, often through DNS-level mechanisms or redirection.
+</Tip>
+
+---
+
+*This guide focuses strictly on troubleshooting network request outcomes using uBO Scope’s popup panel and toolbar badge for active browser tabs. It does not cover installation, basic usage, nor filter list creation — please consult appropriate guides for those topics.*
