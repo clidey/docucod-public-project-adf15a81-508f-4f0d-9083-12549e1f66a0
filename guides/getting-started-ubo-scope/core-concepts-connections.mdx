@@ -1,0 +1,154 @@
+---
+title: "Understanding Third-Party Connections and Badge Counts"
+description: "Demystify how uBO-Scope defines and tracks remote connections, including the distinction between third-party, first-party, and CDN hosts, and how the badge count offers visibility into page privacy posture."
+---
+
+# Understanding Third-Party Connections and Badge Counts
+
+## Workflow Overview
+
+### Task Description
+This guide helps you understand how uBO-Scope defines and tracks remote network connections made by your browser during web browsing sessions. It explains the distinctions between first-party, third-party, and CDN hosts, and clarifies how the toolbar badge count correlates to these connection types — empowering you to better assess the privacy posture of the pages you visit.
+
+### Prerequisites
+- uBO-Scope extension installed and active in your browser.
+- Basic knowledge of browsing tabs and interpreting browser extension badges.
+
+### Expected Outcome
+After following this guide, you will:
+- Grasp the definitions uBO-Scope uses for third-party connections.
+- Understand how hosts (domains and CDNs) are categorized.
+- Be able to interpret the toolbar badge count and relate it to real-world privacy implications.
+
+### Time Estimate
+Less than 10 minutes.
+
+### Difficulty Level
+Beginner to Intermediate.
+
+---
+
+## How uBO-Scope Defines Remote Connections
+
+### First-Party vs Third-Party Connections
+When you visit a webpage, your browser establishes connections to servers hosting that site's content. uBO-Scope distinguishes these as:
+
+- **First-Party Connections:** Network requests made to the original domain of the webpage you're visiting (e.g., visiting `example.com` connects to servers within `example.com` domain).
+- **Third-Party Connections:** Requests made to any other domains that the webpage loads resources from, such as advertisers, analytics providers, or content delivery networks.
+
+This distinction matters because third-party connections often represent tracking entities or external asset providers affecting your privacy.
+
+### CDN Hosts and uBO-Scope
+Many websites utilize Content Delivery Networks (CDNs) — specialized servers geographically distributed to efficiently serve content. Although CDNs are third-party hosts technically, they may be legitimate and essential for website functionality.
+
+uBO-Scope treats CDNs as third-party hosts but does not inherently label them as malicious or undesirable. Understanding whether your connections involve genuine CDNs helps in accurately assessing privacy risks.
+
+---
+
+## Tracking Connections and Outcomes
+
+uBO-Scope listens to network events reported by your browser independently of any content blockers. It tracks every network request outcome as:
+
+- **Allowed:** Requests successfully connected.
+- **Blocked:** Requests prevented from completing by content blockers or network errors.
+- **Stealth-Blocked:** Requests redirected or blocked in a manner designed to be unobtrusive or invisible to the website.
+
+The extension aggregates these connection results on a per-tab basis, grouping domains contacted under these categories.
+
+---
+
+## Understanding the Toolbar Badge Count
+
+The **toolbar badge** on the uBO-Scope icon displays:
+
+> The number of unique third-party domains from which connections to remote servers were allowed for the currently active browser tab.
+
+This count excludes the first-party domain of the page and highlights how many distinct third-party hosts your browser actually connected to while loading the page.
+
+### Why a Lower Badge Count is Better
+- A **lower count** usually indicates fewer third-party connections, which often correlates to enhanced privacy since fewer external entities are contacted.
+- A **higher count** means more third-party connections, increasing potential for cross-site tracking.
+
+<u>Important:</u> This count reflects the _distinct_ third-party domains, not the total number of requests or block events. Therefore, multiple requests to the same third-party domain count as one.
+
+### Common Misunderstandings
+
+Many assume that a higher block count or badge number relates directly to content blocker effectiveness or privacy strength. uBO-Scope clarifies that what truly matters is how many distinct third-party domains were _allowed_ (connected) because: 
+
+- An extension with a higher block count can still allow more third-party domains to connect,
+- Fake or fabricated network requests (like from ad-blocker test sites) do not reflect real browsing behavior.
+
+---
+
+## Examples
+
+| Scenario                                      | First-Party Domain   | Third-Party Domains                                               | Badge Count Displayed |
+|-----------------------------------------------|---------------------|------------------------------------------------------------------|-----------------------|
+| Visit `news.com` with ads and analytics       | news.com            | adtracker.com, analytics.net, cdn.fastcdn.com                    | 3                     |
+| Visit `blog.example` with essential CDN usage | blog.example        | cdn.fastcdn.com                                                  | 1                     |
+| Visit `shop.site` with no third-party scripts | shop.site           | *none*                                                          | 0 (badge hidden)       |
+
+---
+
+## Tips and Best Practices
+
+- Use the badge count as a quick indicator to evaluate how many third-party connections a site initiates, not as a measure of block counts.
+- Investigate the popup UI (via clicking the extension icon) to view detailed lists of allowed, stealth-blocked, and blocked domains.
+- Remember that some third-party domains are legitimate CDNs or necessary service providers.
+- Be cautious interpreting results from ad-blocker test pages — they often do not reflect real browsing behavior.
+
+---
+
+## Common Pitfalls
+
+- **Mistaking badge count for blocks:** The badge reflects allowed third-party domains, not blocked counts.
+- **Ignoring stealth-blocking:** Some requests are stealth-blocked — invisible to websites but silently blocked by content blockers.
+- **Assuming all third parties are bad:** Not all third-party connections are harmful; many are essential.
+
+---
+
+## Troubleshooting
+
+- If the badge count does not appear or seems incorrect, verify the extension is active and permissions are granted.
+- Ensure that the active tab has fully loaded; partial loads might temporarily distort counts.
+- Review the popup details to spot domains with unexpected connection outcomes.
+
+---
+
+## Next Steps & Related Content
+
+- Explore the [Using the Popup: Viewing and Interpreting Results](https://example.com/guides/getting-started-ubo-scope/popup-ui-overview) to dive deeper into per-domain outcomes.
+- Read [Understanding the Toolbar Badge](https://example.com/overview/features-quickstart/badge-interpretation) for a detailed explanation of the badge's meaning.
+- Check [Core Concepts & Terminology](https://example.com/overview/core-concepts-architecture/core-concepts-terminology) to familiarize yourself with fundamental terms used by uBO-Scope.
+
+---
+
+## Diagram: Network Requests and Badge Count Flow
+
+```mermaid
+flowchart TD
+    A[User Opens Webpage] --> B[Browser Initiates Main Frame Request]
+    B --> C{Connection Host}
+    C -->|Matches Page Domain| D[First-Party Connection]
+    C -->|Different Domain| E[Third-Party Connection]
+    E --> F{CDN?}
+    F -->|Yes| G[Third-Party CDN Connection]
+    F -->|No| H[Regular Third-Party Connection]
+
+    D --> I[Tracked as allowed (if fetched)]
+    G --> I
+    H --> I
+
+    I --> J[uBO-Scope Aggregates Domains Per Outcome]
+    J --> K[Counts Unique Allowed Third-Party Domains]
+    K --> L[Update Toolbar Badge with Count]
+
+    style B fill:#eef,stroke:#333,stroke-width:2px
+    style I fill:#afa,stroke:#080,stroke-width:2px
+    style K fill:#ccf,stroke:#3366cc,stroke-width:2px
+
+    click L href "
+https://example.com/overview/features-quickstart/badge-interpretation" "Go to Badge Interpretation Guide"
+```
+
+
