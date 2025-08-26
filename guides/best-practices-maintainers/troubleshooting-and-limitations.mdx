@@ -1,0 +1,144 @@
+---
+title: "Troubleshooting and Understanding Product Limitations"
+description: "A practical overview of what uBO Scope can and cannot report, limitations related to the browser’s webRequest API, and guidance for dealing with cases where some network activity may not be visible due to technical or policy constraints."
+---
+
+# Troubleshooting and Understanding Product Limitations
+
+## Overview
+
+This guide provides a practical and clear overview of what uBO Scope can and cannot report. It explains inherent limitations tied to the browser's `webRequest` API, which uBO Scope relies on to track network connections. Understanding these boundaries is essential to accurately interpret data from uBO Scope and to troubleshoot cases where expected network activity may not be visible.
+
+## What uBO Scope Reports
+
+uBO Scope monitors network activity of the active browser tab by leveraging the browser's `webRequest` API. It records and categorizes network requests into three outcomes:
+
+- **Allowed:** Connections that successfully completed.
+- **Blocked:** Connections that failed due to blocking or errors.
+- **Stealth-blocked:** Connections that were redirected stealthily, typically by content blockers to avoid detection.
+
+The badge count on the browser toolbar icon reflects the number of unique third-party domains contacted.
+
+## Limitations Due to Browser APIs and Policies
+
+### 1. Dependence on `webRequest` API
+
+uBO Scope uses the `webRequest` listeners such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` to capture network activity. However, this reliance imposes inherent constraints:
+
+- **Non-webRequest Requests Are Invisible:** Network requests made outside the scope of the `webRequest` API (e.g., some WebSocket initializations in certain browsers, or fetches done via service workers with opaque responses) are not reported.
+
+- **API Coverage Varies by Browser:** Support and behaviors of the `webRequest` API differ slightly between Chromium, Firefox, and Safari, which can impact completeness.
+
+<Tip>
+If you suspect missing network data, verify that your browser supports the `webRequest` API fully and that relevant permissions are granted.
+</Tip>
+
+### 2. Browser Security Restrictions
+
+Browsers may impose restrictions preventing extensions from observing some network activity for privacy and security reasons:
+
+- **Cross-Origin Resource Sharing (CORS) Policies:** Some network requests blocked or hidden by CORS or browser policies may not generate `webRequest` events.
+
+- **Private or Encrypted Traffic:** Requests encrypted at layers that bypass the browser's standard inspection mechanisms cannot be detected.
+
+- **Service Worker and Background Fetches:** Requests handled via service workers with opaque data or fetches performed by non-page contexts might not appear in uBO Scope.
+
+### 3. Content Blocker Stealth Techniques
+
+Content blockers often use stealth techniques (e.g., redirecting requests rather than outright blocking) to avoid breaking websites or revealing their presence:
+
+- uBO Scope labels these stealth-blocked connections separately to distinguish them.
+
+- Some stealth techniques may cause connections or their outcomes to be hidden or harder to detect.
+
+### 4. Network Request States May Not Always be Accurate
+
+Occasionally, network events reported may lack IP or status code details, leading uBO Scope to mark them as errors for safety. This means some allowed connections without full metadata may be reported as blocked or stealth-blocked.
+
+## Troubleshooting Missing or Unexpected Data
+
+### Step 1: Verify Extension Installation and Permissions
+
+- Confirm uBO Scope is enabled in your browser.
+- Ensure permissions for `webRequest` and host permissions (`http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*`) are granted.
+- Check that the toolbar icon and badge appear correctly.
+
+### Step 2: Understand What is Visible
+
+- Open the uBO Scope popup interface and review allowed, blocked, and stealth domains.
+- Know that some network activity out of `webRequest` scope will not be visible.
+
+### Step 3: Consider Browser Variability
+
+- Different browsers and their versions provide varying levels of API coverage.
+- Browsers may also restrict extensions in incognito or private modes.
+
+### Step 4: Look for Conflicting Extensions or Security Software
+
+- Other extensions or security software may block or hide network requests before uBO Scope can observe them.
+- Temporarily disable other similar extensions to test.
+
+### Step 5: Reload Tabs and Clear Session Data
+
+- Reload the tab to refresh network activity.
+- uBO Scope stores session data; closing and reopening the tab or the browser may reset data.
+
+### Step 6: Check for Known Bugs and Updates
+
+- Refer to the official GitHub repository for known issues: [uBO Scope GitHub](https://github.com/gorhill/uBO-Scope)
+
+## Best Practices to Get Accurate Insights
+
+- Use uBO Scope alongside your primary content blocker for comparative analysis.
+- Avoid relying solely on block count metrics; focus on distinct third-party domains contacted.
+- Test with real-world websites rather than artificial "ad blocker test" pages.
+
+## Summary
+
+While uBO Scope offers valuable visibility into network connections from browser tabs, it cannot see beyond the constraints of the browser's APIs and security policies. Awareness of what is and isn't captured enables you to interpret reports effectively and troubleshoot situations where some expected network activity is absent.
+
+## Additional Resources
+
+- [What is uBO Scope?](https://docs.example.com/overview/introduction-and-purpose/what-is-ubo-scope)
+- [Key Features and Value Proposition](https://docs.example.com/overview/introduction-and-purpose/key-features-and-value)
+- [Analyzing Network Connections on a Webpage](https://docs.example.com/guides/workflows-and-real-world-usage/analyzing-network-connections)
+- [Interpreting Blocked and Stealth Connections](https://docs.example.com/guides/workflows-and-real-world-usage/interpreting-blocked-stealth-connections)
+- [Troubleshooting Common Installation Problems](https://docs.example.com/getting-started/onboarding-validation-troubleshooting/troubleshooting-common-issues)
+
+---
+
+## Appendix: Common Questions
+
+<AccordionGroup title="Troubleshooting FAQs">
+<Accordion title="Why does uBO Scope not show all network requests?">
+This is mainly due to limitations of the browser's `webRequest` API. Some requests are not emitted as events due to browser security, use of service workers, or requests performed outside the scope of monitored contexts.
+</Accordion>
+<Accordion title="What do stealth-blocked connections mean?">
+Stealth-blocked connections are those redirected by content blockers to prevent detection and avoid breaking webpages. They are shown separately to differentiate from outright blocked or allowed connections.
+</Accordion>
+<Accordion title="Is a lower badge count always better?">
+Generally yes; the badge shows the number of distinct third-party domains contacted. Fewer third-party connections usually indicate better privacy. However, the context matters and not all third parties are harmful.
+</Accordion>
+<Accordion title="Can uBO Scope monitor network requests made by background scripts or service workers?">
+No. uBO Scope focuses on network requests initiated by the webpage/tab context as reported via the `webRequest` API. Requests initiated by service workers or background scripts might not be captured.
+</Accordion>
+</AccordionGroup>
+
+## Understanding Public Suffix List Implications
+
+uBO Scope uses the Public Suffix List (PSL) to aggregate and identify domains accurately. Some domains might appear aggregated or counted based on PSL rules to reflect meaningful third-party distinctions.
+
+## Troubleshooting Checklist
+
+- Confirm browser version supports required API features
+- Verify extension permissions and host access
+- Check for other extensions interference
+- Test on known websites with predictable network behavior
+- Restart browser and reload tabs
+- Refer to official GitHub issues for bugs and fixes
+
+## Contact & Support
+
+For ongoing support, file issues or raise questions on the official GitHub page: https://github.com/gorhill/uBO-Scope
+
+---
