@@ -1,0 +1,217 @@
+---
+title: "Diagnosing Allowed, Blocked, and Stealth Requests"
+description: "Master advanced troubleshooting by differentiating between allowed, blocked, and stealth-blocked requests. Learn how to investigate discrepancies between visible and detected connections and understand limitations based on the browser’s webRequest API coverage."
+---
+
+# Diagnosing Allowed, Blocked, and Stealth Requests
+
+## Overview
+
+This guide empowers you to master advanced troubleshooting with uBO Scope by differentiating network requests by their outcome categories: allowed, blocked, and stealth-blocked. You will learn how to investigate why certain connections appear in your monitoring interface and others do not, uncovering hidden discrepancies in network activity. Additionally, this guide explains inherent limitations imposed by browser APIs, specifically the coverage of the `webRequest` API, which impacts what uBO Scope can detect.
+
+By following this guide, you can confidently interpret uBO Scope data, diagnose anomalies between visible page requests and detected connections, and resolve common misunderstandings related to the network monitoring results.
+
+---
+
+## Prerequisites
+
+- uBO Scope must be installed and active on your supported browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+- Basic familiarity with the uBO Scope popup interface, including how to open it and interpret connection categories.
+- Understanding of core uBO Scope concepts such as third-party servers and connection outcomes (covered in [Core Concepts & Terminology](../overview/introduction-core-concepts/core-concepts-terminology.md)).
+- Access to a webpage with network activity to test and observe connections.
+
+---
+
+## Expected Outcome
+
+After completing this guide, you will be able to:
+
+- Identify and distinguish allowed, blocked, and stealth-blocked network requests in uBO Scope.
+- Investigate discrepancies when expected connections do not appear.
+- Recognize browser limitations affecting network request visibility.
+- Apply practical troubleshooting steps to clarify network connection reports.
+
+## Time Estimate
+
+Approximately 10-15 minutes.
+
+## Difficulty Level
+
+Intermediate
+
+---
+
+## Understanding Request Categories
+
+uBO Scope categorizes network requests observed in the current browser tab into three distinct groups:
+
+- **Allowed Requests:** Connections to third-party domains that were successfully made and not blocked by any content blocker.
+- **Blocked Requests:** Requests explicitly blocked by content blockers or that failed due to errors.
+- **Stealth-Blocked Requests:** Requests where the blocker performed stealth blocking, typically involving silent redirections or other techniques to prevent detection.
+
+These categories are represented in the popup interface under their respective headings, each listing domains and counts indicating how many requests were made to those domains.
+
+---
+
+## Step-by-Step Diagnostic Workflow
+
+<Steps>
+<Step title="Open the uBO Scope Popup Interface">
+Open the uBO Scope popup by clicking its toolbar icon while viewing the webpage you want to analyze.
+
+You will see the domain of the current tab displayed prominently along with the summary count of connected domains.
+</Step>
+<Step title="Review Connection Categories">
+Observe the three lists labeled “not blocked,” “stealth-blocked,” and “blocked.”
+
+Each section lists domains along with the number of connections counted.
+
+This gives you an immediate overview of the network activity outcome.
+</Step>
+<Step title="Compare with Expected Network Activity">
+If you notice that some third-party domains suspected of being connected are missing from these lists, prepare to investigate:
+
+- Check if these domains actually reflect in the browser network panel or developer tools.
+- Understand the nature of those requests and the contexts they occur.
+</Step>
+<Step title="Check Browser `webRequest` API Coverage Limitations">
+uBO Scope relies on browser `webRequest` API to detect network requests.
+
+Note the following that can cause missing requests:
+
+- Certain requests may not be observable if browsers or extensions do not expose them via this API.
+- Websocket and other specific protocols may have varying support depending on the browser.
+- Network activity initiated outside the main frame or those not intercepted by content-blocking APIs may be undetectable.
+
+Review your browser version, permissions, and known API coverage (refer to system requirements in [System Requirements](../getting-started/install-launch-validate/system-requirements.md)).
+</Step>
+<Step title="Use uBO Scope to Diagnose Discrepancies">
+Leverage the detailed domain counts to cross-analyze the allowed, blocked, and stealth connection lists:
+
+- Domains appearing only in stealth or blocked sections indicate filtering or blocking actions.
+- Missing domains may indicate limitations or network requests not exposed to `webRequest`.
+- Redirects often fall under stealth blocking and should be investigated accordingly.
+</Step>
+<Step title="Interpret Count Variations and Request Contexts">
+Consider that domain counts shown represent distinct requests:
+
+- An unusually high count for a domain means multiple requests were made.
+- A domain may be allowed but frequently redirected stealthily—this appears in multiple sections.
+- Understand that counts reflect monitoring for the tab currently inspected.
+</Step>
+<Step title="Refresh or Reload Page to Trigger New Monitoring">
+Action network changes by reloading the webpage to generate fresh connection data.
+
+After reload, open uBO Scope popup to validate that data correctly reflects expected request flows.
+</Step>
+<Step title="Consult Troubleshooting Resources if Needed">
+If discrepancies persist despite correct browser and extension setup:
+
+- Verify installation and permissions using [Troubleshooting Setup Issues](../getting-started/install-launch-validate/troubleshooting-setup.md).
+- Ensure browser and extension versions meet requirements.
+- Review known limitations reported in the core [System Architecture and Data Flow](../overview/architecture-features-integration/system-architecture.md) documentation.
+</Step>
+</Steps>
+
+---
+
+## Practical Tips and Best Practices
+
+- **Start with the Tab's Main Host:** Concentrate first on connections related to the tab domain and its direct third-party contacts.
+- **Use Consistent Test Sites:** Pick stable and well-known web pages for testing to avoid noisy or synthetic test sites that generate misleading request patterns.
+- **Be Wary of Redirects:** Redirects logged as stealth-blocked can complicate tracing actual request success.
+- **Cross-Reference with Browser Developer Tools:** Compare uBO Scope data against the browser’s built-in network panel to detect hidden or missing requests.
+- **Keep Browser Updated:** Browser API improvements may affect request visibility; stay updated for the best accuracy and coverage.
+
+---
+
+## Common Issues and Troubleshooting
+
+<AccordionGroup title="Common Diagnostic Issues">
+<Accordion title="Expected Connections Missing from the Allowed List">
+Check if the requests are:
+
+- Made outside of the scope of the `webRequest` API.
+- Network requests started by workers, service workers, or plugins that uBO Scope cannot observe.
+- Using protocols unsupported by the browser's API permission settings.
+
+Validate browser permissions and extension access according to your browser’s documentation.
+</Accordion>
+<Accordion title="Blocked Requests Not Showing in the Blocked List">
+Sometimes a blocked request may not appear due to:
+
+- Timing issues in request interception and reporting.
+- Network errors causing requests to silently fail without explicit blocking.
+- Interference by other extensions or privacy settings hiding some requests.
+
+Try disabling other extensions temporarily and check uBO Scope operation.
+</Accordion>
+<Accordion title="Stealth Requests Count Discrepancies">
+Stealth-blocked requests can be tricky to interpret because they involve silent redirects or filtering that hides blocking from the webpage.
+
+Remember:
+
+- They reflect network activity intercepted but masked by blockers.
+- A high count of stealth-blocked domains can indicate aggressive blocking policies.
+- Count multiple reloads and scenarios to confirm consistent results.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## How uBO Scope Detects Request Outcomes
+
+uBO Scope uses browser webRequest API listeners for network events:
+
+- `onBeforeRedirect` marks a request as stealth-blocked.
+- `onErrorOccurred` marks a request as blocked due to failure or explicit blocking.
+- `onResponseStarted` marks a request as allowed if it succeeded with a valid response.
+
+The extension aggregates requests per tab, extracting hostnames and mapping domains using the public suffix list for accuracy.
+
+Requests are classified dynamically during processing, allowing the popup interface to categorize domains with counts accurately.
+
+---
+
+## Additional Resources
+
+- [Understanding the Popup Interface](../guides/core-usage/understanding-the-popup.md) — Learn how to read the detailed popup breakdown.
+- [Interpreting the Toolbar Badge Count](../guides/core-usage/interpreting-badge-count.md) — Understand the significance of badge numbers.
+- [System Architecture and Data Flow](../overview/architecture-features-integration/system-architecture.md) — Deep dive into internal monitoring mechanisms.
+- [Troubleshooting Setup Issues](../getting-started/install-launch-validate/troubleshooting-setup.md) — Resolve common installation or visibility problems.
+
+---
+
+## Next Steps
+
+After mastering diagnosing request categories:
+
+- Continue to explore [Debunking Content Blocker Myths with uBO Scope](../guides/advanced-usage/myth-busting-content-blockers.md) for insightful use cases.
+- Filter list maintainers can leverage [uBO Scope for Filter List Maintainers](../guides/advanced-usage/filter-list-maintainer-tasks.md) for auditing tasks.
+- Practice real-world troubleshooting by monitoring different websites and comparing with network developer tools.
+
+---
+
+<Check>
+Mastering the diagnosis of allowed, blocked, and stealth requests enhances your ability to interpret privacy and content-blocking effectiveness on any web page.
+</Check>
+
+---
+
+## Appendix: Key Technical Notes
+
+This page focuses on what users can achieve with the Diagnosing Allowed, Blocked, and Stealth Requests page. It does not delve into code implementation except where relevant to user understanding of monitoring limitations.
+
+The browser APIs and permissions determine the scope, and some network requests initiated by pages may not be captured due to technical constraints.
+
+---
+
+**For full technical context and source code, review:**
+
+- uBO Scope repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Background service script (`background.js`) for network request aggregation
+- Popup script (`popup.js`) for UI rendering
+
+These files illustrate how categories are assigned and how the extension maintains counts.
+
+---
