@@ -1,0 +1,148 @@
+---
+title: "Architecture Overview & Data Flow"
+description: "Introduces a simple architecture diagram and descriptive text explaining how uBO Scope captures, processes, and presents network request data per browser tab. Users learn about the roles of the background script, popup, and badge—along with the high-level flow from observation to user-visible result."
+---
+
+# Architecture Overview & Data Flow
+
+## Understanding How uBO Scope Captures and Presents Network Request Data
+
+Every time you browse the web, countless network requests quietly occur behind the scenes—connecting to various servers, some essential, others potentially invasive. **uBO Scope** shines a spotlight on these connections, giving you clear visibility into what third-party servers your browser contacts in real time.
+
+This page introduces the core architecture of uBO Scope and explains the flow of data from the moment a network request is made in your browser to when you see summarized insights directly in the extension's interface. By understanding this flow, you gain a stronger grasp of how uBO Scope serves you reliable, actionable privacy information.
+
+---
+
+## High-Level Overview
+
+uBO Scope operates seamlessly within your browser as an extension built with modern Web Extension APIs. Its components work together to observe network activity, process data efficiently, store session details, and present you with digestible summaries per browser tab.
+
+The main pieces of uBO Scope’s architecture include:
+
+- **Background Script (Service Worker)**
+- **Popup Interface**
+- **Toolbar Badge**
+
+Each plays a distinct role in capturing, handling, and displaying network request outcomes.
+
+### 1. Background Script – The Watchful Observer
+
+The heart of uBO Scope is the background script running as a service worker. It listens closely to all web requests initiated by any tab through the browser's `webRequest` API, observing their outcomes:
+
+- **Success:** When a request reaches a remote server successfully.
+- **Redirect:** When a request is redirected to another URL.
+- **Error:** When a connection attempt fails or is blocked.
+
+The background script collects and classifies these events by tab, grouping connections by their domain and hostname. It maintains an in-memory map storing detailed counts of allowed, stealth-blocked, and blocked network requests for each active tab.
+
+To optimize performance, it batches incoming network event records into a queue, processing them every second, updating session data, and preparing the data for display.
+
+### 2. Popup Interface – Real-Time Insight Display
+
+When you click the uBO Scope icon, the popup interface springs to life. It:
+
+- Sends a request to the background script to get the latest network connection data for the active tab.
+- Receives this serialized data, deserializes it, and renders it inside the popup.
+- Separates domains into categories such as "not blocked", "stealth-blocked", and "blocked".
+- Shows counts of distinct domains, providing you with a concise snapshot of your network exposure per tab.
+
+### 3. Toolbar Badge – At-a-Glance Awareness
+
+Even without opening the popup, the extension icon badge shows the number of distinct third-party domains your current tab connected to without being blocked. This badge count updates promptly as new requests succeed, giving you instant awareness of your network exposure.
+
+---
+
+## User-Focused Data Flow
+
+Below is a simplified visualization of how uBO Scope handles network requests—from detection to display.
+
+```mermaid
+flowchart TD
+  A[User Loads or Interacts with Webpage] --> B[Browser Initiates Network Requests]
+
+  subgraph Background Script
+    B -->|"Observes requests via webRequest API"| C[Event Listener Records Request Outcomes]
+    C --> D[Queue Incoming Request Events]
+    D -->|"Batch processing every 1 second"| E[Update Tab-Specific Maps: Allowed, Stealth, Blocked]
+    E --> F[Save Session Data]
+    E --> G[Update Toolbar Badge Count]
+  end
+
+  subgraph Popup Interface
+    H[User Clicks Extension Icon] --> I[Popup Sends Message: Request Tab Data]
+    I --> J[Background Script Responds with Serialized Tab Data]
+    J --> K[Popup Deserializes and Renders Data]
+  end
+
+  G -->|"User sees badge count update"| L[Toolbar Badge Displays Distinct Allowed Domains]
+  K -->|"User sees categorized domain lists"| M[Popup Displays Detailed Domain Connection Summary]
+
+  classDef background fill:#e3f2fd,stroke:#2196f3,stroke-width:1px;
+  class Background Script background;
+
+  classDef popup fill:#e8f5e9,stroke:#43a047,stroke-width:1px;
+  class Popup Interface popup;
+
+```
+
+---
+
+## Key Architectural Elements Explained
+
+| Component           | Purpose                                                                                      | User Impact                                      |
+|---------------------|----------------------------------------------------------------------------------------------|-------------------------------------------------|
+| **Background Script**| Observes all network requests, categorizes outcomes, stores state per tab, updates badge.    | Transparency into every request, efficient data handling.
+|
+| **Popup Interface**  | Requests detailed connection data for the active tab, formats and displays it to the user. | Clear user interface showing domain-level insights.
+|
+| **Toolbar Badge**    | Provides quick, real-time counts of distinct allowed third-party domains per tab.            | Instant privacy awareness without interaction.
+
+---
+
+## Why You Should Care About This Architecture
+
+- **Reliability:** The background script ensures no network request goes unnoticed, capturing even elusive redirects and errors accurately.
+- **Performance:** By batching event handling and leveraging session storage, the extension remains responsive and lightweight.
+- **Clarity:** Categorizing domains by allowed, stealth-blocked, or blocked helps users quickly assess their browsing privacy.
+- **Contextual:** Storing information per tab aligns with how users operate, allowing focused investigations on a single webpage.
+
+This architecture underpins the accurate, easy-to-understand data you rely on when using uBO Scope.
+
+---
+
+## Practical Tips and Best Practices
+
+- To get the most out of uBO Scope, monitor the toolbar badge as you navigate sites to instantly sense network exposure.
+- Open the popup frequently to explore detailed domain connections and see which third parties are truly active.
+- Understand that the badge count reflects only third-party connections that were successful and distinct; it doesn't count repeated requests to the same domain.
+- Remember that network requests made outside the browser's webRequest API scope (e.g., some browser internals) aren’t visible to uBO Scope.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Network Data Capture">
+<Accordion title="Why does the badge count sometimes not update immediately?">
+The background script batches network event processing every second to optimize performance. Slight delays in badge updates are normal.
+</Accordion>
+<Accordion title="I see no data for some tabs—why?">
+uBO Scope can only collect data for tabs where network requests occur and are visible to the webRequest API. Internal browser pages or extensions may not report data.
+</Accordion>
+<Accordion title="What does 'stealth-blocked' mean in the popup?">
+This category represents network redirects and other subtle blocking behaviors reported by the browser, helping you understand complex request outcomes.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+Now that you understand how uBO Scope processes and presents network request data, dive into these complementary topics:
+
+- [What Is uBO Scope?](/overview/intro-basics/what-is-ubo-scope) — To ground yourself in the product’s purpose
+- [Key Benefits & Value Proposition](/overview/intro-basics/value-prop-benefits) — To learn why this architecture matters to your privacy
+- [Interpreting Connection Insights](/guides/getting-started-essentials/interpreting-connection-insights) — To master reading the data you see
+
+Start observing connections on your favorite websites and leverage this knowledge to enhance your browsing privacy today.
+
+---
