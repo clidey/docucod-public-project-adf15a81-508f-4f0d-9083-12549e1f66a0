@@ -1,0 +1,169 @@
+---
+title: "Understanding the Toolbar Badge & Count"
+description: "Explains how uBO Scope's toolbar icon badge reflects the number of unique third-party remote servers contacted by your browser, why a lower count is usually better, and how to connect this metric to privacy and security best practices."
+---
+
+# Understanding the Toolbar Badge & Count
+
+## Workflow Overview
+
+The toolbar badge on the uBO Scope extension icon provides a real-time count of the unique third-party remote servers contacted by your browser on the active tab. This guide helps you understand how this badge count is calculated, why a lower number is beneficial for your privacy, and how to interpret this metric within your browsing context.
+
+### Prerequisites
+- uBO Scope installed and active in your browser
+- A webpage loaded on the active tab with network activity
+- Basic familiarity with what third-party connections represent
+
+### Expected Outcome
+By the end of this guide, you will:
+- Understand what the toolbar badge number represents
+- Learn why it is a key privacy indicator
+- Know how changes in the badge count relate to your browsing and content blocker behavior
+
+### Time Estimate
+About 5 minutes for reading and understanding
+
+### Difficulty Level
+Beginner to Intermediate
+
+---
+
+## What the Toolbar Badge Represents
+
+The toolbar badge displays the **count of distinct third-party remote servers** connected to by the current webpage loaded in your active browser tab. 
+
+- **Third-party remote server**: Any server different from the webpage’s main domain that your browser attempts to connect to.
+- The extension categorizes connections as **allowed**, **blocked**, or **stealth-blocked**, but the badge focuses on those **allowed** connections.
+
+### Why a Lower Count is Usually Better
+
+A lower distinct third-party server count means:
+- Fewer external entities have access or can track your browsing on that page,
+- Reduced privacy exposure and potential tracking,
+- Less performance overhead from multiple external resource requests.
+
+<u>Note:</u> Sometimes, external services like Content Delivery Networks (CDNs) are necessary and legitimate, which could result in low but non-zero counts.
+
+---
+
+## How uBO Scope Calculates the Badge Count
+
+1. **Network Request Observation:**
+   uBO Scope continuously observes all network requests your browser makes using browser APIs like `webRequest`. 
+
+2. **Tab-Specific Data:**
+   It tracks connections separately for each tab to ensure the badge reflects the active webpage’s third-party connections.
+
+3. **Domain Normalization:**
+   Each hostname from network requests is translated into its base domain using a public suffix list to group subdomains correctly (e.g., `cdn.example.com` resolves to `example.com`).
+
+4. **Counting Unique Domains:**
+   Only **distinct** third-party domains from allowed requests are counted.
+
+5. **Badge Update:**
+   The count updates dynamically and is displayed as a numeric badge on the toolbar icon for instant visibility.
+
+---
+
+## Interpreting the Badge Number
+
+- **No badge / empty badge:** No third-party remote connections were detected or allowed on the page.
+- **Low numbers (1-5):** Indicates minimal third-party exposure, generally desirable for privacy.
+- **High numbers (10+):** Suggests many external servers are contacted, which may increase privacy risks.
+
+### Practical Examples
+- Visiting a simple news article might show a badge count of 3 (e.g., CDN, analytics, ads).
+- A social media page could show 20+ third-party servers due to multiple embedded widgets.
+
+---
+
+## Best Practices for Users
+
+- **Aim to keep the badge count low:** Consider disabling or blocking unnecessary third-party content when privacy is a priority.
+- **Use the popup panel:** Click the toolbar icon to open the popup panel and see detailed categories of connections.
+- **Regularly audit connections:** Review which domains appear repeatedly and investigate their legitimacy.
+- **Understand necessary third parties:** Not all third-party connections are harmful. CDNs or authentication services are often required.
+
+<Tip>
+Remember, the badge reflects allowed connection domains, not just the number of blocked domains. A content blocker that effectively reduces allowed third parties will result in a lower badge count.
+</Tip>
+
+---
+
+## Troubleshooting Common Badge Issues
+
+### Badge Does Not Update or Shows Incorrect Count
+- **Reload the page:** The badge updates only based on active network requests in the tab.
+- **Ensure uBO Scope permissions are active:** The extension needs permission to observe web requests (`webRequest` permission).
+- **Verify you are on the active tab:** The badge count reflects only the current active tab.
+- **Conflicting extensions:** Other privacy or content blockers might interfere with network request monitoring.
+
+### Badge Always Empty
+- Extension might not be initialized correctly.
+- Browser might restrict `webRequest` API usage.
+- Check permissions and reinstall if necessary.
+
+<Warning>
+Browsers occasionally update APIs or permissions; keep your extension up-to-date to ensure proper badge behavior.
+</Warning>
+
+---
+
+## Summary
+
+The uBO Scope toolbar badge is a powerful, at-a-glance privacy indicator representing the number of unique allowed third-party remote servers connected by the active webpage. Keeping this count low is a key sign of reduced third-party tracking and enhanced privacy.
+
+By understanding how this count is calculated and how to interpret it, you empower yourself to audit, evaluate, and improve your browser privacy posture effectively.
+
+---
+
+## Next Steps & Related Documentation
+
+- **Using the Popup Panel: Reading Connection Summaries** — dive deeper into categorized domain lists and understand allowed, stealth-blocked, and blocked connections.
+- **Auditing and Reducing Third-Party Connections** — practical strategies to minimize third-party exposure.
+- **Debunking Misleading Ad Block Metrics and Tests** — learn why badge counts provide real insights compared to misleading metrics.
+- **Core Terminology and Concepts** — familiarize yourself with essential terms for context.
+
+You can find all these guides in the Getting Started and Guides sections of the documentation.
+
+
+---
+
+## Code Reference from Background Process (For Expert Users)
+
+The badge count is set programmatically by tracking unique allowed domains per tab:
+
+```javascript
+function updateTabBadge(tabId) {
+    if ( tabId === -1 ) { return; }
+    const tabDetails = session.tabIdToDetailsMap.get(tabId);
+    if ( tabDetails === undefined ) { return; }
+    const count = tabDetails.allowed.domains.size;  // Count unique allowed domains
+    browser.action.setBadgeText({
+        tabId,
+        text: count !== 0 ? `${count}` : ''
+    }).catch(() => {});
+}
+```
+
+This logic ensures that the badge always displays the current unique count or is hidden when zero.
+
+---
+
+## Visual Summary Diagram
+
+```mermaid
+flowchart TD
+    Start["Page Loads in Tab"] --> Monitor["uBO Scope Monitors Network Requests"]
+    Monitor --> ExtractHost["Extract Hostnames from Requests"]
+    ExtractHost --> MapDomain["Map to Base Domains"]
+    MapDomain --> Categorize["Categorize Outcomes: Allowed, Blocked, Stealth"]
+    Categorize --><<badgeCount>> CountAllowed["Count Unique Allowed Domains"]
+    CountAllowed --> UpdateBadge["Update Toolbar Badge Number"]
+    UpdateBadge --> End["User Sees Real-time Privacy Indicator"]
+
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:1.5px;
+    class Monitor,ExtractHost,MapDomain,Categorize,CountAllowed,UpdateBadge process;
+```
+
+This diagram visualizes the flow from page load to badge update.
