@@ -1,0 +1,182 @@
+---
+title: "The Popup: Navigating Your Results"
+description: "Walks through the popup interface, explaining each section: how allowed, stealth-blocked, and blocked domains are presented, and how to read the domain list. Includes examples and screenshots for clarity."
+---
+
+# The Popup: Navigating Your Results
+
+## Unlock Insight Into Your Browser's Connections
+
+When you click the uBO Scope toolbar icon, the popup interface provides a concise yet powerful snapshot of all remote server connections your browser attempted for the current active tab. This popup breaks down the network calls by their outcome categories — allowed, stealth-blocked, and blocked — giving you crystal-clear visibility into how connections are handled on each website you visit.
+
+### What You'll See Immediately
+- The exact hostname and domain of the active tab, presented clearly in Unicode for easy reading.
+- A summary count of distinct connected domains, so you quickly understand the scope of third-party communication.
+- Three distinct sections, each listing domains grouped by their connection status:
+  - **Not Blocked (Allowed)**: Domains from which resources were successfully fetched.
+  - **Stealth-Blocked**: Domains where requests were silently blocked or redirected, avoiding detection by the website.
+  - **Blocked**: Domains where requests failed due to blocking (e.g., by other filters or network issues).
+
+### Who Will Benefit
+- Users who want quick, transparent insight into which remote servers their browser connects to on any page.
+- Privacy-conscious individuals seeking to verify the effectiveness of their content blocker.
+- Filter list maintainers who analyze real-world domain interactions for optimized blocking rules.
+
+---
+
+## Understanding the Popup Interface
+
+### Tab Hostname and Domain Display
+At the top of the popup, you find the active tab's hostname split into two parts:
+- The subdomain portion (if any) is shown first (e.g., 'www').
+- The main domain, shown next, is processed with Punycode decoding for internationalized domain names.
+
+If the hostname matches the domain exactly, only the domain is shown. This clear separation helps you quickly identify the context for the connection data below.
+
+### Summary Section: Domains Connected
+Centered below the hostname, the summary presents the total count of distinct third-party domains connected for the active tab. This number reflects only allowed domains — those from which requests succeeded — providing a direct measure of third-party interaction surface.
+
+### Outcome Sections: Domain Lists by Status
+The popup divides connected domains into three outcome-based sections. Each uses distinct coloring cues for clarity (green for allowed, red for blocked and stealth-blocked) and provides counts per domain, presented as row entries.
+
+**Each section includes:**
+- A header clearly naming the category ("not blocked", "stealth-blocked", "blocked").
+- A vertically scrollable list of domains observed in that category.
+- For each domain, the exact Unicode domain name and the count of connection attempts recorded.
+
+#### Not Blocked
+These are domains your browser connected to without interruption. Typical examples include first-party servers and trusted third parties (e.g., CDNs). The count next to each domain reflects the number of successful requests.
+
+#### Stealth-Blocked
+Domains in this list represent connections that were silently blocked or redirected to avoid detection by the visited page. These stealth blocking events typically indicate enhanced content blocking features or redirection happening behind the scenes.
+
+#### Blocked
+This section lists domains where connection attempts failed and were blocked outright. These may result from explicit filter list rules or technical failures preventing successful communication.
+
+### Reading the Domain List
+Each domain is presented alongside a numeric badge representing how many times requests to that domain occurred. Domains in all sections are sorted alphabetically for easy scanning.
+
+### Example Scenario
+Imagine visiting a news site. The popup might show:
+- The domain “news.example” as the main domain.
+- Allowed domains such as “cdn.examplecdn.com” with counts representing assets fetched.
+- Stealth-blocked domains like “tracking.adserver.net” that were redirected or silently dropped.
+- Blocked domains like “malicious.site” prevented outright.
+
+This immediate, categorized breakdown helps users see what third parties their browser talks to and how effectively unwanted connections are blocked or stealthy-filtered.
+
+---
+
+## Practical Tips for Using the Popup
+
+- **Refresh the Popup**: The popup dynamically updates when you open it, reflecting the latest tab data. If connections change, re-opening the popup will always show fresh results.
+
+- **Interpreting Counts**: Higher counts next to domains imply repeated requests, while lower counts may indicate single resource fetches.
+
+- **Unicode Domains**: Internationalized domain names are converted for readability. This prevents confusion with punycode.
+
+- **Empty Sections**: If any outcome category has no domains for the current tab, that section automatically hides to keep the interface clean.
+
+- **Scrolling**: If many domains are listed, sections scroll independently within the popup.
+
+---
+
+## Troubleshooting and Common Questions
+
+<AccordionGroup title="Troubleshooting Popup Display Issues">
+<Accordion title="Popup Shows 'NO DATA' or Empty Lists">
+This indicates that the extension did not receive connection data for the active tab. Possible causes include:
+- The active tab has no recorded network requests yet.
+- Permissions issue or browser API limitations.
+- Extension initialization is still in progress.
+
+Try refreshing the webpage or switching tabs and reopening the popup.
+</Accordion>
+<Accordion title="Domain Counts Seem Low or Odd">
+Remember that the popup only counts distinct domains your browser attempted to communicate with, categorized by request outcome. Not all requests are counted; very short-lived or background requests might be missing due to browser API coverage.
+
+Ensure your content blocker or any proxy settings are not interfering with normal request flows.
+</Accordion>
+<Accordion title="Unexpected Domains Appearing Allowed or Stealth-Blocked">
+Some legitimate third-party content delivery networks and analytics services commonly appear here. Investigate counts and domains using filter list references or known trusted services.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary and Next Steps
+
+The uBO Scope popup is your real-time dashboard for understanding what connections your browser makes for the current active tab. By clearly separating domains into allowed, stealth-blocked, and blocked categories — and showing attempt counts — it empowers you to make informed privacy decisions.
+
+For deeper understanding of counts and badge indicators, consult the [Interpreting the Toolbar Badge Count](../interpreting-badge-count) documentation. If you wish to observe connections across different tabs or delve into analysis, explore the guides on [Viewing Domain Connections with the Popup](../../guides/getting-started-usage/viewing-domain-connections) and [Analyzing Stealth and Blocked Domains](../../guides/advanced-use-analysis/analyzing-stealth-and-blocked-domains).
+
+Ready to begin? Click the uBO Scope icon during your next browsing session and explore how seamless, transparent network monitoring can reinforce your web privacy.
+
+---
+
+## Source and Implementation Notes
+
+This popup is rendered via a clean HTML interface styled with scoped CSS for clarity and ease of reading. It leverages the browser's `webRequest` API to collect connection data, segmented and summarized in the background script, then sent asynchronously to the popup script.
+
+The lists of domains and counts are dynamically generated from current tab data, using an HTML `<template>` element for consistent row rendering. Unicode domain decoding is handled through Punycode to ensure intuitive display.
+
+
+---
+
+## Example: Popup Interface Layout
+
+```html
+<h2 id="tabHostname"><span>www.</span><span>example.com</span></h2>
+<section id="summary">
+  domains connected: <span>42</span>
+</section>
+<section class="outcome allowed">
+  <h3>not blocked</h3>
+  <div class="domains">
+    <div class="row"><span class="domain">cdn.examplecdn.com</span><span class="count badge">18</span></div>
+    <div class="row"><span class="domain">static.example.com</span><span class="count badge">12</span></div>
+  </div>
+</section>
+<section class="outcome stealth">
+  <h3>stealth-blocked</h3>
+  <div class="domains">
+    <div class="row"><span class="domain">tracking.adserver.net</span><span class="count badge">5</span></div>
+  </div>
+</section>
+<section class="outcome blocked">
+  <h3>blocked</h3>
+  <div class="domains">
+    <div class="row"><span class="domain">malicious.site</span><span class="count badge">7</span></div>
+  </div>
+</section>
+```
+
+This example illustrates the popup's clean, tiered domain presentation with distinct coloring not shown here but applied via CSS.
+
+
+---
+
+## See Also
+- [What is uBO Scope?](../introduction-product-value/what-is-ubo-scope) — Learn about uBO Scope’s mission and core functionality.
+- [Interpreting the Toolbar Badge Count](../quickstart-feature-tour/interpreting-badge-count) — Understand what the badge number signifies.
+- [Analyzing Stealth and Blocked Domains](../../guides/advanced-use-analysis/analyzing-stealth-and-blocked-domains) — Dive deeper into stealth blocking implications.
+
+
+---
+
+## Source Code
+
+Explore the implementation details:
+- Popup interface and rendering: [`js/popup.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+- Popup HTML and layout: [`popup.html`](https://github.com/gorhill/uBO-Scope/blob/main/popup.html)
+- Styling for the popup: [`css/popup.css`](https://github.com/gorhill/uBO-Scope/blob/main/css/popup.css)
+
+Further background processing and data aggregation logic can be reviewed in [`js/background.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js).
+
+
+---
+
+_This page focuses exclusively on understanding and reading the uBO Scope popup interface and interpreting its domain result listings, ensuring you’re equipped to make the most of the extension’s instant insights._
+
+
+
