@@ -1,0 +1,204 @@
+---
+title: "How uBO Scope Monitors Network Requests"
+description: "Learn how uBO Scope leverages the browser's webRequest API to monitor attempted and successful network requests to third-party remote servers. Explains the limitations of network visibility, cross-browser consistency, and how badge counts relate to real-world privacy risk."
+---
+
+# How uBO Scope Monitors Network Requests
+
+uBO Scope provides a transparent window into the network activity of your browser by leveraging the browser’s native `webRequest` API. This enables real-time monitoring of all attempted and successful network requests, particularly those connecting to third-party remote servers, which are a critical factor in assessing web privacy.
+
+---
+
+## 1. Overview: What uBO Scope Tracks
+
+At its core, uBO Scope is designed to:
+
+- **Capture all network requests** made by your browser, including redirects, successful connections, and errors.
+- **Classify these requests** into three distinct categories:
+  - **Allowed**: Requests that went through successfully.
+  - **Blocked**: Requests that failed or were explicitly blocked.
+  - **Stealth-blocked**: Redirected requests that were prevented from completing.
+
+By focusing on unique domains contacted, especially third-party domains, uBO Scope helps you understand the breadth of your browser’s network exposure.
+
+### Why Third-Party Domains Matter
+
+Third-party connections, often to trackers, CDNs, or ad servers, represent privacy risks and potential data leaks. uBO Scope counts the number of **distinct third-party remote servers** contacted to give you an accurate sense of your browsing footprint.
+
+---
+
+## 2. How uBO Scope Uses the webRequest API
+
+The extension listens to three critical network events through the browser's `webRequest` API:
+
+| Event               | Description                                                      |
+|---------------------|------------------------------------------------------------------|
+| `onBeforeRedirect`  | Triggered when a network request is about to be redirected       |
+| `onErrorOccurred`   | Triggered when a network request fails or is blocked             |
+| `onResponseStarted` | Triggered at the start of a successful response                   |
+
+These listeners feed into uBO Scope's internal logic, which records outcomes against each network request.
+
+### Event Processing Flow
+
+- **Redirects:** Marked as stealth-blocked, the system tracks when a request doesn’t complete due to redirection.
+- **Errors:** Classified as blocked requests, representing explicit failures or blocks.
+- **Successes:** Requests with a valid IP or status code are logged as allowed. If these conditions are not met, the success is downgraded to an error.
+
+This ensures accurate classification regardless of the underlying content blockers or DNS-level filtering active in your browser.
+
+---
+
+## 3. Tab-Level Aggregation and Real-Time Feedback
+
+uBO Scope maintains connection data aggregated by browser tab, allowing you to inspect the network activity on a per-tab basis. This approach offers actionable insights tailored to your browsing context.
+
+### What Happens Internally?
+
+- Each network request is tied to a tab ID.
+- The extension tracks domains and hostnames in each outcome category.
+- The badge on the extension icon reports the number of distinct **allowed** third-party domains per active tab.
+- The popup panel visually displays detailed connection data for that tab, broken down by allowed, stealth-blocked, and blocked domains.
+
+### Sample User Flow
+
+1. You navigate to a website.
+2. uBO Scope captures all network requests triggered by that page.
+3. The badge updates dynamically, displaying the count of unique allowed third-party domains.
+4. You click the extension icon to open the popup.
+5. The popup shows domains grouped by their connection outcome, giving you granular visibility.
+
+---
+
+## 4. Limitations and Cross-Browser Behavior
+
+While uBO Scope offers powerful visibility, it's important to understand its limitations:
+
+- **Only Network Requests Exposed via the webRequest API Are Visible:** Some browser platform internals or extensions might bypass `webRequest` or make network calls invisible to extensions, which uBO Scope cannot detect.
+- **Browser API Differences:** Though the extension supports Chromium-based, Firefox, and Safari browsers, differences in API availability or network request processing may affect data granularity.
+- **No API Coverage for Network Requests Outside the Tab:** Requests made outside the active browsing context (e.g., background service workers, other apps) are outside the scope.
+
+Despite these restrictions, the extension provides consistent, actionable data about real, third-party server connections relevant to privacy.
+
+---
+
+## 5. Understanding the Badge Count
+
+The badge count on uBO Scope’s toolbar icon represents the current tab’s number of **distinct third-party domains that successfully allowed network requests**.
+
+### Why Is This Valuable?
+
+- **Lower is Better:** A lower count means fewer third-party servers are contacted, which typically indicates a smaller online footprint.
+- **Not a Block Counter:** The badge is not a block count; it does not measure how many requests were blocked.
+- **Misconceptions Cleared:** A content blocker that blocks more requests does not necessarily mean better privacy if it allows connections to many third-party domains.
+
+---
+
+## 6. Inspecting the Popup Panel
+
+When you open the extension popup, uBO Scope presents a detailed breakdown:
+
+- **Page Hostname:** Displayed prominently, including separated subdomain and registered domain using Punycode decoding for internationalized domains.
+- **Summary:** Total count of unique domains contacted in the current tab.
+- **Categories:** Separate sections for Not Blocked, Stealth-Blocked, and Blocked domains, showing domain names and connection counts.
+
+This design helps you quickly identify which third-party servers are interacting with the page and how your content blocker or network policies impact these connections.
+
+---
+
+## Example: Understanding a Network Request Outcome
+
+Consider a network request made by the current tab to `cdn.example.com`:
+
+- The `hostnameFromURI` utility extracts the hostname from the request URL.
+- Using the public suffix list, `domainFromHostname` computes the registered domain, e.g., `example.com`.
+- Depending on the outcome event (`success`, `error`, or `redirect`), the request is categorized and counted under Allowed, Blocked, or Stealth-blocked.
+- The domain count increments accordingly.
+
+---
+
+## 7. Practical Tips for Users
+
+- **Use the Badge to Gauge Privacy Exposure:** Monitor the distinct allowed domain count as an indicator of how many third-party servers your browsing currently touches.
+- **Open the Popup for Details:** Identify exact domains and how connections are classified.
+- **Refresh the Page if Data Seems Missing:** Sometimes network activity is still catching up.
+- **Remember the Limitations:** Not all connections can be tracked due to platform constraints.
+
+---
+
+## 8. Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Network Monitoring Issues">
+<Accordion title='Badge Count Not Updating'>
+If the badge count does not update:
+
+- Make sure the extension has the necessary permissions.
+- Reload the active tab.
+- Confirm the browser version meets minimum requirements (Chrome 122+, Firefox 128+, Safari 18.5+).
+- Check for conflicts with other extensions using the `webRequest` API.
+</Accordion>
+
+<Accordion title='Popup Panel Shows "NO DATA" or Blank'>
+
+- Ensure you have an active tab loaded with a webpage.
+- Some local pages (`file://`, browser settings) have no network requests.
+- Try reloading the tab and reopening the popup.
+- Verify network activity is actually occurring (e.g., by interacting with the page).
+</Accordion>
+
+<Accordion title='Connections Not Classified Correctly'>
+
+- This might happen if the browser’s `webRequest` API is limited by browser settings or privacy modes.
+- Network requests triggered by service workers or native apps are invisible.
+- uBO Scope does not track non-http(s)/ws(s) protocols.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 9. Diagram of Network Request Monitoring Flow
+
+```mermaid
+flowchart TD
+
+  Start["Browser starts network request"] --> Capture["webRequest event listener"]
+
+  subgraph Events
+    Redirect["onBeforeRedirect"]
+    Error["onErrorOccurred"]
+    Success["onResponseStarted"]
+  end
+
+  Capture -->|If redirect| Redirect
+  Capture -->|If error| Error
+  Capture -->|If success| Success
+
+  Redirect --> CategorizeStealth["Mark as Stealth-Blocked"]
+  Error --> CategorizeBlocked["Mark as Blocked"]
+  Success --> CheckValid["Validate IP / Status"]
+  CheckValid -->|Valid| CategorizeAllowed["Mark as Allowed"]
+  CheckValid -->|Invalid| CategorizeBlocked
+
+  CategorizeAllowed & CategorizeBlocked & CategorizeStealth --> UpdateTabData["Update Tab Aggregation"]
+
+  UpdateTabData --> UpdateBadge["Update Toolbar Badge"]
+  UpdateTabData --> UpdatePopup["Update Popup Panel Data"]
+
+  UpdateBadge --> End["User sees updated badge count"]
+  UpdatePopup --> End
+
+  classDef event fill:#f9f,stroke:#333,stroke-width:2px;
+  class Redirect,Error,Success,event;
+```
+
+---
+
+## 10. Next Steps
+
+Now that you understand how uBO Scope captures and categorizes network requests, explore these topics to deepen your mastery:
+
+- [Understanding the Badge Count and Popup Panel](https://your-docs-domain/guides/interpreting-results/badge-and-popup-guide)
+- [Classification of Requests: Allowed, Blocked, and Stealth-Blocked](https://your-docs-domain/overview/core-concepts/classification-of-requests)
+- [Troubleshooting Common Setup Issues](https://your-docs-domain/getting-started/initial-usage-validation/common-setup-issues)
+
+By combining knowledge from these guides, you will maximize the benefit of uBO Scope and gain precise control over your network privacy.
