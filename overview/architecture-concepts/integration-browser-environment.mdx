@@ -1,0 +1,146 @@
+---
+title: "Integration & Browser Compatibility"
+description: "Outlines how uBO Scope integrates with popular browsers (Chromium, Firefox, Safari) and leverages native APIs for transparency across all blocking technologies. Touches on extension installation, platform support, and the implications of browser-based request reporting for real-world compatibility."
+---
+
+# Integration & Browser Compatibility
+
+## Bringing Transparency to All Major Browsers
+
+uBO Scope seamlessly integrates with leading browsers—Chromium-based browsers (like Google Chrome and Microsoft Edge), Mozilla Firefox, and Apple Safari—to provide you with transparent, real-time insight into all network connections initiated within your browsing sessions. This integration ensures that no matter where you use uBO Scope, your experience remains consistent, reliable, and tightly aligned with native browser capabilities.
+
+---
+
+## How uBO Scope Leverages Native Browser APIs
+
+uBO Scope is built on the power of the browser's native **`webRequest` API**, which reports on every network request initiated by pages you visit. Unlike many tools that rely solely on visible content or filter status, uBO Scope taps directly into this API to:
+
+- Track **all** attempted and successful connections to remote servers.
+- Categorize connection outcomes as **allowed**, **blocked**, or **stealth-blocked** regardless of the blocking technology in use.
+- Maintain an accurate count of distinct third-party servers contacted per tab.
+
+Because the `webRequest` API operates at the browser level, uBO Scope can provide comprehensive visibility even when content blocking happens upstream (such as DNS filtering or system-level blocking) or via other extensions. This guarantees authentic, unfiltered reporting of network activity.
+
+---
+
+## Supported Browsers and Platform Details
+
+| Browser        | Platform Support                  | Manifest Highlights                          | Notes on Integration                                                               |
+|----------------|---------------------------------|---------------------------------------------|------------------------------------------------------------------------------------|
+| **Chromium**   | Chrome, Edge, Brave, Opera       | Uses Manifest V3 with service worker background script (`/js/background.js`) | Requires minimum Chrome version 122.0, supports `webRequest` with enhanced capabilities. |
+| **Firefox**    | Desktop and Android Firefox      | Manifest V3 with `background` module script | Supports extended host permissions including WebSocket URLs for comprehensive tracking.
+|
+| **Safari**     | Safari 18.5 and newer            | Manifest V3 with module background script  | Integrates with Safari’s strict extension policies; targets newer versions only to leverage WebExtension API consistency.
+|
+
+All versions grant uBO Scope the necessary permissions:
+- `webRequest` and host permissions to monitor HTTP(s) and WebSocket(s) traffic
+- `storage` to maintain session data
+- `activeTab` for context awareness
+
+---
+
+## Extension Installation and Setup
+
+Installation packages are tailored for each platform to ensure compatibility:
+- The **`tools/make-package.sh`** script prepares platform-specific builds incorporating appropriate manifest files and assets.
+- The extension installs from official stores:
+
+  - [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+  - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+  
+  Safari users can install the extension following guidelines for Safari Web Extensions, considering the minimum version requirement.
+
+Upon installation, uBO Scope operates with minimal configuration, automatically collecting data and updating connection statistics visible through its toolbar badge and popup UI.
+
+---
+
+## Understanding Browser-Based Request Reporting Implications
+
+### What You Can Expect:
+- **Comprehensive Coverage:** All network connection attempts captured by the browser, independent of active content filters.
+- **Third-Party Connection Transparency:** Accurate identification of third-party remote servers contacted, providing actionable insights on privacy and performance.
+- **Consistent Metrics:** Metrics such as the badge count reliably reflect distinct connections rather than raw block counts.
+
+### Considerations and Limitations:
+- **API Reach:** Network traffic initiated outside the browser's `webRequest` scope (e.g., certain internal browser processes or some native apps) will not appear.
+- **Browser Behavior Differences:** Slight variations may occur between browsers due to differing implementations of the `webRequest` API and permissions.
+
+These implications underscore uBO Scope’s value in leveling the playing field—bringing unvarnished transparency to network activity across browsers and filtering technologies.
+
+---
+
+## Summary of Integration Workflow
+
+```mermaid
+flowchart TD
+  subgraph Browser
+    WRAPI["webRequest API"]
+    Storage["Browser Session Storage"]
+    Badge["Toolbar Badge"]
+    PopupUI["Popup User Interface"]
+    TabEvent["Tab Events"]
+  end
+
+  subgraph uBO_Scope
+    BackgroundScript["Background Script (background.js)"]
+  end
+
+  WRAPI -->|Reports network requests| BackgroundScript
+  BackgroundScript -->|Updates session data| Storage
+  BackgroundScript -->|Updates counts| Badge
+  BackgroundScript -->|Provides data| PopupUI
+  TabEvent --> BackgroundScript
+  PopupUI -->|User views data| Badge
+
+  classDef browser fill:#f9f,stroke:#333,stroke-width:2px
+  class Browser browser
+  class uBO_Scope fill:#bbf,stroke:#333,stroke-width:2px
+
+  class BackgroundScript,uBO_Scope
+  class WRAPI,Storage,Badge,PopupUI,TabEvent,Browser
+
+```
+
+This flow illustrates how native browser APIs feed critical data into uBO Scope’s background service, enabling real-time updates and user-facing insights.
+
+---
+
+## Practical Tips for Cross-Browser Use
+
+- **Keep Browsers Updated:** Ensure you use updated versions that support Manifest V3 and the necessary WebExtension APIs.
+
+- **Review Permissions Prompt:** During installation, review permissions carefully to confirm access to webRequest and host permissions.
+
+- **Understand Badge Counts:** A lower badge count indicates fewer distinct third-party connections, a positive sign for privacy.
+
+- **Use Popup UI for Details:** Open the extension’s popup to explore categorized connection outcomes (allowed, stealth-blocked, blocked) per domain.
+
+---
+
+## Troubleshooting Integration Issues
+
+If you notice discrepancies or missing data:
+
+- Verify that the extension has the necessary host permissions for all relevant domains.
+- Confirm that your browser version supports all required APIs.
+- Check for any conflicting extensions that might interfere with webRequest events.
+- Validate that the background service is running and not being evicted unexpectedly (notably in Chromium).
+
+For detailed troubleshooting, refer to [Troubleshooting Installation & Usage Issues](/getting-started/getting-using/troubleshooting).
+
+---
+
+## Next Steps
+
+To fully leverage uBO Scope after installation:
+
+- Explore the [Popup UI](/guides/getting-started-workflows/understanding-popup-ui) to analyze connection details.
+- Understand the meaning of badge counts with [Interpreting Toolbar Badge Counts and Metrics](/guides/getting-started-workflows/interpreting-badge-counts).
+- Learn how uBO Scope fits into broader privacy and filtering strategies by reviewing [What is uBO Scope?](/overview/introduction-fundamentals/what-is-ubo-scope).
+
+These guides will empower you to harness uBO Scope’s capabilities effectively across your preferred browser.
+
+---
+
+*For the complete architecture and technical insights, consult [System Architecture Overview](/overview/architecture-concepts/system-architecture).*
