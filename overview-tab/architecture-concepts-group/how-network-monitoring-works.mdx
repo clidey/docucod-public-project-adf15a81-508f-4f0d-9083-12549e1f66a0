@@ -1,0 +1,129 @@
+---
+title: "How Network Monitoring Works"
+description: "Explains, at a high level, how uBO Scope leverages the browser’s webRequest API to track and report both allowed and blocked connections—relying on direct observation rather than guesswork. Describes the product’s focus on actual network outcomes to provide reliable analytics unaffected by stealth-blocking techniques or DNS-based blocking."
+---
+
+# How Network Monitoring Works
+
+Understanding how uBO Scope monitors your network traffic is key to leveraging its full potential as a trustworthy tool for tracking web connections. This page provides a high-level explanation of the mechanisms uBO Scope uses to observe and categorize network requests, highlighting how it relies solely on direct observation rather than inference or guesswork.
+
+---
+
+## The Foundation: Browser's webRequest API
+
+uBO Scope is built upon the browser’s native `webRequest` API. This API provides detailed insight into all web requests initiated by the browser — including HTTP, HTTPS, and WebSocket connections.
+
+Unlike tools that infer blocking or allow rules based on indirect signals, uBO Scope listens directly to these network events, enabling it to track exactly which connections were allowed, which were blocked, and which were stealth-blocked.
+
+This direct observation is what ensures the accuracy and reliability of the data uBO Scope presents.
+
+---
+
+## Direct Outcome Tracking
+
+Instead of merely checking if a request matches a filter list or guessing the result, uBO Scope records actual network outcomes:
+
+- **Allowed Connections:** Requests that successfully connected or received responses.
+- **Blocked Connections:** Requests that resulted in network errors indicating blocking.
+- **Stealth-Blocked Connections:** Redirects or connection attempts that are silently suppressed or altered by content blockers to avoid detection.
+
+By tracking these outcomes per browsing tab and aggregating by hostname and domain, uBO Scope gives you a trustworthy snapshot of real-world network behavior.
+
+---
+
+## How uBO Scope Processes Network Requests
+
+Upon each network event, uBO Scope queues request details with their respective event status (`redirect`, `error`, `success`). These queued records are processed asynchronously at short intervals to efficiently update the internal session state.
+
+For example:
+
+- A main document navigation triggers a reset of tracking data for that tab.
+- Success responses increment counts of allowed domains.
+- Error events (such as those common with blocked requests) register as blocked outcomes.
+- Redirect events are tracked carefully to distinguish stealth blocking.
+
+This structured processing ensures data integrity and timely updates to what you see in the popup panel and badge count.
+
+---
+
+## Domain Identification with the Public Suffix List
+
+To provide meaningful grouping of network connections beyond just raw hostnames, uBO Scope integrates the [Public Suffix List (PSL)](https://publicsuffix.org/).
+
+This list defines which domain suffixes are registrable (like `.com`, `.co.uk`, `.app`) and helps uBO Scope extract the "root" domain from any hostname.
+
+For instance, the hostname `sub.example.co.uk` is resolved to the domain `example.co.uk`.
+
+This is crucial for correctly aggregating network activity to understand the number of distinct third-party domains involved.
+
+---
+
+## Robustness Against Stealth Blocking and DNS-Based Blocking
+
+Many content blockers employ stealth techniques that make blocking invisible to the web page JavaScript or trigger DNS-level blocking that might not be reported straightforwardly.
+
+Because uBO Scope monitors the outcomes via the webRequest API, it accurately detects these effects by observing network events directly rather than relying on inference from page scripts or relying solely on DNS resolution.
+
+This makes the extension a reliable tool for auditing actual network traffic, independent from the specific blocking techniques used.
+
+---
+
+## User Experience Flow Example
+
+1. **You visit a webpage**.
+2. The browser begins issuing network requests for various resources.
+3. uBO Scope’s background script receives these requests via the `webRequest` API listeners.
+4. Events (`success`, `error`, or `redirect`) get queued and later processed, updating per-tab connection details.
+5. When you open uBO Scope's popup panel, it requests data for the current tab.
+6. The popup displays counts of allowed, stealth-blocked, and blocked connections, grouped by domain.
+7. The toolbar badge updates to reflect the number of distinct allowed third-party domains.
+
+This seamless flow provides you with transparent visibility into the true network activity behind the browser's scenes.
+
+---
+
+## Practical Tips
+
+- **Understand the Badge:** The badge number shows distinct domains with allowed connections. A higher number often means more third-party content loaded.
+- **Check Stealth Blocking:** The extension lists stealth-blocked domains separately, helping to identify blocking that a webpage can't detect.
+- **Refresh or Navigate:** To reset data for a tab, simply reload or navigate; uBO Scope tracks main frame navigations to clear and refresh state.
+
+---
+
+## Troubleshooting Common Scenarios
+
+- **No Data Displayed in Popup:** Verify that the extension has the necessary permissions (`webRequest`, `activeTab`) and that you are viewing an active browser tab.
+- **Badge Count Doesn't Update Immediately:** Network requests are batched every second for efficiency, so slight delays are expected.
+- **Missing Network Requests:** Some browser-internal or extension-isolated requests might not be visible via the `webRequest` API.
+
+---
+
+## Summary
+
+uBO Scope's network monitoring is powered by direct, API-driven observation of web requests, providing an accurate and real-time view of actual network outcomes. By relying on the browser's `webRequest` API and sophisticated domain parsing with the Public Suffix List, it offers a transparent, resilient, and insightful tool to audit what connections your browser truly makes — and which it blocks or stealth blocks.
+
+---
+
+For a deeper dive into uBO Scope's architecture and how this monitoring data flows and integrates into the user interface, visit the [Architecture & Data Flow](../architecture-concepts-group/architecture-dataflow) and [Core Concepts and Terminology](../architecture-concepts-group/core-terminology) pages.
+
+
+---
+
+<Callout type="tip">
+For developers curious about the integration with the webRequest API, the background script (`js/background.js`) contains key logic for request event handling, queuing, and outcome recording.
+</Callout>
+
+
+---
+
+### Reference
+- [Public Suffix List](https://publicsuffix.org/)
+- Browser `webRequest` API documentation
+
+---
+
+##### Source:
+- Background script: `js/background.js`
+- Popup rendering: `js/popup.js`
+
+---
