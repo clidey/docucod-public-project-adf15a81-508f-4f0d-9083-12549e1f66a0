@@ -1,0 +1,158 @@
+---
+title: "Analyzing Stealth and Blocked Domains"
+description: "Dive into how uBO Scope differentiates between allowed, stealth-blocked, and explicitly blocked domains. Learn to read and interpret these states, both in the popup and for troubleshooting privacy issues."
+---
+
+# Analyzing Stealth and Blocked Domains in uBO Scope
+
+## Overview
+This guide focuses exclusively on how uBO Scope identifies and reports the three distinct states of third-party domains your browser encounters while browsing: **allowed**, **stealth-blocked**, and **blocked**. Understanding how to interpret these classifications within the extension’s popup interface empowers you to analyze your browser’s network privacy exposure and troubleshoot connection issues effectively.
+
+---
+
+## 1. Understanding Domain Outcomes
+
+uBO Scope classifies third-party domains connected from your active browser tab into three distinct groups based on the outcome of their network requests:
+
+### Allowed Domains
+These domains are third-party remote servers your browser successfully connected to while loading the active webpage. They are "not blocked" and contribute to the privacy impact of the site.
+
+### Stealth-Blocked Domains
+These domains are those that were redirected or otherwise stealthily blocked by the browser or extension content blocking mechanisms. Stealth blocking means the domain's network requests might have been silently blocked or redirected without explicit failure, so these connections do not register fully as allowed or outright blocked.
+
+### Blocked Domains
+These third-party domains had their network requests explicitly blocked by the content blocker or the browser. This means no connection was made, thus preserving your privacy against that domain.
+
+<Tip>
+The distinction between these outcomes provides a granular understanding of how your browsing activity interacts with third-party servers, including those that might be attempting to track you. This visibility is essential for privacy-aware users and developers alike.
+</Tip>
+
+---
+
+## 2. Viewing Domain Outcomes in the uBO Scope Popup
+
+The popup interface categorizes domains under three sections:
+
+- **Not blocked (Allowed)**
+- **Stealth-blocked**
+- **Blocked**
+
+### How to Access the Popup:
+1. Click the uBO Scope icon in your browser toolbar.
+2. Wait a moment for the data to populate for the active tab.
+3. Observe the domain lists under each category.
+
+### Interpreting the Lists:
+- Each domain listed shows the domain in Unicode format, making it readable regardless of character encoding or punycode usage.
+- The number next to the domain is the count of network requests associated with that domain during the tab session.
+- The total number of allowed domains is shown at the top as the count in the summary section, matching the badge count on the toolbar.
+
+<Tip>
+If the popup shows "NO DATA," it means that uBO Scope has not captured any network data for the active tab yet. Try refreshing the tab or opening a different webpage.
+</Tip>
+
+---
+
+## 3. How uBO Scope Distinguishes Each Outcome
+
+### Allowed Domains
+- When a network request is reported as successful by the browser’s `webRequest` API, and the domain has not been previously stealth or blocked in this tab session, it is recorded as allowed.
+- Allowed domains accumulate in the allowed list with request counts.
+
+### Stealth-Blocked Domains
+- Redirect events or network requests that do not complete successfully but do not error explicitly may be flagged as stealth.
+- These domains typically represent those that were redirected or suppressed silently by popular content blockers, maintaining invisibility to the website under inspection.
+
+### Blocked Domains
+- The extension listens to explicit error events on network requests, indicating that the connection was blocked.
+- These domains are tracked separately and presented clearly.
+
+<Note>
+Stealth blocking is a less common but crucial category because some blockers prevent network requests without triggering obvious errors, unseen by ordinary monitoring tools.
+</Note>
+
+---
+
+## 4. Practical Example
+
+Suppose you visit a popular news website. The uBO Scope popup might display:
+
+- **Not blocked:** `cdn.example-cdn.com` (25), `api.news-site.com` (10)
+- **Stealth-blocked:** `tracker.adsnetwork.com` (5)
+- **Blocked:** `ads.badadnetwork.com` (3)
+
+This means your browser loaded resources from legitimate CDNs and site APIs while stealthily blocking some ad trackers through redirecting or silent suppression, and explicitly blocking other aggressive ad servers.
+
+---
+
+## 5. Tips for Effective Analysis
+
+- **Refresh pages** to see updated domain outcomes.
+- Use the domain counts to identify heavy third-party resource usage.
+- Monitor stealth-blocked domains as potential privacy threats that may be attempting to track silently.
+- Compare allowed vs. blocked lists to verify if content blockers are functioning as expected.
+
+<Warning>
+If your popup shows many allowed third-party domains you don’t recognize, consider reviewing your content blocker settings or using additional privacy tools.
+</Warning>
+
+---
+
+## 6. Common Troubleshooting Scenarios
+
+<AccordionGroup title="Troubleshooting Domain Outcome Issues">
+<Accordion title="The Popup Shows No Data or 'NO DATA'">
+- Ensure uBO Scope is installed and enabled.
+- Refresh the active tab to trigger network monitoring.
+- Visit a dynamic website with third-party content.
+- If still empty, verify any browser permissions required (see Prerequisites).
+</Accordion>
+
+<Accordion title="Discrepancy Between Badge Count and Allowed Domains">
+- Badge count shows the unique allowed domains count.
+- The popup might list domains with multiple entries contributing to counts.
+- Allowed domains shown include distinct domains, so the badge should match.
+- If mismatch occurs, refresh the tab or restart the browser.
+</Accordion>
+
+<Accordion title="Stealth-Blocked Domains Are Excessive or Confusing">
+- Some domains may appear due to redirects or fallback mechanisms.
+- Review filter lists or content blocker settings if privacy concerns arise.
+- Refer to advanced analysis guides for leveraging stealth data more effectively.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Next Steps and Related Documentation
+
+- Explore the [Popup Overview](https://github.com/gorhill/uBO-Scope/blob/main/docs/overview/quickstart-feature-tour/popup-overview.md) for detailed navigation of the popup interface.
+- Understand the [Toolbar Badge Count](https://github.com/gorhill/uBO-Scope/blob/main/docs/overview/quickstart-feature-tour/interpreting-badge-count.md) to know how to interpret the badge metrics.
+- If you encounter issues, see [Troubleshooting Common Setup Issues](https://github.com/gorhill/uBO-Scope/blob/main/docs/getting-started/usage-validation/common-issues-troubleshooting.md) for quick resolutions.
+- For advanced users and filter list maintainers, consult the [Using uBO Scope for Filter List Maintenance](https://github.com/gorhill/uBO-Scope/blob/main/docs/guides/advanced-use-analysis/using-ubo-scope-for-filter-maintenance.md).
+
+---
+
+## 8. Summary
+
+By mastering the interpretation of allowed, stealth-blocked, and blocked domains in the uBO Scope popup, you gain powerful insight into your browser’s network privacy profile and blocking efficacy. This understanding enables more informed decisions about privacy tools and the detection of silently blocked trackers.
+
+---
+
+## Appendix: Domain Classification Mechanism (Technical Insight)
+
+{/* Note: This section is for users interested in the underlying principles behind uBO Scope’s classification. */}
+
+- uBO Scope relies on the Public Suffix List to accurately determine the **registered domain** from any hostname. This ensures domain counts are meaningful and avoid overcounting subdomains.
+- Network requests are monitored using the browser’s `webRequest` API, which reports events such as redirects, errors, and successful responses.
+- Based on these events, domains are categorized as follows:
+  - `success` event ⇒ Allowed
+  - `redirect` event ⇒ Stealth
+  - `error` event ⇒ Blocked
+- The extension uses per-tab session data to maintain accurate records of connection outcomes for the active tab, resetting when the main frame (top-level URL) changes.
+
+This accurate classification underpins the reliability of the popup’s domain lists and toolbar badge count.
+
+---
+
+{/* End of Guide */}

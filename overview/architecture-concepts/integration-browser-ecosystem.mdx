@@ -1,0 +1,147 @@
+---
+title: "Integration with Your Browser"
+description: "Describes how uBO Scope leverages browser features (specifically, the webRequest API) to provide accurate network monitoring, and the limitations based on browser support."
+---
+
+# Integration with Your Browser
+
+uBO Scope harnesses the power of modern web browsers' extension APIs to deliver precise and comprehensive monitoring of network activity related to webpage visits. This section explains how uBO Scope leverages the browser's `webRequest` API to track connections to remote servers and highlights the inherent limitations imposed by browser support.
+
+---
+
+## How uBO Scope Uses the Browser's webRequest API
+
+At its core, uBO Scope is designed to expose all connections—whether attempted, successful, or blocked—that the browser makes to remote servers during your web browsing sessions. It achieves this by utilizing the browser's `webRequest` API, which is the official interface that browser extensions use to observe and manipulate network requests.
+
+### Real-Time Observation of Network Requests
+
+The `webRequest` API allows uBO Scope to listen to key network events, including:
+
+- **Request redirection**
+- **Error occurrences**
+- **Response commencement**
+
+By subscribing to these events, uBO Scope collects detailed data about each network request's outcome immediately as it happens. This real-time monitoring is essential for providing accurate information about which servers your browser connects to or attempts to connect to.
+
+### Classification of Connections
+
+Using the data from the `webRequest` API, uBO Scope classifies connections into three distinct categories:
+
+- **Allowed:** Connections that the browser successfully made.
+- **Blocked:** Connections that were prevented or failed.
+- **Stealth-blocked:** Connections that were redirected without visible interruption.
+
+This classification helps users understand not just how many connections are made, but also how their content blocking tools and other systems interact with these connections.
+
+### Benefits of webRequest Integration
+
+- **Accurate Reporting:** Because the `webRequest` API reports network activity at the browser level, the extension accurately accounts for network requests subject to content blocking or other modifications.
+
+- **Comprehensive Coverage:** It captures requests made by different webpage elements (scripts, images, iframes, etc.) and protocols such as HTTP, HTTPS, WebSocket (ws/wss).
+
+- **Independent of Content Blocker:** uBO Scope reflects network request outcomes regardless of which content blocker is deployed, making it a reliable tool for direct observation rather than assumptions based on block counts.
+
+<Tip>
+The toolbar badge count in uBO Scope represents the number of distinct third-party domains involved in allowed connections, derived from events tracked through the `webRequest` API.
+</Tip>
+
+---
+
+## Limitations and Browser Support Considerations
+
+While the `webRequest` API is powerful, its availability and completeness vary depending on the browser:
+
+### Supported Browsers
+
+- **Chromium-based browsers (e.g., Chrome, Edge):** Full support for the `webRequest` API with access to network requests, including WebSocket connections.
+
+- **Mozilla Firefox:** Full support for `webRequest` with the ability to monitor network outcomes comprehensively.
+
+- **Safari:** Support is limited and constrained to certain versions (strict minimum version 18.5), which affects network request visibility.
+
+### Network Requests Outside webRequest API View
+
+Certain network requests might bypass the `webRequest` API, such as:
+
+- Requests initiated outside the browser’s network stack.
+- Requests by browser extensions or some internal browser services.
+- Emerging protocols or network mechanisms not yet exposed.
+
+uBO Scope cannot report on these requests as they are outside the reach of the API.
+
+### Impact on Monitoring Accuracy
+
+Because uBO Scope relies solely on what the browser exposes via `webRequest`:
+
+- It captures *all* network requests the browser knows about, including those blocked by DNS-based or other external blocking systems if visible to the API.
+- It does *not* see connections completely hidden from the browser.
+
+Thus, while the extension gives an accurate and detailed view of network requests, its scope is limited by API capabilities.
+
+<Warning>
+If you notice discrepancies between uBO Scope reports and network activity (e.g., unreported connections), this may be due to network requests occurring outside the browser's `webRequest` API coverage.
+</Warning>
+
+---
+
+## uBO Scope’s Workflow with Browser Integration
+
+To put this into perspective, here is a simplified flow of how uBO Scope interacts with the browser:
+
+1. **Network Request Occurs:** Browser attempts to load resources when browsing a webpage.
+2. **webRequest Event Fired:** Browser triggers events for redirect, error, or response start.
+3. **Background Script Listens:** The `background.js` service worker captures these events.
+4. **Outcome Recorded:** The extension categorizes the request as allowed, blocked, or stealth based on the event.
+5. **Session Data Updated:** The data for the current tab is stored and aggregated.
+6. **Popup Data Requested:** When opening the popup UI, the extension fetches aggregated domain data.
+7. **Popup UI Displays Data:** Users see a categorized listing of all connections from the active tab.
+
+This workflow ensures users see timely, organized information about all relevant network connections their browser makes.
+
+---
+
+## Practical Tips and Best Practices
+
+- **Keep Your Browser Updated:** Ensure you use a recent version of your browser to benefit from the latest `webRequest` API capabilities.
+
+- **Understand API Limits:** Know that some network requests may inherently elude the API, so interpret data accordingly.
+
+- **Complement Network Insights:** Use uBO Scope alongside other diagnostic tools if you need comprehensive network monitoring beyond browser scope.
+
+- **Use for Privacy Awareness:** Regularly inspect the popup UI to understand which third-party domains your browsing interacts with, enhancing privacy insight.
+
+---
+
+## Troubleshooting Common Integration Issues
+
+<AccordionGroup title="Integration Troubleshooting">  
+<Accordion title="No Data in Popup or Badge Shows Zero">  
+- Verify the extension has permission to access the current tab (`activeTab` permission).
+- Confirm that `webRequest` permission is granted.
+- Reload the tab or restart the browser to refresh API event listening.
+</Accordion>  
+<Accordion title="Inconsistent or Missing Connections">  
+- Confirm if using a supported browser version.
+- Check whether network requests use protocols covered by the `webRequest` API (`http`, `https`, `ws`, `wss`).
+- Note that some extensions or browser features may alter request visibility.
+</Accordion>  
+<Accordion title="Browser Does Not Support webRequest API Fully">  
+- Review browser version and compatibility.
+- Consider alternative browsers with better API support if comprehensive monitoring is required.
+</Accordion>  
+</AccordionGroup>
+
+---
+
+## Further Exploration
+
+For a detailed understanding of uBO Scope's internal handling and architecture, users can refer to the following documentation:
+
+- [System Architecture Overview](../architecture-concepts/system-architecture.md): Explains internal data flow and components.
+- [Core Concepts and Terminology](../architecture-concepts/core-terminology.md): Clarifies key definitions used in results.
+- [The Popup: Navigating Your Results](../quickstart-feature-tour/popup-overview.md): Guides users on interpreting the popup UI.
+
+
+---
+
+*For source code references related to the browser integration, see the [background.js](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js) and [ext.js](https://github.com/gorhill/uBO-Scope/blob/main/js/ext.js) files.*
