@@ -1,0 +1,175 @@
+---
+title: "Understanding Allowed, Stealth, and Blocked Connections"
+description: "Dive into how uBO-Scope categorizes and displays network requests per domain (allowed, stealth-blocked, blocked); see how this information provides foundational insight for privacy and filtering decisions."
+---
+
+# Understanding Allowed, Stealth, and Blocked Connections
+
+## Overview
+
+This guide explains how uBO-Scope categorizes network requests into three distinct statuses: **Allowed**, **Stealth-blocked**, and **Blocked**. These statuses represent the outcome of your browser's attempts to connect to third-party remote servers when loading a webpage. Understanding these categories empowers you to interpret the extension’s reports accurately, helping you assess your browser’s privacy posture and troubleshoot connection behavior.
+
+### What You Will Learn
+
+- The definitions of Allowed, Stealth-blocked, and Blocked connections.
+- How uBO-Scope determines and displays these outcomes per domain.
+- Practical use cases illustrating how these categories impact privacy and filtering decisions.
+
+---
+
+## 1. How uBO-Scope Classifies Connections
+
+uBO-Scope leverages the browser's `webRequest` API to monitor every network request initiated by active tabs and categorizes them based on the request’s outcome and blocking status.
+
+### Allowed Connections
+
+These are network requests that successfully reached the target remote server and received a valid response. They represent third-party servers the browser connected to without interference.
+
+- Typically, these include content delivery networks (CDNs), analytics services, APIs, or any external resources not blocked by content blockers.
+- In uBO-Scope’s popup UI, allowed connections appear in the **'not blocked'** section with a green accent.
+
+### Stealth-blocked Connections
+
+Stealth-blocked connections are those network requests that were internally redirected or modified in a way that silently prevents the browser from connecting, often to maintain compatibility and avoid detection by websites.
+
+- These connections never reach the remote server but do not produce an obvious failure visible to the webpage.
+- They appear in the **'stealth-blocked'** section with a red accent.
+- This subtle blocking technique helps prevent webpage breakage while enforcing privacy.
+
+### Blocked Connections
+
+Blocked connections are network requests where the browser attempted to connect but failed due to active blocking (by the extension, DNS filtering, or other mechanisms).
+
+- These requests result in errors or connection failures.
+- They are reported in the **'blocked'** section of the UI, also highlighted in red.
+
+---
+
+## 2. Viewing Connection Statuses in the uBO-Scope Popup
+
+When you open the uBO-Scope extension popup, you receive a real-time summary of all third-party domains contacted by the active tab. The interface divides this information clearly:
+
+- **Tab Hostname:** Displays the domain of the current active tab.
+- **Domains connected:** The number of distinct third-party domains the active tab has communicated with.
+- Three distinct sections:
+  - **Not blocked:** Lists all allowed third-party domains.
+  - **Stealth-blocked:** Lists domains for requests that were stealthily blocked.
+  - **Blocked:** Lists domains where requests were actively blocked with error.
+
+Each domain entry shows the domain name and a numeric badge representing how many requests were made to it.
+
+<Tip>
+These categories help you gauge how many and which external servers your browser accessed, what was silently prevented, and what was outright blocked to protect your privacy.
+</Tip>
+
+---
+
+## 3. Step-by-Step: Checking Connection Status per Domain
+
+<Steps>
+<Step title="Open the uBO-Scope Popup">
+Click the uBO-Scope icon on your browser toolbar to open the popup. It immediately loads and displays connection data related to your current active tab.
+</Step>
+<Step title="Identify the Tab Hostname">
+Review the top header showing the primary hostname of the current page. This contextualizes all subsequent connection data.
+</Step>
+<Step title="Review Allowed Domains">
+Look under the **'not blocked'** section. These domains successfully connected.
+
+- Domains are sorted alphabetically.
+- The count next to each domain shows the number of requests.
+- A large list with many entries means your active tab connected to many third-party services.
+</Step>
+<Step title="Explore Stealth-Blocked Domains">
+Next, examine the **'stealth-blocked'** section.
+
+- These domains represent requests silently blocked without webpage awareness.
+- Knowing these helps you understand nuanced privacy protections.
+</Step>
+<Step title="Inspect Blocked Domains">
+Finally, check the **'blocked'** section.
+
+- These are explicit failures or canceled requests.
+- A domain appearing here may indicate aggressive blocking or filtering rules.
+</Step>
+<Step title="Interpreting the Summary">
+At the popup’s summary line, note the total number of distinct allowed domains.
+
+- This count is reflected as the badge on the extension icon.
+- A lower badge count means fewer third-party connections, indicating better privacy at a glance.
+</Step>
+</Steps>
+
+---
+
+## 4. Practical Scenarios
+
+### Scenario 1: Verifying Privacy Protections
+
+You visit a news website and open uBO-Scope popup. 
+- You see several domains under 'blocked' and 'stealth-blocked'.
+- This confirms your content blocker is actively limiting requests to potential trackers.
+- By cross-checking these domain names, you can identify common tracking services being blocked.
+
+### Scenario 2: Diagnosing Functional Website Issues
+
+If a website shows broken features,
+- Check uBO-Scope to see if critical third-party domains are blocked.
+- If required scripts or APIs are blocked, consider whitelisting or adjusting blocking rules.
+
+### Scenario 3: Filter List Maintenance
+
+Filter list maintainers can use the explicit counts and categories to:
+- Detect unexpected allowed domains that might need blocking.
+- Identify stealth-blocked domains for refining blocking tactics.
+
+---
+
+## 5. Tips and Best Practices
+
+- **Refresh the popup for updated data:** uBO-Scope gathers connections in real-time; switching tabs or refreshing your website will update the count.
+- **Interpret badge counts wisely:** A higher block count does not necessarily mean stronger blocking; focus on the allowed third-party count instead.
+- **Use domain names as clues:** Recognizable domains linked to ads or trackers usually appear rightly blocked or stealth-blocked.
+- **Understand limitations:** Network requests outside the browser’s `webRequest` API scope may not be visible here.
+
+<Warning>
+Do not rely solely on third-party “ad blocker test” sites to assess protection efficacy. They often do not reflect real-world network interactions—uBO-Scope reveals actual network behavior.
+</Warning>
+
+---
+
+## 6. Troubleshooting Common Questions
+
+<AccordionGroup title="Troubleshooting Connection Statuses">
+<Accordion title="No data shows up in the popup">
+Ensure you have the latest version installed, permissions are granted, and you open the popup on an active browser tab with loaded content. See the [First-Time Configuration & Extension Access Guide](/getting-started/essentials/configuration-basics) for help.
+</Accordion>
+<Accordion title="Why do some domains only show under stealth-blocked?">
+Stealth-blocking silently prevents requests without direct failures to avoid site breakage. These domains may be trackers that your content blocker employs stealth tactics against.
+</Accordion>
+<Accordion title="The badge count seems high despite blocking many domains">
+The badge counts **allowed** third-party domains. More allowed domains mean more connections made, which could mean the blocker is less effective even if many blocks are reported.
+</Accordion>
+<Accordion title="Can I see request details per domain?">
+The current version presents aggregate domain counts. Future updates may expose detailed request information for maintainers.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Next Steps
+
+- Explore the [uBO-Scope Popup UI Quick Tour](/guides/getting-started/ui-quick-tour) to deepen your understanding of the interface.
+- Review the [Interpreting the Toolbar Badge Count](/guides/analyzing-network-activity/interpreting-badge-count) guide to master what the badge means.
+- Visit the [Understanding Filter Lists](/guides/advanced-usage/filter-list-maintainer-tips) to learn how to improve blocking.
+
+---
+
+## Additional Resources
+
+- [uBO-Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) for the source code and updates.
+- Browser extension stores for installation: [Chrome Web Store](https://chrome.google.com/webstore/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp), [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+
+---
+
+This understanding of connection outcomes arms you with precise insights into your browser’s network behavior and empowers informed decisions on privacy and content-blocking strategies.
