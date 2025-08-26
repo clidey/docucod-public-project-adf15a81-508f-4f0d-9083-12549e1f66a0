@@ -1,0 +1,222 @@
+---
+title: "Understanding Toolbar Badge Counts"
+description: "Explains how uBO Scope calculates the number of unique third-party domains connected per tab, how to interpret the toolbar badge count, and why lower is generally better for privacy. Includes explanation of edge scenarios and clarifies common misconceptions."
+---
+
+# Understanding Toolbar Badge Counts
+
+ uBO Scope's toolbar badge count presents a crucial, concise summary of your browser's third-party network connections for the active tab. This guide demystifies how this number is calculated, what it represents, and why a lower count signals better privacy and security.
+
+---
+
+## 1. Workflow Overview
+
+### Task Description
+Understand how uBO Scope computes and displays the toolbar badge count representing unique third-party domains contacted per browser tab.
+
+### Prerequisites
+- uBO Scope installed and active on a supported browser (Chromium v122+, Firefox v128+, Safari v18.5+).
+- Basic familiarity with how network requests work in browsers.
+- Access to browse websites to observe badge changes in real-time.
+
+### Expected Outcome
+- Confident interpretation of the badge number on the extension toolbar icon.
+- Ability to recognize what counts towards the badge and what does not.
+- Understanding common exceptions and how to interpret edge cases.
+
+### Time Estimate
+5 to 10 minutes to read through with practical site checks.
+
+### Difficulty Level
+Beginner to Intermediate.
+
+---
+
+## 2. How uBO Scope Calculates the Badge Count
+
+### What the Badge Represents
+The badge count on uBO Scope’s toolbar icon is the **number of unique third-party domains** with which your current browser tab has established a network connection.
+
+- **Third-party domain:** A domain different from the main website's domain currently open in the tab.
+- Each unique domain is counted once regardless of multiple connections.
+
+**Why does this matter?**
+- Fewer third-party domains contacted generally indicate a smaller external footprint and greater privacy.
+- The badge count shows only domains that were *actually contacted*, whether connections succeeded, were blocked stealthily, or otherwise.
+
+### Determining Domain Counts from Network Requests
+uBO Scope listens to your browser's network requests via the `webRequest` API and records:
+
+- **Successful connections:** Network requests allowed and completed.
+- **Stealth-blocked connections:** Requests silently blocked without breaking the page but reported by the browser.
+- **Blocked connections:** Requests intercepted and blocked explicitly by content blockers or network interruptions.
+
+It consolidates unique domains contacted according to these outcomes but **only counts domains from allowed (successful) connections toward the badge.**
+
+### Key Calculation Rules
+- The badge counts **only unique third-party domains contacted in the tab's lifetime**.
+- The main page domain is excluded.
+- Consecutive connections to the same domain count once.
+- Redirects are attributed cautiously to avoid double counting.
+- Domains contacted during sub-resource loading or scripts count if different from the main domain.
+
+### Main Frame vs. Sub-Resource
+- Network requests from the main page and embedded resources (scripts, images, frames) are tracked.
+- Domains contacted in all these contexts update the badge count.
+
+---
+
+## 3. Interpreting the Toolbar Badge Count
+
+### Why Lower Counts Are Better
+- Lower badge counts mean fewer third-party connections and reduced tracking vectors.
+- Popular websites often require some third-party domains (e.g., CDNs, analytics), so zero is rare.
+- High counts often indicate numerous trackers or embedded ad networks.
+
+### Common Misconceptions
+- Badge count is **not** a block count. It reflects successful third-party domain connections.
+- A lower block count on other extensions may not mean better blocking; the actual number of allowed domains reveals more about privacy impact.
+
+<Tip>
+Remember, the badge shows the **domains actually contacted**, not merely the ones requested or blocked. This gives a realistic picture of network exposure.
+</Tip>
+
+### Edge Scenarios and Clarifications
+
+<AccordionGroup title="Understanding Edge Cases and Common Questions">
+<Accordion title="Why does the badge sometimes show a number even if I use blockers?">
+Because uBO Scope integrates with network reporting via the browser’s webRequest API, the badge counts domains for requests that passed through or were invisibly stealth-blocked by blockers. Some connections might be allowed for website functionality, resulting in nonzero counts.
+</Accordion>
+
+<Accordion title="Can the badge count show more domains than visible in the popup?">
+Yes. The popup shows a detailed breakdown of allowed, stealth-blocked, and blocked domains, but the badge only reflects allowed domains. Some stealth-blocked domains may not appear in the badge count since they are not considered allowed connections.
+</Accordion>
+
+<Accordion title="Why might the badge count differ from another extension's block count?">
+Block counts indicate requests explicitly blocked by an extension, but do not reflect all network connections. uBO Scope’s badge reflects the unique domains with which the page successfully connected, providing a more direct and accurate privacy exposure measure.
+</Accordion>
+
+<Accordion title="What happens if a domain redirects to a different third-party domain?">
+Redirects count as stealth events internally and update connection records accordingly, ensuring the badge count reflects unique third-party domains actually contacted.
+</Accordion>
+
+<Accordion title="Are websocket connections counted?">
+Yes. uBO Scope tracks network requests over HTTP(S) and WebSocket protocols, so websocket third-party domains contribute to the badge count.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 4. Practical Tips to Use the Badge Effectively
+
+- **Monitor badge numbers when visiting different websites.** Lower numbers indicate tighter privacy.
+- **Use alongside uBO Scope’s popup domain breakdown** for a detailed look into allowed, blocked, and stealth-blocked connections.
+- **Reload pages to observe changes** in badge counts as you interact with the site.
+- Use the badge count to **debunk common block count myths** by comparing with other blockers.
+
+<Tip>
+A rising badge count on a website may signal new third-party trackers or increased resource inclusion — keep awareness high.
+</Tip>
+
+---
+
+## 5. Step-by-Step: Check and Interpret Badge Count on a Webpage
+
+<Steps>
+<Step title="Install and Enable uBO Scope">
+Ensure uBO Scope is installed per instructions for your browser and activated with necessary permissions.
+</Step>
+
+<Step title="Navigate to a Website">
+Browse to any website you want to analyze for third-party connections.
+</Step>
+
+<Step title="Observe Toolbar Badge">
+Check the extension’s badge number on your browser’s toolbar. This shows how many unique third-party domains were contacted.
+</Step>
+
+<Step title="Open uBO Scope Popup for Details">
+Click the toolbar icon to open the popup showing detailed categorized lists of connected domains (allowed, stealth-blocked, blocked).
+</Step>
+
+<Step title="Compare Badge to Popup Summary">
+Verify that the badge number matches the count of allowed domains in the popup’s summary.
+</Step>
+
+<Step title="Reload and Revalidate">
+Refresh the webpage and watch the badge for any changes, confirming dynamic connection behavior.
+</Step>
+</Steps>
+
+---
+
+## 6. Troubleshooting & Common Issues
+
+### Badge Not Updating or Showing Empty
+- Confirm uBO Scope has required permissions (`webRequest`, `activeTab`, `storage`).
+- Ensure your browser version is supported.
+- Reload the tab or restart the browser.
+- Check for any conflicting extensions affecting network request reporting.
+
+### Unexpectedly High Badge Count
+- Some websites load many third-party services; check with uBO Scope popup to analyze which domains contribute.
+- Consider that some services may operate as legitimate third parties (e.g., CDNs).
+
+### Badge Count Remains Zero
+- Verify the extension is active and permissions granted.
+- Some local or offline sites may not trigger third-party connections.
+- Web request visibility depends on browser APIs; some requests may not be detectable.
+
+### Inconsistent Badge vs. Popup Data
+- Popup data reflects categorized domains; badge shows only allowed unique domains.
+- Reload the popup if stale data suspected.
+
+<Warning>
+The badge depends entirely on your browser’s `webRequest` API. Network requests outside this scope (e.g., browser internals, service workers outside scope) won’t be counted.
+</Warning>
+
+---
+
+## 7. Next Steps & Related Documentation
+
+- Expand your knowledge with the [Analyzing Third-Party Connections guide](https://example.com/guides/core-workflows/analyzing-connections) to interpret popup data.
+- Review the [How uBO Scope Works](https://example.com/overview/architecture-core-concepts/system-architecture) page for a deeper understanding of internal workings.
+- Consult the [Quick Validation Checklist](https://example.com/getting-started/usage-validation/quick-validation) to verify your setup.
+- Explore [Installation Issues & Permissions](https://example.com/getting-started/troubleshooting/troubleshooting-install) if you face operational problems.
+
+---
+
+## Appendix: Diagram of Badge Count Calculation
+
+```mermaid
+flowchart TD
+    A["Network Request Received"] --> B["Extract Hostname and Domain"]
+    B --> C{"Is Main Frame Request?"}
+    C -->|Yes| D["Reset Tab Data & Set Main Domain"]
+    C -->|No| E["Process Subresource Request"]
+    D & E --> F["Determine Request Outcome"]
+
+    F -->|Success| G["Add Domain to Allowed List"]
+    F -->|Redirect| H["Add Domain to Stealth-Blocked List"]
+    F -->|Error| I["Add Domain to Blocked List"]
+
+    G --> J["Update Unique Domains for Allowed Connections"]
+    H --> K["Update Unique Domains for Stealth Connections"]
+    I --> L["Update Unique Domains for Blocked Connections"]
+
+    J --> M["Update Toolbar Badge Count"]
+
+    subgraph TabDetails
+        D
+        G
+        H
+        I
+    end
+
+    M --> N["Display Badge on Toolbar Icon"]
+
+    click A "js/background.js" "line:85-95" "Network Request Listener"
+    click M "js/background.js" "line:120-132" "Update Badge Function"
+```
+
+---
