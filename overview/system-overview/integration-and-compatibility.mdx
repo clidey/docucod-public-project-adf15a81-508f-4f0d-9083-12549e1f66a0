@@ -1,0 +1,105 @@
+---
+title: "Integration & Browser Support"
+description: "Overviews supported browsers and how uBO Scope complements existing content blockers and DNS filtering, stressing that it works independently of other blockers as long as network activity is observable via webRequest. References available platform manifests for compatibility details."
+---
+
+# Integration & Browser Support
+
+## Seamless Integration Across Major Browsers
+
+uBO Scope is designed to operate reliably across the most popular desktop and mobile browsers by leveraging the browser's native network monitoring capabilities. Its architecture harnesses the `webRequest` API, which all supported browsers must expose, to observe and report on all outgoing network requests initiated by web pages.
+
+This approach ensures comprehensive visibility of network activity no matter which content blockers or DNS filters you have installed. uBO Scope does not interfere or integrate with these other blockers; instead, it complements them by providing an independent, transparent view of network connections.
+
+## Supported Browsers and Requirements
+
+| Browser         | Minimum Version | Notes                                   | 
+|-----------------|-----------------|-----------------------------------------|
+| Chromium-based   | 122.0+          | Requires Manifest V3 support and `webRequest` API availability. | 
+| Firefox          | 128.0+          | Strict minimum version due to API requirements and manifest constraints. | 
+| Safari           | 18.5+           | Limited host permissions; supported only on newer versions supporting `webRequest`. |
+
+The extension follows the Manifest V3 standard across all platforms, ensuring modern browser compatibility, improved security, and performance consistency.
+
+### Platform Manifest Details
+
+- **Chromium** (Chrome, Edge, Brave): Implements a background service worker script (`/js/background.js`), with permission to monitor HTTP, HTTPS, WebSocket, and Secure WebSocket protocols.
+
+- **Firefox:** Uses a background module script with similar host permissions and additional browser-specific metadata (e.g., extension ID and strict minimum version) to guarantee compatibility.
+
+- **Safari:** Has more conservative host permissions limited to HTTP and HTTPS; requires minimum version 18.5 due to WebExtension API support.
+
+## How uBO Scope Works Alongside Other Content Blockers
+
+uBO Scope observes all network requests flowing through the browser's `webRequest` API. This means:
+
+- As long as a network request is observable via `webRequest`, uBO Scope will detect it, regardless of whether other content blockers or DNS filters block or modify those requests.
+
+- It provides an independent audit of which connections were truly allowed, stealth-blocked (requests that are blocked in a way unobservable to the page), or fully blocked.
+
+- Because uBO Scope operates independently and does not perform any blocking, it does not interfere with or rely on any specific content blocker.
+
+## Key Integration Considerations & Best Practices
+
+- **Network Visibility Dependency:** uBO Scope can only report outcomes for requests that the browser exposes via the `webRequest` API. Requests hidden from this API (e.g., those blocked at the OS or DNS level without browser visibility) cannot be reported.
+
+- **No Blocking Conflicts:** Since uBO Scope does not implement filtering itself, it avoids conflicts or performance impacts related to other extensions or network filters.
+
+- **Extension Permissions:** To function correctly, uBO Scope requires permissions to monitor network activity (`webRequest`), access the active tab (`activeTab`), and store data persistently (`storage`).
+
+- **Platform Differences:** Some browsers restrict functionality or require explicit minimum versions to support Manifest V3 and the necessary APIs.
+
+## Practical Example: Understanding Extension Behavior Across Browsers
+
+When you install uBO Scope in Chrome (version 122 or later), the extension registers listeners for network events including redirects, responses, and errors. It monitors all HTTP(S) and WebSocket traffic initiated by web pages and categorizes them appropriately.
+
+In Firefox (version 128 or later), the behavior is similar but adapted per Firefox’s extension API nuances, including additional metadata in the manifest for compatibility.
+
+Safari users on 18.5+ will receive uBO Scope with slightly narrower URL monitoring permissions due to the platform’s restrictions but will still benefit from seeing a transparent view of network calls relevant to their browsing.
+
+## References for Specific Platform Manifests
+
+- [Firefox Manifest Details](https://github.com/gorhill/uBO-Scope/blob/main/platform/firefox/manifest.json)
+- [Chromium Manifest Details](https://github.com/gorhill/uBO-Scope/blob/main/platform/chromium/manifest.json)
+- [Safari Manifest Details](https://github.com/gorhill/uBO-Scope/blob/main/platform/safari/manifest.json)
+
+## Summary
+
+uBO Scope guarantees broad browser compatibility without interfering with your existing privacy and content blocking setups. As long as your browser exposes network requests through the `webRequest` API, uBO Scope will provide an accurate, independent audit of all remote server connections initiated by the websites you visit.
+
+This makes it an indispensable tool for users wanting to verify how effective their blockers are, for filter list maintainers, and for anyone looking to gain transparency over network activity at the browser level.
+
+---
+
+<Note>
+For the best user experience, ensure your browser version meets the minimum version requirements detailed above. For more details on permissions, installation, and usage, consult the related documentation sections on installation and interpreting connection results.
+</Note>
+
+<Callout type="info">
+Check out the [System Architecture & Data Flow](../system-overview/architecture-diagram) documentation to understand how uBO Scope tracks network requests internally.
+</Callout>
+
+---
+
+## Troubleshooting Integration Issues
+
+If uBO Scope does not appear to detect network requests:
+
+- Verify your browser meets the minimum version requirements.
+- Confirm no other extension or browser setting is disabling the `webRequest` API.
+- Check that uBO Scope has the required permissions granted, especially `webRequest` and host permissions.
+- Review if any corporate policies or security software interferes with extension API functionality.
+
+For persistent issues, consult the [Troubleshooting Common Setup Issues](../../getting-started/initial-usage-validation/common-setup-issues) guide.
+
+---
+
+## Next Steps
+
+To begin tracking network requests after installation:
+
+1. Verify your platform and browser version compatibility.
+2. Follow the [Installing uBO Scope](../../getting-started/installation-overview/browser-installation) instructions.
+3. Learn how to interpret the data in the popup via [Understanding the Badge Count and Popup Panel](../../guides/interpreting-results/badge-and-popup-guide).
+
+---

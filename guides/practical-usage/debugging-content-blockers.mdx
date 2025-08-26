@@ -1,0 +1,182 @@
+---
+title: "Troubleshooting Content Blockers with uBO Scope"
+description: "A practical guide for using uBO Scope to verify if content blockers are effectively limiting third-party connections. Includes techniques for filter list maintainers and users to test the real-world impact of different blocking configurations."
+---
+
+# Troubleshooting Content Blockers with uBO Scope
+
+A practical guide for using uBO Scope to verify if content blockers are effectively limiting third-party connections. This guide includes step-by-step techniques for filter list maintainers and users to test the real-world impact of different blocking configurations.
+
+---
+
+## 1. Understanding uBO Scope's Role in Troubleshooting
+
+uBO Scope provides an accurate window into the network requests made by web pages, categorizing connections as allowed, blocked, or stealth-blocked regardless of which content blockers are active in your browser. This makes it an indispensable tool for verifying if content blockers truly prevent unwanted third-party connections.
+
+When troubleshooting content blockers, uBO Scope helps you answer questions like:
+- Are my blocking rules properly preventing connections to known tracking or advertising domains?
+- Is stealth blocking hiding some blocked requests from normal detection?
+- Are certain connections unexpectedly allowed despite active filters?
+
+By focusing on **distinct third-party remote servers actually contacted or blocked**, you gain comprehensive insight beyond superficial block counts or unreliable "ad blocker test" webpages.
+
+---
+
+## 2. Prerequisites
+
+Before diving into troubleshooting using uBO Scope, ensure the following:
+
+- **uBO Scope is installed and enabled** in your supported browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+- You understand what the badge count and popup panel represent ([see interpreting badge counts and popup UI](../interpreting-results/badge-and-popup-guide)).
+- Your content blocker (such as uBlock Origin) or custom filter lists are configured and active.
+- You have a target website or test page where you want to verify content blocking behavior.
+
+---
+
+## 3. Workflow: Verifying Content Blocking Using uBO Scope
+
+Follow this practical workflow to verify content blocking effectiveness with uBO Scope.
+
+<Steps>
+<Step title="Open the target webpage">
+Navigate to the website you wish to test for content blocking.
+
+**Expected Result:** The page loads normally (or in your expected state with content blocked).
+</Step>
+
+<Step title="Open uBO Scope popup panel">
+Click the uBO Scope toolbar icon to open the popup panel which lists remote server connections.
+
+**Expected Result:** The popup displays the current tab's hostname and the count of distinct third-party domains under Allowed, Blocked, and Stealth-Blocked sections.
+</Step>
+
+<Step title="Analyze the Allowed domains">
+Review the "not blocked" section for third-party domains that were contacted successfully.
+
+- Look for unexpected or suspicious domains that you wanted to block.
+- Confirm that legitimate CDN domains or first-party hosts show as expected.
+
+**Decision:** If unexpected allow-listed third parties appear, investigate your filter rules or exceptions.
+</Step>
+
+<Step title="Analyze the Blocked and Stealth-Blocked domains">
+Inspect the "blocked" and "stealth-blocked" domains sections:
+
+- **Blocked:** Domains where requests failed clearly due to blocking.
+- **Stealth-blocked:** Domains where blocking was silently performed to avoid detection.
+
+**Check:** These lists should include known advertising or tracking domains targeted by your content filters.
+</Step>
+
+<Step title="Generate additional network activity">
+To ensure comprehensive testing, trigger additional interactions on the page such as:
+
+- Reload the page.
+- Navigate to different internal pages.
+- Trigger dynamic content loading or widgets.
+
+**Expected Result:** Network requests refresh and popup data updates accordingly.
+</Step>
+
+<Step title="Confirm badge count reflects distinct third-party connections">
+Look at the extension's badge count on the toolbar.
+
+- This number reflects the count of unique third-party remote servers contacted.
+- A lower count indicates tighter blocking or less third-party exposure.
+
+**Tip:** Badge count should correlate logically with the popup's allowed domain list.
+</Step>
+
+<Step title="Test modifications to filter lists or settings">
+To verify the impact of different blocking rules:
+
+- Temporarily disable or enable specific filter lists.
+- Add custom blocking rules.
+- Reload the target webpage and observe changes in uBO Scope’s popup data.
+
+**Expected Result:** Changes reflect immediately and accurately in allowed/blocked domain lists and badge count.
+</Step>
+</Steps>
+
+---
+
+## 4. Practical Tips for Effective Troubleshooting
+
+- **Use real-world browsing sessions:** Avoid relying on artificial test pages that do not mimic authentic web behaviors.
+- **Focus on domains, not just URLs:** uBO Scope aggregates data by domain, letting you quickly identify problematic third parties.
+- **Pay attention to stealth-blocked domains:** Sometimes blockers hide their activity, making apparent successful connections misleading.
+- **Reload pages after changes:** Filters and settings changes only take effect after a new page load.
+- **Compare before/after scenarios:** Toggling particular filters helps isolate which rules impact blocking results.
+
+---
+
+## 5. Common Pitfalls & Troubleshooting Advice
+
+<AccordionGroup title="Common Issues When Testing Content Blockers">
+<Accordion title="Popup Shows No Data or Stuck Loading">
+- Confirm uBO Scope is installed and enabled with required permissions.
+- Reload the page or browser.
+- Check the extension’s console logs for errors.
+- Verify that webRequest API access is available in your browser version.
+- See [Troubleshooting Common Setup Issues](../../getting-started/initial-usage-validation/common-setup-issues) for detailed help.
+</Accordion>
+<Accordion title="Badge Count Doesn't Change Despite Page Loads">
+- Ensure the tab is active and uBO Scope is monitoring it.
+- Reload the page to refresh the session data.
+- Some connections might happen outside of webRequest API scope (e.g., DNS blocking) and may not report correctly.
+- Confirm no conflicting privacy extensions override or block uBO Scope’s tracking.
+</Accordion>
+<Accordion title="Unexpected Allowed Domains Appear">
+- Double-check custom filters or whitelists.
+- Look for redirects that happen via stealth blocking.
+- Review active filter list versions and update if outdated.
+- Manually add blocking rules targeting suspicious domains and test again.
+</Accordion>
+<Accordion title="Stealth-Blocked Domains Are Empty or Unexpectedly Populated">
+- Stealth-block detection depends on subtle network outcomes.
+- Some blockers may choose not to use stealth blocking.
+- Differences in browsers or uBO versions can affect stealth block reporting.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Example Test Scenario
+
+Imagine you want to verify that requests to `trackers-ad.example.com` are being blocked.
+
+1. Navigate to a page known to load resources from this tracker.
+2. Open uBO Scope popup and look for `trackers-ad.example.com` in the **Blocked** or **Stealth-Blocked** sections.
+3. If it appears under **Allowed**, check your content blocker’s filter list to ensure a blocking rule exists.
+4. Add or enable a blocking rule like:
+
+```plaintext
+||trackers-ad.example.com^
+```
+
+5. Reload the page and verify that `trackers-ad.example.com` now appears under **Blocked** or **Stealth-Blocked**.
+6. Confirm the badge count reflects fewer allowed third-party connections.
+
+This workflow confirms the real-time effectiveness of your blocker configuration.
+
+---
+
+## 7. Next Steps & Related Documentation
+
+- **Understanding the Badge Count and Popup Panel:** Gain deeper insight into interpreting the data uBO Scope displays. [Read guide](../interpreting-results/badge-and-popup-guide)
+- **Interpreting Results: Myths, Pitfalls, and Best Practices:** Avoid common mistakes using uBO Scope's data to evaluate blockers. [Read guide](../interpreting-results/mythbusting-and-best-practices)
+- **System Architecture & Data Flow:** Learn how uBO Scope collects and processes network request data. [Read overview](../../overview/system-overview/architecture-diagram)
+- **Troubleshooting Common Setup Issues:** Resolve installation or usage problems impacting monitoring accuracy. [Read guide](../../getting-started/initial-usage-validation/common-setup-issues)
+- **Using uBO Scope to Audit Site Privacy:** Apply uBO Scope to practical privacy audits. [See practical usage](../practical-usage/privacy-checklist)
+
+Leveraging these guides in combination with this troubleshooting workflow ensures you can confidently verify and optimize your content blocking strategies using uBO Scope.
+
+---
+
+<Tip>
+Always validate content blocker effectiveness with real browsing scenarios rather than synthetic test pages, as uBO Scope reports authentic network results directly from the browser’s webRequest API.
+</Tip>
+
+<Note>
+Stealth blocking enables some content blockers to silently block requests without causing web page errors or detectable failures. uBO Scope uniquely reports these stealth-blocked domains, giving you a complete picture of blocking activity.
+</Note>
