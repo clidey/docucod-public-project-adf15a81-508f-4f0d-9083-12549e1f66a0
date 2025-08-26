@@ -1,0 +1,186 @@
+---
+title: "Using Stealth-Blocked Data for Problem Diagnosis"
+description: "Teaches power users and filter list maintainers how to leverage stealth-blocked request insights. Covers distinguishing between normal and stealth blocks, using public suffix info, and troubleshooting tricky scenarios."
+---
+
+# Using Stealth-Blocked Data for Problem Diagnosis
+
+## Workflow Overview
+
+This guide empowers power users and filter list maintainers to harness the stealth-blocked connection data surfaced by uBO Scope. By understanding stealth blocking—network requests that are redirected or suppressed invisibly—you will be able to diagnose subtle or complex issues affecting your filter lists or web browsing experience. The guide explains how to distinguish stealth blocks from other block types, how to apply public suffix list insights for domain classification, and provides practical troubleshooting approaches for tricky scenarios.
+
+### Prerequisites
+
+- uBO Scope installed and active in your supported browser (Chrome, Firefox, Safari).
+- Familiarity with the basic uBO Scope interface, especially the popup panel displaying allowed, blocked, and stealth-blocked domains.
+- Basic understanding of browser webRequest API notions and network request flow.
+- Recommended: Review [Understanding the Popup Panel](https://example.com/guides/getting-started/understanding-popup) and [Core Concepts](https://example.com/overview/architecture-concepts/core-concepts) for foundation insight.
+
+### Expected Outcome
+
+After completing this guide, you will:
+- Confidently identify stealth-blocked domains in uBO Scope’s data.
+- Use domain and public suffix distinctions to contextualize stealth blocks.
+- Apply diagnostic strategies to uncover filter list problems or unwanted behaviors hidden by stealth blocking.
+- Understand when stealth blocks are normal, and when they signal actionable issues.
+
+### Time Estimate
+
+Approximately 20–30 minutes to complete, assuming familiarity with basic uBO Scope features.
+
+### Difficulty Level
+
+Intermediate to Advanced – Intended for technically proficient users and filter list maintainers.
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Access the Stealth-Blocked Domains List
+
+- Open the uBO Scope extension popup in your active browser tab.
+- Observe the section labeled "stealth-blocked"; this shows domains flagged as stealth-blocked in the current tab context.
+
+_Expected result_: You see a list of domains with a count of stealth-blocked requests per domain.
+
+### 2. Understand What Stealth Blocking Means
+
+- Stealth blocks correspond to network requests whose blocking occurs by redirecting or silently suppressing the request before the browser reports an error or success.
+- These differ from outright "blocked" requests that fail with error events.
+
+_Tip_: Stealth blocks often indicate subtle filtering rules that prevent requests without triggering errors visible to the page.
+
+### 3. Differentiate Domains Using the Public Suffix List
+
+- uBO Scope uses the public suffix list (PSL) to classify hostnames into domains and public suffixes.
+- Example: For hostname `sub.example.co.uk`, `example.co.uk` is the domain, while `co.uk` is the public suffix.
+- This classification helps assess whether stealth blocks apply to first-party or third-party domains.
+
+_Action_: Investigate stealth-blocked domains to see if they are distinct third parties or potentially first-party elements.
+
+### 4. Investigate Stealth Blocks for Unexpected Behavior
+
+- Review stealth-blocked domains performing multiple stealth blocks (indicated by counts).
+- Cross-reference these with your filter list rules or known domains to determine if stealth blocking is expected.
+- Domains that appear stealth-blocked but should be allowed may indicate over-blocking or rule misconfiguration.
+
+_Example_: A CDN domain stealth-blocked unexpectedly could impact site performance.
+
+### 5. Use Stealth-Blocked Data to Diagnose Filter List Issues
+
+- If stealth blocks seem excessive or misplaced, compare them against allowed domains and blocked domains to detect contradictions.
+- Consider whether redirects causing stealth blocks lead to circumvention or unintended allowlist.
+
+### 6. Employ Debugging Workflow for Complex Cases
+
+- Reload the page while monitoring the update in stealth-blocked domain counts.
+- Temporarily disable or adjust suspect filter list rules based on stealth-blocked domain names.
+- Rerun uBO Scope and observe changes to stealth-blocked counts to confirm your diagnosis.
+
+### 7. Confirm Findings and Take Action
+
+- Once confident, refine your filter lists to correct stealth block-related issues.
+- Document the changes and monitor future stealth-blocked entries for similar patterns.
+
+---
+
+## Examples & Scenario
+
+### Example Scenario: Diagnosing a Hidden Third-Party Tracker
+
+**Context:** You suspect a tracker is stealth-blocked but still causing page load issues.
+
+**Steps:**
+- Open uBO Scope popup and locate stealth-blocked domains.
+- Identify a suspicious domain repeatedly stealth-blocked.
+- Consult the public suffix to see if it’s a unique third-party domain.
+- Cross-check filter lists and third-party domain lists.
+- Adjust filter rule to block it outright or whitelist if benign.
+- Reload page and verify the stealth block disappears or changes to "blocked" accordingly.
+
+### Example Output Expected
+
+In the popup panel, stealth-blocked section might show:
+
+| Domain             | Count |
+|--------------------|-------|
+| tracker.examplecdn.com | 7     |
+
+After adjustment and reload, this domain should move from stealth-blocked to blocked or allowed, depending on your changes.
+
+---
+
+## Troubleshooting & Tips
+
+### Common Issues
+
+- **No stealth-blocked domains visible:**
+  - The page or tab may not have stealth blocked requests, or data collection is pending.
+  - Try reloading the tab and check badge counts to ensure active monitoring.
+
+- **Unexpected stealth blocks on known safe domains:**
+  - Review your filter rules for overly broad patterns.
+  - Confirm domain classification with public suffix list usage.
+
+- **Stealth blocks causing site breakage or slow loading:**
+  - Temporarily disable stealth-blocking related rules to test impact.
+  - Consider explicit allowlisting if necessary for functionality.
+
+### Best Practices
+
+- Always validate stealth-blocked domain classification through public suffix awareness.
+- Use stealth-block data in conjunction with allowed and blocked domain insights for holistic analysis.
+- Regularly update the public suffix list in uBO Scope to maintain accurate domain parsing.
+- Combine with network debugging tools when performing deep analyses.
+
+### Performance Considerations
+
+- Monitoring stealth blocks continuously may slightly impact extension performance depending on browsing patterns.
+- Avoid excessive simultaneous tabs or heavy network loads when troubleshooting.
+
+---
+
+## Next Steps & Related Content
+
+- After mastering stealth-block data usage, explore [Analyzing Third-Party Connections](https://example.com/guides/core-workflows/analyzing-connections) to broaden understanding of network traffic.
+- For foundational insights, revisit the [Core Concepts](https://example.com/overview/architecture-concepts/core-concepts) and [Feature Highlights](https://example.com/overview/architecture-concepts/feature-highlights) pages.
+- Consult [Troubleshooting Common Issues](https://example.com/getting-started/first-use-and-validation/troubleshooting) if you encounter problems interpreting data.
+
+---
+
+## Diagram: Stealth-Block Monitoring Flow
+
+```mermaid
+flowchart TD
+  PageLoad["User loads web page"] --> Monitor["uBO Scope monitors network requests"]
+  Monitor --> RequestEvent{ "Network request event" }
+  RequestEvent -->|"redirect"| StealthBlocked["Stealth-blocked request recorded"]
+  RequestEvent -->|"error"| Blocked["Blocked request recorded"]
+  RequestEvent -->|"success"| Allowed["Allowed request recorded"]
+
+  StealthBlocked --> UpdateData["Update stealth block domain data"]
+  Blocked --> UpdateData
+  Allowed --> UpdateData
+
+  UpdateData --> SaveSession["Save session data"]
+  SaveSession --> UpdateBadge["Update tab badge count"]
+
+  UpdateBadge --> Popup["Popup panel displays counts and domains"]
+
+  subgraph User Interaction
+    Popup --> User["User analyzes stealth-blocked domains"]
+    User --> Troubleshoot["User adjusts filter rules as needed"]
+  end
+
+  Troubleshoot --> Reload["User reloads page"]
+  Reload --> Monitor
+
+  classDef stealth fill:#fbb,stroke:#a00,stroke-width:2px;
+  class StealthBlocked stealth;
+```
+
+---
+
+This workflow illustrates how network request events leading to stealth blocks are captured by uBO Scope, how data gets updated and surfaced in the popup, and how users can iteratively diagnose and troubleshoot stealth blocking issues.
+
+---
