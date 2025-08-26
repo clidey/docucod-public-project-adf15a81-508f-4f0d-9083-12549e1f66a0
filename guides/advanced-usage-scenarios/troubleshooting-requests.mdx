@@ -1,0 +1,210 @@
+---
+title: "Troubleshooting Network Requests and Data Reporting"
+description: "Explore how to handle unexpected badge counts, missing network data, or apparent discrepancies between what the site loads and what uBO Scope reports. Learn to diagnose and resolve issues that arise from browser limitations or advanced content blocking techniques."
+---
+
+# Troubleshooting Network Requests and Data Reporting
+
+## Overview
+This guide helps you resolve issues when uBO Scope’s badge count or popup data does not reflect expected network activity. You will learn how to diagnose scenarios where no connections are reported, counts seem incorrect, or data appears missing despite site activity. Understanding these common conditions will empower you to verify correct operation, address browser or permission limitations, and interpret data discrepancies.
+
+---
+
+## 1. Common Symptoms and What They Mean
+
+- **Badge shows zero or no count** even though the webpage loads third-party resources
+- **No data or "NO DATA" shown in the popup** when opened
+- **Badge count or popup data seems unexpectedly low or high** for the site you are visiting
+- **Connections appear missing or incomplete**, especially for sites using advanced blocking or non-standard request techniques
+
+<Tip>
+Always start troubleshooting by verifying your browser version and extension permissions. Many issues stem from missing `webRequest` API permissions or browser incompatibility.
+</Tip>
+
+---
+
+## 2. Prerequisites to Verify Before Troubleshooting
+
+- Confirm your browser version meets minimum requirements:
+  - Chromium 122+
+  - Firefox 128+
+  - Safari 18.5+
+- Confirm uBO Scope has been installed and activated properly (see "Installing uBO Scope" and "Activating and Accessing uBO Scope" guides).
+- Verify uBO Scope has permission to observe web requests, especially `webRequest` in your browser’s extension settings.
+- Make sure no conflicting extensions or browser privacy settings disable the `webRequest` API or block extension monitoring.
+
+<Check>
+To check permissions in Chromium or Firefox: go to extensions page → find uBO Scope → ensure all required permissions like "Observe network requests" or "webRequest" are granted.
+</Check>
+
+---
+
+## 3. Step-by-Step Troubleshooting Workflow
+
+### Step 1: Confirm the badge and popup load
+
+1. Open any commonly used website with third-party resources (e.g., news or e-commerce site).
+2. Observe the uBO Scope toolbar badge count updates dynamically.
+3. Click the toolbar icon to open the popup and verify domain connection lists populate.
+
+**Expected Results:**
+- Badge shows a number reflecting distinct third-party domains.
+- Popup lists allowed, stealth-blocked, and blocked connection domains.
+
+If badge remains empty or popup shows "NO DATA", continue to Step 2.
+
+---
+
+### Step 2: Verify browsing context and permissions
+
+- Close other extensions that can interfere with web requests (content blockers, privacy-focused extensions).
+- Verify browser allows uBO Scope to track network requests:
+  - On Firefox and Chromium, check privacy/tracking protection settings.
+  - On Safari, ensure minimum version and extension activation.
+- Restart browser after any permission changes.
+
+**Expected Results:**
+- uBO Scope badge begins reflecting network connections again.
+
+---
+
+### Step 3: Diagnose if `webRequest` API is restrictive or disabled
+
+Some browsers or profiles restrict or disable the `webRequest` API’s ability to report requests, especially requests made by service workers, fetch(), or advanced APIs.
+
+- Visit an HTTPS site and open the developer console.
+- Check for restrictions or errors concerning extension network access.
+- If present, consult your browser’s privacy settings or profiles to relax restrictions.
+
+<Warning>
+Some browsers limit `webRequest` API under private browsing, incognito mode, or on mobile platforms, causing under-reporting in uBO Scope.
+</Warning>
+
+---
+
+### Step 4: Check for advanced content blocking or stealth blocking
+
+uBO Scope reports three categories:
+- **Allowed**: connections that succeeded
+- **Blocked**: connections that failed/error (based on errors reported by webRequest)
+- **Stealth-blocked**: connections intercepted by redirects or stealthy blocking mechanisms
+
+Advanced content blockers or browsers may use stealthy blocking which may cause discrepancies in domain counts.
+
+- Disable other blockers temporarily and retest to identify if stealth blocking affects data shown.
+- Use related documentation on [Debunking Block Count Myths](../advanced-usage-scenarios/debunking-myths) to interpret the impact on counts.
+
+---
+
+### Step 5: Clear extension and browser session data
+
+- Sometimes stale or corrupted session data may cause incorrect counts.
+- Go to your browser’s extensions settings → uBO Scope → clear stored data or disable/reactivate the extension.
+- Restart browser.
+
+---
+
+## 4. Additional Tips and Best Practices
+
+- **Always use the latest supported browser version** to ensure full `webRequest` API support.
+- **Avoid ad blocker test webpages** — these use artificial scenarios which can confuse network reporting tools like uBO Scope.
+- **Regularly restart your browser** to refresh extension and network tracking states.
+- If you use **multiple similar extensions**, conflicts may cause inaccurate reporting.
+- Review the [Quick Validation Guide](../getting-up-and-running/quick-validation) to confirm your setup.
+
+---
+
+## 5. Troubleshooting Common Issues
+
+<AccordionGroup title="Common Troubleshooting Issues">
+<Accordion title='No Badge Count Updates or Empty Badge'>
+
+- Verify extension permissions (`webRequest` and host permissions allowed).
+- Disable other extensions that might alter network requests.
+- Restart the browser.
+- Confirm browser and extension versions are supported.
+- Clear extension session storage.
+
+</Accordion>
+
+<Accordion title='Popup Displays "NO DATA" or Empty Lists'>
+
+- Open popup after confirming active tab has network activity.
+- Refresh the tab.
+- Check for browser privacy modes or profiles limiting extension API.
+- Reinstall or reload extension.
+
+</Accordion>
+
+<Accordion title='Inconsistent Counts Compared to Site Behavior'>
+
+- Understand stealth blocking and redirects interfere.
+- Disable other blockers to isolate problem.
+- Realize that some resources may load outside `webRequest` scope (e.g., fetch() in service workers).
+
+</Accordion>
+
+<Accordion title='Counts Do Not Reflect Blocker Status Correctly'>
+
+- The badge counts allowed distinct third-party domains — it does not count blocked requests.
+- Review [Interpreting uBO Scope Results and Badges](../core-workflows/interpreting-results) to understand badge logic.
+
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Understanding Browser & Extension Limitations
+
+uBO Scope relies on browser `webRequest` API to monitor network requests at a low level. However:
+
+- Some browsers limit this API in private/incognito windows.
+- Some network requests initiated by browser internals or service workers may not be visible.
+- Extensive privacy settings or extensions can cause webRequest reporting gaps.
+
+This means that missing connections or no updates may not always reflect an extension fault but inherent API or browser restriction.
+
+---
+
+## 7. Next Steps
+
+After resolving data reporting issues:
+
+- Explore [Monitoring Connections on Any Site](../core-workflows/basic-usage) to deepen your understanding of network activity monitoring.
+- Consult [Debunking Block Count Myths](../advanced-usage-scenarios/debunking-myths) to interpret badge and block data accurately.
+- Check [Solving Installation Problems](../../getting-started/troubleshooting-common-issues/common-installation-issues) if you suspect installation or setup issues.
+
+---
+
+## References
+- [Installation and First-Time Setup](../core-workflows/install-setup)
+- [Activating and Accessing uBO Scope](../../getting-started/getting-up-and-running/initial-launch-activation)
+- [Quick Validation: Confirm uBO Scope is Working](../../getting-started/getting-up-and-running/quick-validation)
+- [Interpreting uBO Scope Results and Badges](../core-workflows/interpreting-results)
+- uBO Scope GitHub Repository: https://github.com/gorhill/uBO-Scope
+
+---
+
+## Appendix: Verifying Permissions in Chromium
+```plaintext
+1. Navigate to chrome://extensions/
+2. Locate uBO Scope
+3. Click "Details"
+4. Confirm the "Permissions" section includes:
+   - "Read and change all your data on the websites you visit"
+   - "Access browser tabs"
+   - "WebRequest"
+5. If permissions are missing, reinstall or re-enable the extension.
+```
+
+## Appendix: Typical uBO Scope Badge Behavior
+
+The badge displays the count of distinct **allowed third-party domains** contacted by the current tab.
+
+Remember:
+- Lower badge counts indicate fewer unique third-party connections, generally better for privacy.
+- Blocked or stealth-blocked connections do not increase badge count.
+
+---
+
+By following these steps and understanding uBO Scope’s reporting model, you will effectively troubleshoot and interpret network request data to maintain full visibility of browser remote connections.
