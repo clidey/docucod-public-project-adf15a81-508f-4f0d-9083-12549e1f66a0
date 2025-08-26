@@ -1,0 +1,148 @@
+---
+title: "How uBO Scope Works (Architecture Overview)"
+description: "Get a visual and narrative overview of how uBO Scope interacts with your browser. Understand the role of webRequest listeners, the flow of data from network request detection to popup panel display, and how the badge updates in real time. Includes a simple mermaid data flow diagram."
+---
+
+# How uBO Scope Works (Architecture Overview)
+
+Discover how uBO Scope integrates with your browser to provide real-time visibility into third-party network connections. This overview explains the journey from the moment your browser initiates network requests, through uBO Scope's internal processing, to the moment you see actionable information in the popup panel and badge count.
+
+---
+
+## How uBO Scope Detects Network Requests
+
+uBO Scope leverages the browser's `webRequest` API to monitor network activity transparently. This API allows the extension to listen for three key events related to network requests:
+
+- **Before Redirect**: Captures when a request is about to be redirected.
+- **Error Occurred**: Detects when a request fails due to an error.
+- **Response Started**: Indicates a successful start of a response from the server.
+
+These events allow uBO Scope to record detailed outcomes of every network request that relates to each browser tab, regardless of whether a content blocker is active or not.
+
+
+## Data Collection and Tab Association
+
+Each network request recorded by uBO Scope is linked to a specific browser tab using the request's `tabId`. Requests without a valid tab context are ignored to maintain accurate per-tab reporting.
+
+For every tab, uBO Scope maintains a detailed object including:
+
+- The **main domain and hostname** associated with the tab.
+- Three categories of third-party connections:
+  - **Allowed** (successful connections)
+  - **Stealth-blocked** (redirected or silently blocked connections)
+  - **Blocked** (explicitly blocked requests resulting in errors)
+
+Whenever the tab's main frame initiates a network request, uBO Scope resets this tab data to ensure each browsing session and page load is tracked cleanly.
+
+
+## Domain Parsing and Deduplication
+
+To provide meaningful insights, uBO Scope parses each request's hostname and derives its "registered domain" using the Public Suffix List (PSL). This domain extraction is critical because it groups subdomains under their parent domains, so users see distinct third-party domains instead of an overwhelming list of hosts.
+
+This PSL-based parsing handles complex domain structures, including punycode and IDNA (internationalized) domains, ensuring consistent and accurate domain grouping.
+
+
+## Updating the Browser Action Badge
+
+The extension continuously calculates the count of distinct allowed third-party domains per tab. This count is displayed prominently on the browser action badge (the toolbar icon) for the active tab, giving instant feedback on your exposure to third-party connections.
+
+Whenever relevant network requests change (e.g., new allowed domains are detected or tabs are closed), uBO Scope updates this badge count to reflect the current state.
+
+
+## Popup Panel and User Interface
+
+Beyond the badge, users can open the uBO Scope popup panel to see a detailed, categorized list of third-party domains per tab:
+
+- **Not Blocked:** Domains where connections succeeded.
+- **Stealth-Blocked:** Domains connected through redirects or stealth-blocking mechanisms.
+- **Blocked:** Domains where connection attempts failed due to blocking.
+
+This UI provides counts next to each domain and organizes information to enable quick understanding and analysis.
+
+
+## Data Persistence and Session Management
+
+uBO Scope stores session data (tab details and connection outcomes) in the browser's session storage. This ensures that information remains consistent across service worker restarts or temporary extension suspensions without persisting beyond browser sessions.
+
+Tab data is cleared automatically when tabs are closed to avoid stale information.
+
+
+## Real-World Workflow Example
+
+1. You open a webpage in Tab A.
+2. As the page loads, multiple network requests are initiated—some to first-party servers, others to third parties.
+3. uBO Scope detects each request event and:
+   - Parses the request URL,
+   - Determines the parent domain,
+   - Categorizes the outcome (allowed, stealth, blocked).
+4. The badge on Tab A's icon updates to show the number of distinct allowed third-party domains.
+5. When you open the popup panel, you see lists of domains grouped by outcome with connection counts.
+
+
+## Benefits of uBO Scope's Architecture
+
+- **Real-time awareness**: See third-party contacts as they happen, up to date.
+- **Accurate domain analysis**: Avoid noisy or misleading host counts with robust domain parsing.
+- **Content blocker agnostic**: Reports connection outcomes regardless of which or if any blocking is applied.
+- **Session-focused persistence**: Keeps fresh data relevant to your current browsing experience.
+
+
+---
+
+## Visualizing the Data Flow
+
+```mermaid
+flowchart TD
+
+  Browser["Browser"] -->|Initiates Network Request| WebRequestAPI["webRequest API"]
+
+  subgraph Extension Background
+    direction TB
+    Listener["Request Listeners (onBeforeRedirect, onError, onResponseStarted)"] --> Queue["Network Request Journal"]
+    Queue --> Timer["Timer to Batch Process (1s delay)"] --> Processor["Process Network Requests"] --> SessionData["Session Data: Tab ID → Connection Outcomes"]
+    Processor --> UpdateBadge["Update Badge Count"]
+  end
+
+  SessionData --> PopupPanel["Popup Panel UI"]
+  UpdateBadge --> BrowserActionBadge["Browser Action Badge"]
+
+  BrowserActionBadge --> User["User Sees Badge Count"]
+  PopupPanel --> User
+
+  %% Subgraph Labels
+  subgraph User Interaction
+    User
+  end
+
+  classDef extBackground fill:#d9f6ff,stroke:#009,stroke-width:1px;
+  class Extension Background extBackground;
+```
+
+
+---
+
+## Practical Tips
+
+- **Keep your browser and extension updated** to ensure accurate domain parsing and the latest Public Suffix List.
+- **Understand the badge count** as a count of unique third-party domains connected successfully.
+- **Use the popup panel** for deeper insights, especially when troubleshooting or assessing third-party exposure.
+- **Close tabs to clear data** related to those tabs, keeping session storage lean and relevant.
+
+
+## Troubleshooting Highlights
+
+- If the badge doesn’t update, ensure uBO Scope has the necessary permissions and the browser supports `webRequest` event listening.
+- Network requests outside `webRequest` API scope cannot be detected (e.g., some service workers or non-HTTP protocols).
+- Ensure no browser policies or restrictive environments are blocking extension storage access.
+
+
+---
+
+# Next Steps
+
+Explore the [Interpreting the Badge and Main UI](https://your-doc-site/guides/main-workflows/interpreting-badge) page to learn how to read and act on the connection counts and domain lists. For installation and setup details, see the [Installing uBO Scope](https://your-doc-site/getting-started/installation-basics/extension-installation) page.
+
+
+---
+
+*This overview positions you to leverage uBO Scope confidently, understanding the flow from network event capture to actionable user insights.*

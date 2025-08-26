@@ -1,0 +1,130 @@
+---
+title: "Troubleshooting Common Installation Issues"
+description: "Find practical solutions for common setup problems—such as the extension not appearing, no domains showing, or badge behavior inconsistencies. Each fix is described clearly, with actionable next steps and links back to the relevant extension logic or support resources."
+---
+
+# Troubleshooting Common Installation Issues
+
+If you have installed uBO Scope but encounter problems such as the extension not appearing, domains not showing in the popup, or incorrect toolbar badge behavior, this guide will help you diagnose and resolve these common issues quickly and effectively.
+
+---
+
+## 1. Extension Does Not Appear After Installation
+
+If uBO Scope's toolbar icon or popup is missing, follow these steps:
+
+### Step 1: Verify Installation Status
+- **Chrome/Chromium:** Go to `chrome://extensions/` and confirm uBO Scope is installed and enabled.
+- **Firefox:** Navigate to `about:addons` → Extensions and ensure uBO Scope is active.
+- **Safari:** Open Safari Extensions preferences and verify installation.
+
+### Step 2: Confirm Browser Version Compatibility
+- uBO Scope requires minimum versions:
+  - **Chrome:** 122 or higher
+  - **Firefox:** 128 or higher
+  - **Safari:** 18.5 or higher
+
+Ensure your browser is up to date to support required APIs (`webRequest` and `action` with popup).
+
+### Step 3: Restart the Browser
+- Fully close and restart your browser to ensure the extension is loaded properly.
+
+### Step 4: Check Extension Permissions
+- The extension must have permissions for webRequest and activeTab.
+- If permissions were declined or restricted, uBO Scope cannot monitor network requests.
+
+## 2. No Domains or Data Showing in Popup
+
+If the popup opens but shows "NO DATA" or no domains are listed:
+
+### Step 1: Reload the Active Tab
+- Sometimes network request data requires the tab to reload after extension install.
+
+### Step 2: Confirm WebRequest API Access
+- Ensure no other extensions or browser policies block `webRequest` API usage.
+- On Chrome, certain privacy modes like Incognito require explicit permission for extensions.
+
+### Step 3: Verify Network Activity
+- Visit websites with known third-party connections (e.g., popular news or e-commerce sites).
+- If no domains appear, network monitoring might be disabled or blocked by browser settings.
+
+### Step 4: Check for Content Blocker Interference
+- uBO Scope reports all connections regardless of content blockers, but some network requests may be stealth-blocked (shown in popup).
+- If all domains show stealth or blocked, it indicates another blocker is affecting requests.
+
+## 3. Toolbar Badge Behavior Is Inconsistent or Missing
+
+The toolbar badge shows the count of distinct third-party domains connected per active tab. Issues here include badge not updating or showing incorrect counts.
+
+### Step 1: Confirm Tab Focus
+- Badge reflects the currently active tab in the current window.
+- Switching tabs or windows should update the badge number accordingly.
+
+### Step 2: Check Browser Action Configuration
+- The `manifest.json` defines the toolbar icon and popup.
+- If backgrounds or permissions are restricted (e.g., due to browser policies), badge updates may fail silently.
+
+### Step 3: Clear Session Data
+- Cached session data may be corrupt, causing display issues.
+- Clear extension session storage or reinstall the extension:
+  1. Open browser extension storage via developer tools.
+  2. Remove session data keys such as `sessionData` and `publicSuffixList`.
+  3. Reload browser and the extension.
+
+### Step 4: Disable and Re-enable the Extension
+- Temporarily disable then re-enable uBO Scope to reset badge state.
+
+## 4. Common Next Steps When Issues Persist
+
+- **Check Browser Console for Errors:** Access the background service worker console or extension popup console to view errors or warnings.
+- **Review Other Extensions:** Disable other privacy or network-related extensions that may conflict.
+- **Consult Browser Policies:** Especially in enterprise environments, group policies can block required permissions.
+- **Submit an Issue:** If the problem cannot be resolved, provide detailed information including browser version, uBO Scope version (found in extension details), and steps to reproduce.
+
+## 5. Useful Commands & Resources
+
+### Access Extension Storage (Developer Tools)
+- In Chrome:
+  1. Open `chrome://extensions/` and enable Developer mode.
+  2. Click 'background page' link under uBO Scope to open console.
+  3. Use Application tab → Storage to inspect session data.
+
+### Clear Extension Storage Manually (Example)
+```javascript
+// In extension background console or via debug console
+browser.storage.session.remove('sessionData');
+browser.storage.session.remove('publicSuffixList');
+```
+
+### Official GitHub Repository for Reporting & Source
+- <https://github.com/gorhill/uBO-Scope>
+
+---
+
+## Additional Tips & Best Practices
+
+- **Ensure Correct Extension Version:** Download uBO Scope from official stores linked in the README to avoid outdated or spoofed versions.
+- **Use Supported Browsers:** Only browsers supporting the `webRequest` API properly can yield full functionality.
+- **Reload Tabs After Installation:** Extensions monitoring network requests start fresh on page loads.
+- **Keep Browser Updated:** Browser updates may enhance or break extension APIs.
+
+---
+
+By following this guide, most common installation and operation issues with uBO Scope can be resolved pragmatically. For deeper insight, please refer to the related documentation pages on installation prerequisites, badge interpretation, and validation steps.
+
+
+---
+
+### Links to Related Documentation
+- [Prerequisites & System Requirements](/getting-started/installation-basics/prerequisites-system-requirements)
+- [Installing uBO Scope](/getting-started/installation-basics/extension-installation)
+- [First Launch & Basic Configuration](/getting-started/installation-basics/initial-configuration)
+- [Validate uBO Scope Operation](/getting-started/validation-troubleshooting/validation-steps)
+- [Badge Interpretation Guide](/guides/main-workflows/interpreting-badge)
+- [Troubleshooting Common Issues](/getting-started/validation-troubleshooting/troubleshooting-common-issues)
+
+### Source Code Reference
+- Background logic for session and request handling: [js/background.js](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js)
+- Popup UI rendering: [js/popup.js](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+
+---

@@ -1,0 +1,169 @@
+---
+title: "Troubleshooting & Understanding Edge Cases"
+description: "Addresses what uBO Scope can and can't report—such as requests happening outside the webRequest API or when browser limitations apply. Includes solutions for diagnosing unexpected results."
+---
+
+# Troubleshooting & Understanding Edge Cases
+
+## Overview
+
+This guide explains what uBO Scope can and cannot report, focusing on scenarios where network requests happen outside the browser's `webRequest` API or when browser limitations apply. You will learn how to diagnose unexpected or missing connection data, understand the extension's inherent constraints, and apply practical solutions to get the clearest insights from your browsing activity.
+
+---
+
+## 1. What uBO Scope Monitors and Reports
+
+**Purpose:** uBO Scope tracks network connections initiated by webpages through the browser's `webRequest` API. It reports on connections that are allowed, stealth-blocked, or blocked by various content blockers or network-level interventions.
+
+### What Is Reported
+
+- **Network requests made in the main browser process and associated with tabs.**
+- **Requests visible through the browser's `webRequest` API including requests that succeed or fail.**
+- **Third-party connections, aggregated by domain, showing distinct remote servers contacted per tab.**
+
+### What Isn't Reported
+
+- Network requests **not captured by the browser's `webRequest` API**. This includes:
+  - Requests initiated by browser internals or extensions that use alternative mechanisms.
+  - Requests made by browser features not exposing data to `webRequest`, such as some built-in DNS resolutions or isolated network contexts.
+  - Connections inside privileged browser contexts or some embedded browsers without full API support.
+
+- Requests blocked or modified outside the browser API, such as by:
+  - DNS layer blocking (unless reflected by the browser API).
+  - External firewalls or proxies.
+
+### Browser Platform Limitations
+
+- API support differs across browsers and versions (uBO Scope requires at least Chrome 122+, Firefox 128+, Safari 18.5+).
+- Some browsers restrict `webRequest` API capabilities, limiting visibility on network activity.
+
+<Note>
+The accuracy and completeness of reported connection data depend on the browser providing detailed `webRequest` events. The extension cannot monitor or infer requests invisible to that API.
+</Note>
+
+---
+
+## 2. Diagnosing Unexpected or Missing Connection Reports
+
+If you notice missing network requests or unexpected data in uBO Scope, use the following diagnostics.
+
+### Step 1: Confirm Browser and Extension Versions
+
+- Verify that you are running a supported browser version:
+  - Chromium-based browsers version 122 or higher
+  - Firefox version 128 or higher
+  - Safari version 18.5 or higher
+- Ensure uBO Scope is installed and updated to the latest version (check version 1.0.1 or newer).
+
+### Step 2: Check Extension Permissions
+
+- Confirm that the extension has these permissions granted:
+  - `webRequest` permission (critical for capturing network requests)
+  - Host permissions for relevant URL schemes (`http://*/*`, `https://*/*`, and for Chromium browsers also `ws://*/*`, `wss://*/*`)
+
+### Step 3: Validate WebRequest API Visibility
+
+- Some network requests may be made outside the scope of `webRequest` API events:
+  - Background browser fetches or service worker related traffic.
+  - Browser prefetching or speculative connections.
+
+- Open developer tools and review the Network tab versus the uBO Scope popup data. Significant discrepancies usually indicate `webRequest` API limitations.
+
+### Step 4: Look for Requests With Missing Metadata
+
+- If a request has no IP or zero status code, uBO Scope treats it as an error likely indicating failure or invisibility to the API.
+- These requests are classified as blocked or stealth-blocked in the UI.
+
+### Step 5: Review Known Browser Quirks
+
+- uBO Scope cannot observe requests from browser components that do not emit `webRequest` events.
+- Some browsers or platforms may delay or cache connection monitoring, impacting real-time updates.
+
+---
+
+## 3. Solutions and Best Practices for Clearer uBO Scope Results
+
+### Clear Extension Data
+
+If you suspect corrupted or outdated session data:
+
+1. Open your browser's extension management page.
+2. Find uBO Scope.
+3. Use the browser's storage clearing tools or uninstall and reinstall the extension.
+4. Reload pages to re-trigger fresh network monitoring.
+
+### Refresh Public Suffix List
+
+- The extension relies heavily on the Public Suffix List to parse domains.
+- If domain parsing looks incorrect or inconsistent, try reloading the suffix list by restarting the browser or extension.
+
+### Minimize Browser Interference
+
+- Disable conflicting extensions temporarily.
+- Avoid testing on synthetic "ad blocker test" websites that produce unrealistic or fabricated network requests.
+
+### Use Real Browsing Scenarios
+
+- Test uBO Scope results on real, commonly visited websites.
+- Observe the badge and popup domains to understand the actual network exposure.
+
+---
+
+## 4. Understanding Connection Classifications in Edge Cases
+
+### Allowed
+
+- Requests fully observed by the API and completed successfully.
+
+### Blocked
+
+- Requests that failed, errored, or were blocked and reported as such by the API.
+
+### Stealth-Blocked
+
+- Redirected requests or requests with ambiguous or limited data, indicating possible covert blocking or redirection.
+
+### Edge Case Examples
+
+- Certain dynamic requests initiated by scripts or browser internals may not appear.
+- Connections over WebSocket protocols appear only on Chromium browsers with relevant host permissions.
+
+---
+
+## 5. When to Seek Further Assistance
+
+If you’ve followed the above diagnostics and still encounter unexpected results or have concerns about missing important network connections:
+
+- Review the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope) for known issues.
+- Consult related troubleshooting pages in the documentation.
+
+---
+
+## Summary
+
+Understanding the limitations and browser-dependent behaviors that affect what uBO Scope can report is critical for effective use. This guide empowers you to diagnose why some requests may be missing or misrepresented and offers practical steps to maximize visibility through the extension.
+
+
+---
+
+## Additional Resources
+
+- [Installation & Setup Guide]( /guides/getting-started/installation-setup )
+- [Interpreting the Badge and Main UI]( /guides/main-workflows/interpreting-badge )
+- [Analyzing Third-Party Connections Per Tab]( /guides/main-workflows/analyzing-network-requests )
+- [Troubleshooting Common Installation Issues]( /getting-started/validation-troubleshooting/troubleshooting-common-issues )
+- [Public Suffix List Official Site]( https://publicsuffix.org )
+
+---
+
+## Appendix: Technologies Behind uBO Scope Reporting
+
+- uBO Scope listens to browser `webRequest` API events such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` to maintain a current journal of network request outcomes.
+- Domains are parsed using the Public Suffix List to aggregate connections by registrable domains.
+- The popup interface reflects categories of domains visually, while the toolbar badge reports the count of distinct allowed third-party domains per tab.
+
+<Tip>
+Regularly update your browser to benefit from improvements to the `webRequest` API and related security features that can affect uBO Scope’s reporting accuracy.
+</Tip>
+
+---
