@@ -1,0 +1,186 @@
+---
+title: "System Architecture & Data Flow"
+description: "Visual and narrative explanation of uBO Scope’s key components: extension background scripts monitor all network requests using the browser’s webRequest API and aggregate session data per tab, which is then surfaced in the popup UI for user interpretation. Includes a mermaid diagram to illustrate relationships."
+---
+
+# System Architecture & Data Flow
+
+## Overview
+uBO Scope is designed to provide clear, real-time insights into all network connections initiated by your browser tabs. This page explains the core components of uBO Scope and how they work together to monitor network requests, aggregate connection data per browser tab, and present actionable information in the extension’s popup interface.
+
+Understanding this architecture helps you appreciate how uBO Scope delivers accurate connection counts and detailed domain categorizations without interrupting browsing or relying on guesswork.
+
+---
+
+## How uBO Scope Works: Core Components and Data Flow
+
+At its heart, uBO Scope operates as a browser extension that continuously listens to network activity across tabs by leveraging the browser's `webRequest` API. The key components involved are:
+
+- **Background Scripts (Background Service Worker or Module)**
+- **Session Data Aggregation**
+- **Popup User Interface (UI)**
+
+Each component plays a vital role in capturing, processing, and displaying network connection information.
+
+
+### 1. Background Scripts: The Network Watchdog
+
+The background scripts run persistently in the extension’s environment and serve as the main observer of all browser network requests.
+
+- Using the `webRequest` API, these scripts listen to key events such as request redirects, errors, and response starts.
+- Each network request event is queued and processed to assign it a classification outcome: **allowed**, **blocked**, or **stealth-blocked**.
+- The background script extracts the hostname from each request and uses the Public Suffix List to determine the domain in order to uniquely track third-party servers.
+- Results are stored and aggregated per tab, maintaining detailed counts of interactions with various domains.
+
+This continuous monitoring ensures that for any active tab, uBO Scope has a comprehensive view of the remote servers contacted.
+
+
+### 2. Session Data Aggregation per Tab
+
+Data is organized around individual browser tabs, maintaining a separate session record for each open tab:
+
+- When the main frame of a tab navigates, the session data for that tab is reset to ensure fresh tracking.
+- Each network request outcome updates count maps for allowed, blocked, or stealth-blocked domains and hostnames.
+- This structured data enables quick lookup and accurate reporting without performance penalties.
+
+The background script also manages the extension badge's number on the toolbar icon, showing the count of distinct third-party domains successfully connected (allowed) for the active tab.
+
+
+### 3. Popup UI: User-Friendly Data Presentation
+
+The popup UI gathers the processed data from the background scripts on demand:
+
+- When you open uBO Scope’s popup, a message is sent to retrieve the tab-specific data.
+- The UI then renders the hostname, domain, and counts of allowed, stealth-blocked, and blocked remote servers.
+- Domains and their request counts are displayed in distinct sections, making it easy to interpret the current tab’s network exposure.
+
+This design balances detail with clarity, empowering you to quickly understand your browsing traffic privacy posture.
+
+---
+
+## Example User Flow: From Request to Insight
+
+1. **Page Load:** You navigate to a website in a new tab.
+2. **Request Capture:** The background script captures all network requests initiated by this tab.
+3. **Outcome Classification:** Each request’s outcome is recorded as allowed, blocked, or stealth-blocked.
+4. **Data Aggregation:** Per-tab session data updates counters of unique domains contacted.
+5. **Badge Update:** The toolbar icon updates with the count of allowed third-party domains.
+6. **Data Display:** Upon opening the popup, you see a detailed breakdown of these domains with counts.
+
+This flow happens seamlessly, providing instant feedback about which connections occur behind the scenes.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Interpret Badge Count:** The badge shows distinct allowed third-party domains, a key privacy indicator.
+- **Popup Data Accuracy:** Since the UI pulls data from the background script’s aggregations, it reflects real-time tab-based analytics.
+- **Awareness of Stealth-Blocking:** Stealth-blocked entries indicate network requests that were redirected or hidden by content blockers; they help understand sophisticated blocking mechanisms.
+
+
+## Understanding the Key Relationships
+
+The following diagram illustrates the architecture and data flow:
+
+```mermaid
+flowchart TD
+
+    subgraph Background "Background Scripts"
+      BG["Network Listener (webRequest API)"]
+      SessionData["Session Data Aggregation per Tab"]
+      BadgeUpdater["Toolbar Badge Manager"]
+    end
+
+    subgraph Browser["Browser Environment"]
+      Tabs["Browser Tabs"]
+      Popup["Popup UI"]
+    end
+
+    User["User Interaction"]
+
+    %% Network events from tabs to background
+    Tabs -->|Network Requests| BG
+
+    %% Background processes data
+    BG --> SessionData
+    SessionData --> BadgeUpdater
+    BadgeUpdater --> Tabs
+
+    %% Popup data request
+    Popup -->|Requests Data| SessionData
+    SessionData -->|Sends Aggregated Data| Popup
+    User -->|Clicks Extension Icon| Popup
+
+    %% User view
+    Popup -->|Renders Data| User
+
+    classDef bgScripts fill:#f9f,stroke:#333,stroke-width:2px;
+    class Background bgScripts;
+
+    classDef browserEnv fill:#bbf,stroke:#333,stroke-width:2px;
+    class Browser browserEnv;
+
+    class User fill:#8f8,stroke:#333,stroke-width:2px;
+```
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Common Challenges and Solutions">
+<Accordion title="Why does the badge show no count?">
+If you see no number on the badge, it may be because:
+- The active tab has no third-party connections registered yet.
+- The network requests may fall outside of what the extension can monitor.
+- The tab may not have fully loaded or navigated yet.
+
+Try refreshing the tab or switching tabs to prompt data updates.
+</Accordion>
+<Accordion title="Why are some domains in stealth-blocked?">
+Stealth-blocking reflects network requests that are redirected or invisibly blocked by content blockers or features in the browser.
+This category helps reveal hidden network activity that standard blocking counters might miss.
+</Accordion>
+<Accordion title="Popup data not updating?">
+The popup shows snapshot data per tab and updates whenever opened.
+If data seems stale, try closing and reopening the popup or refreshing the tab.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+uBO Scope’s system architecture is thoughtfully designed to monitor network requests at the browser level, aggregate rich session data tied to individual tabs, and present clear, actionable connection summaries in the popup UI.
+
+This approach gives you unmatched transparency about which third-party domains your browser contacts, helping you audit site privacy and assess content blocker effectiveness with confidence.
+
+For deeper understanding, consider exploring related documentation linked below.
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](/overview/product-intro/what-is-ubo-scope) - Introduction and purpose of the extension
+- [Understanding Network Connections](/overview/core-concepts/network-connection-types) - Details on first vs third-party distinction
+- [Allowed, Blocked, and Stealth-Blocked](/overview/core-concepts/classification-of-requests) - Outcome classifications explained
+- [Integration & Browser Support](/overview/system-overview/integration-and-compatibility) - Supported platforms and browser nuances
+
+---
+
+## Next Steps
+
+To start leveraging uBO Scope, visit the [Getting Started]( /getting-started) section for installation guidance and initial usage tips.
+
+Explore the [Popup UI and Badge Guide](/guides/interpreting-results/badge-and-popup-guide) to maximize the value of data surfaced through this architecture.
+
+
+---
+
+_This page is part of the comprehensive uBO Scope documentation that empowers users to understand and control their browsing exposure to third-party connections._
+
+---
+
+*Source Code & Resources:* [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+
+
+---
