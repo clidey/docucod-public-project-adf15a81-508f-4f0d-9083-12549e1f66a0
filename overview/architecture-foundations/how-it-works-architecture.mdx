@@ -1,0 +1,172 @@
+---
+title: "How It Works: System Architecture"
+description: "Explains the high-level architecture of uBO Scope with a mermaid diagram, showing how the background script monitors webRequest events, manages session data per tab, updates the popup UI, and maintains a public suffix list for accurate domain tracking. Visualizes the data flow and component responsibilities."
+---
+
+# How It Works: System Architecture
+
+uBO Scope is architected to provide clear, accurate insight into your browser's network connections by efficiently monitoring, categorizing, and presenting remote server interactions. This page walks you through the high-level components and data flows that power uBO Scope, focusing on how the background script captures network events, maintains session state per browser tab, keeps the public suffix list up to date for domain resolution, and communicates data to the popup UI.
+
+---
+
+## Overview
+
+At its core, uBO Scope's system architecture centers around the background script (`js/background.js`), which acts as the engine monitoring every web request your browser makes during browsing sessions. It collects data, classifies outcomes (allowed, blocked, stealth-blocked), and maintains tab-specific session data.
+
+To accurately identify the domain from each URL, uBO Scope uses an embedded **Public Suffix List** (PSL)—a crucial component that helps distinguish registrable domains from subdomains, ensuring the extension reports meaningful and actionable information.
+
+The popup UI (`popup.html` and `js/popup.js`) fetches and renders this processed data, giving you an immediate view of third-party connections related to the active tab.
+
+---
+
+## Major Components and Their Responsibilities
+
+### 1. Background Script (js/background.js)
+
+- **Network Request Monitoring:** Utilizes browser `webRequest` API listeners (`onBeforeRedirect`, `onErrorOccurred`, `onResponseStarted`) to asynchronously intercept details about network requests matching the extension's host permissions.
+
+- **Session Data Management:** Maintains a `tabIdToDetailsMap` which tracks network interaction details separately for each browser tab. This ensures you get isolated, tab-focused insights.
+
+- **Outcome Categorization:** Classifies network requests into three groups:
+  - **Allowed:** Network connections fetched successfully
+  - **Blocked:** Requests that encounter errors or are blocked
+  - **Stealth-Blocked:** Redirected requests that are silently suppressed
+
+- **Badge Update:** Reflects the count of distinct allowed domains contacted by the active tab on the browser action badge for quick reference.
+
+- **Persistent State:** Reads and writes session data and PSL snapshots from/to browser session storage, preserving state across browser sessions or extension restarts.
+
+- **Domain Extraction Logic:** Uses the PSL and punycode libraries to translate URLs to accurate domain and hostname formats, handling internationalized domain names properly.
+
+
+### 2. Public Suffix List (PSL)
+
+- A comprehensive domain suffix database embedded at `/assets/thirdparties/publicsuffix.org/list/public_suffix_list.dat`.
+
+- Loaded and parsed at extension startup to provide authoritative domain boundary detection.
+
+- Enables mapping from full hostnames to their registrable domains, crucial for grouping server connections meaningfully.
+
+- Stored in session storage as a serialized snapshot for optimized reloads.
+
+
+### 3. Popup UI (`popup.html`, `js/popup.js`)
+
+- **Active Tab Query:** Requests the background script for the current tab's connection details.
+
+- **Data Deserialization:** Converts serialized connection data back into usable objects.
+
+- **Display Logic:** Renders a categorized list of remote server domains by connection outcome within the popup interface:
+  - Domains allowed to load resources
+  - Domains stealth-blocked (redirected silently)
+  - Domains blocked due to errors or explicit blocking
+
+- **User Feedback:** Updates the domain count summary and clearly differentiates connection dispositions.
+
+
+### 4. Supporting Libraries
+
+- **`psl`** - Assists in domain parsing based on the Public Suffix List.
+- **`punycode`** - Handles conversion between ASCII-compatible and Unicode domain representations.
+- **`s14e-serializer`** - Efficiently serializes and deserializes session data for storage.
+
+---
+
+## Data Flow and Interaction
+
+```mermaid
+flowchart TD
+
+    subgraph Browser
+        direction TB
+        Tab["Browser Tab"]
+        Popup["Popup UI (popup.html/js)"]
+    end
+
+    subgraph ExtensionsBackground["uBO Scope Background Script (js/background.js)"]
+        direction TB
+        NetListener["WebRequest Listeners"]
+        SessionMgr["Session Data Manager"]
+        PSLManager["Public Suffix List Loader & Parser"]
+        BadgeUpdater["Badge Text Updater"]
+    end
+
+    Tab -->|Generates Network Requests| NetListener
+    NetListener -->|Queues Requests with Event Details| SessionMgr
+    SessionMgr -->|Updates Per-Tab Details| BadgeUpdater
+    BadgeUpdater -.-> Tab
+
+    PSLManager -->|Provides Domain Info| SessionMgr
+
+    Popup -->|Requests Tab Data (via Runtime Message)| SessionMgr
+    SessionMgr -->|Sends Serialized Tab Data| Popup
+
+    %% Notes
+    classDef note fill:#f9f,stroke:#333,stroke-width:1px,color:#333,font-style:italic;
+    class Note1,Note2 note;
+
+    Note1["Uses browser.webRequest API to capture network events"]
+    Note2["Maintains tabId-indexed data for isolated network connection tracking"]
+
+    NetListener --- Note1
+    SessionMgr --- Note2
+
+    click NetListener "js/background.js" "WebRequest event listening and queuing logic"
+    click SessionMgr "js/background.js" "Session storage and connection outcome management"
+    click PSLManager "/assets/thirdparties/publicsuffix.org/list/public_suffix_list.dat" "Public Suffix List source"
+    click Popup "popup.html" "Popup UI HTML and script"
+```
+
+---
+
+## Key Insights for Users
+
+- **Per-Tab Tracking:** Understanding connections tab-by-tab helps isolate which websites and their third parties generate network activity.
+
+- **Outcome Categorization:** Immediate visibility into which servers loaded successfully, which were blocked, and which were stealth-blocked reveals how your browser and content blockers interact.
+
+- **Domain Accuracy:** Leveraging the Public Suffix List ensures domains are counted at the correct registrable boundary, avoiding misleading multi-level subdomain splits.
+
+- **Persistent State:** Session data is preserved across sessions ensuring continuity in monitoring.
+
+- **Badge Feedback Loop:** Your browser toolbar badge always reflects the number of distinct allowed third-party domains for the active tab, providing a quick privacy posture indicator.
+
+---
+
+## Practical Tips and Best Practices
+
+- **Keep the extension updated** to benefit from the latest Public Suffix List and performance improvements.
+
+- **Use uBO Scope in tandem with your existing content blockers** to gain transparency into their real-world blocking effectiveness.
+
+- **Interpret badge counts carefully:** A lower number indicates fewer third-party connections, generally better for privacy.
+
+- **Understand stealth-blocked connections:** Redirects marked as stealth-blocked are silently prevented and might not be visible in other tools.
+
+---
+
+## Troubleshooting Common Issues
+
+- If the badge count or popup information seems stale, **reload your browser tab or restart the extension** to ensure session data and the Public Suffix List are up to date.
+
+- Make sure your browser has granted the **necessary permissions** for web request monitoring (`webRequest`, `storage`, `activeTab`).
+
+- If the popup fails to load data, check the **background script’s console logs** for errors related to message passing or session storage.
+
+---
+
+## Next Steps
+
+To deepen your understanding of uBO Scope, visit these related documentation pages:
+
+- [What is uBO Scope?](./overview/introduction-essentials/what-is-ubo-scope) — For product purpose and core functionality
+- [Core Features at a Glance](./overview/introduction-essentials/core-features-overview) — To see key capabilities
+- [Reading the Popup Panel Data](./guides/interpreting-results/reading-popup) — For tips on interpreting UI connection data
+
+For developers and filter maintainers, reviewing the [Browser Integration & Extensibility](./overview/architecture-foundations/integration-and-compatibility) page will also be beneficial.
+
+---
+
+<u>For source code and contributing guidelines, visit the official GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)</u>
+
+---
