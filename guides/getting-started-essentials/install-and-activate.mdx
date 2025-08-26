@@ -1,0 +1,197 @@
+---
+title: "Install and Activate uBO Scope"
+description: "Step-by-step guide for installing uBO Scope on major browsers, enabling the extension, and confirming its initial operation. Provides quick verification and troubleshooting tips for first-time users, ensuring a smooth onboarding experience."
+---
+
+# Install and Activate uBO Scope
+
+This guide walks you through the process of installing uBO Scope on major browsers, activating the extension, and verifying that it is functioning correctly. Follow these steps to ensure a smooth onboarding experience and start monitoring your browser's network connections effectively.
+
+---
+
+## 1. Overview
+
+uBO Scope is a lightweight browser extension designed to reveal all remote server connections your browser tabs make, including those allowed, stealth-blocked, and blocked. The key to an effective installation is ensuring your browser supports uBO Scope and that you have enabled the necessary permissions.
+
+---
+
+## 2. Prerequisites
+
+Before installing uBO Scope, make sure you meet the following conditions:
+
+- **Supported Browsers and Versions:**
+  - Google Chrome version 122 or later
+  - Mozilla Firefox version 128 or later
+  - Safari version 18.5 or later
+- **Permissions:** uBO Scope requires permission to access webpages (`webRequest`), active tabs, and storage in your browser.
+- **Internet Connection:** Needed to download the extension from official stores.
+
+> Ensure your browser is updated to the required minimum version to avoid compatibility issues.
+
+---
+
+## 3. Installation Steps
+
+### Google Chrome (≥122)
+1. Open the [Chrome Web Store page for uBO Scope](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp).
+2. Click **Add to Chrome**.
+3. Confirm by clicking **Add extension** in the dialog.
+4. Wait for the installation to complete; the uBO Scope icon will appear next to your address bar.
+
+### Mozilla Firefox (≥128)
+1. Open the [Firefox Add-ons page for uBO Scope](https://addons.mozilla.org/firefox/addon/ubo-scope/).
+2. Click **Add to Firefox**.
+3. Confirm any permissions the extension requests.
+4. Once installed, the uBO Scope icon should be visible near the toolbar.
+
+### Safari (≥18.5)
+1. Open the Safari Extensions section on the Mac App Store.
+2. Search for "uBO Scope" or navigate to the official extension page.
+3. Click **Get** and install the extension.
+4. Enable uBO Scope in Safari’s Preferences under **Extensions**.
+
+---
+
+## 4. Activating uBO Scope
+
+After installation:
+
+1. Click the uBO Scope icon in your browser toolbar.
+2. The first time you open it, the popup will load and display initial network connection data.
+3. If no data appears, try reloading the active webpage or navigating to a new site.
+
+<u>Note:</u> uBO Scope begins monitoring network requests immediately upon activation, but you may need to refresh a page to populate initial data.
+
+---
+
+## 5. Quick Verification
+
+Validate that uBO Scope is operating as expected:
+
+1. **Open a tab with an active webpage** (e.g., https://example.com).
+2. Observe the **badge count** on the uBO Scope toolbar icon, indicating the number of distinct third-party connections.
+   - A lower badge count suggests fewer third-party connections.
+3. Click the uBO Scope icon to open the popup.
+4. Check the listed domains under the three categories:
+   - **Not Blocked:** Domains from which connections succeeded.
+   - **Stealth-blocked:** Domains where requests were stealthily blocked.
+   - **Blocked:** Domains where requests were blocked outright.
+
+<Tip>
+The badge count reflects distinct third-party domains contacted. Use it as an indicator of your browsing exposure.
+</Tip>
+
+---
+
+## 6. Troubleshooting Installation and Activation
+
+If uBO Scope does not behave as expected after installation:
+
+<AccordionGroup title="Common Installation and Activation Issues">
+<Accordion title="Missing Toolbar Icon">
+- Verify the extension was installed correctly.
+- In browser extension settings, ensure uBO Scope is enabled and visible on the toolbar.
+- Restart the browser if necessary.
+</Accordion>
+
+<Accordion title="No Badge Count or Popup Data">
+- Confirm you are visiting pages over HTTP(S) or WebSocket protocols.
+- Reload the page after installation to trigger network monitoring.
+- Ensure browser permissions for webRequest and activeTab are granted.
+</Accordion>
+
+<Accordion title="Permission Denied Messages">
+- Check your browser's extension permissions.
+- Reinstall uBO Scope if permissions were denied during installation.
+</Accordion>
+
+<Accordion title="Incorrect or Zero Domain Counts">
+- uBO Scope requires the browser webRequest API to monitor network requests.
+- Some private browsers or restrictive environments may block this API, limiting functionality.
+- Try in a different supported browser or user profile to isolate issues.
+</Accordion>
+</AccordionGroup>
+
+<Note>
+Refer to the dedicated Troubleshooting Installation & Setup guide for detailed issue resolution steps.
+</Note>
+
+---
+
+## 7. Best Practices for First Use
+
+- After installation, open several websites to observe different connection profiles.
+- Regularly check the badge count to understand your exposure to third-party domains.
+- Use uBO Scope alongside your content blocker but do not rely solely on apparent block counts.
+
+---
+
+## 8. Next Steps
+
+After you have successfully installed and activated uBO Scope:
+
+- Explore the [Understanding the Popup and Badge](/guides/getting-started-essentials/understanding-the-popup) guide to interpret data meaningfully.
+- Learn how to analyze third-party connections with [Analyzing Third-Party Connections on Any Page](/guides/practical-analysis-workflows/analyze-page-connections).
+- Review troubleshooting tips in [Troubleshooting Installation & Setup](/getting-started/installation-and-setup/troubleshooting) for support.
+
+---
+
+## Appendix: Manual Packaging (Advanced Users)
+
+For users wishing to build the extension package manually (e.g., for development or platforms not supporting web store installs), use the following shell script:
+
+```bash
+#!/usr/bin/env bash
+#
+# Script to create the uBO-Scope extension package for a specified platform.
+# Usage: ./tools/make-package.sh <platform> [version]
+
+if [ -z "$1" ]; then
+    echo "*** Error: need platform name"
+    exit 1
+fi
+
+PLATFORM="$1"
+DES=build/uBO-Scope."$PLATFORM"
+
+echo "*** uBO-Scope: creating extension in $DES"
+
+rm -rf "$DES"
+mkdir -p "$DES"
+
+echo "*** uBO-Scope: copying files"
+
+cp -R assets                       "$DES"/
+cp -R css                          "$DES"/
+cp -R img                          "$DES"/
+cp -R js                           "$DES"/
+cp ./*.html                        "$DES"/
+cp platform/"$PLATFORM"/manifest.json "$DES"/
+cp LICENSE.txt                     "$DES"/
+cp README.md                       "$DES"/
+
+mkdir -p "$DES"/js/lib
+cp node_modules/punycode/punycode.es6.js "$DES"/js/lib/
+
+# Version provided as argument
+if [ -n "$2" ]; then
+    echo "*** uBO-Scope: setting version to $2 in manifest.json"
+    tmp=$(mktemp)
+    jq --arg a "$2" '.version = $a' "$DES/manifest.json" > "$tmp" && \
+        mv "$tmp" "$DES/manifest.json"
+fi
+```
+
+This script assumes a Linux environment and requires `jq` for JSON manipulation.
+
+---
+
+## References
+
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- Browser-specific official stores:
+  - [Chrome Web Store](https://chromewebstore.google.com/)
+  - [Firefox Add-ons](https://addons.mozilla.org/)
+  - [Mac App Store for Safari Extensions](https://apps.apple.com/)
+
+---
