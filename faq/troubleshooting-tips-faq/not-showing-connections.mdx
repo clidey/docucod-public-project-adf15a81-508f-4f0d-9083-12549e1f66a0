@@ -1,0 +1,150 @@
+---
+title: "Why is uBO Scope not showing connections for some websites?"
+description: "Explains reasons why some connections might not appear—such as browser limitations, use of DNS-level blocking, or missing permissions—and offers steps for resolving visibility issues."
+---
+
+# Why is uBO Scope Not Showing Connections for Some Websites?
+
+uBO Scope offers unmatched transparency by displaying all third-party network connections initiated by webpages. However, there are scenarios where you might notice that uBO Scope does not show connections for certain websites. This page explains the common reasons for such visibility gaps and guides you through practical steps to resolve or understand them.
+
+---
+
+## 1. Understanding the Visibility Limits
+
+uBO Scope relies entirely on the browser's `webRequest` API to detect and report network requests. This fundamental dependency introduces some constraints:
+
+- **Browser API Limitations:** Some network requests may happen at levels or in contexts that the `webRequest` API does not expose, causing these requests to be invisible to uBO Scope.
+
+- **DNS-Level or External Blocking:** When blocking occurs through external DNS filtering or stealth mechanisms, the browser may prevent network requests from emitting events that uBO Scope can observe.
+
+- **Permissions and Host Access:** Missing necessary permissions or missing host patterns in the extension's manifest can prevent uBO Scope from monitoring requests on some sites.
+
+Understanding these points is key to realistic expectations and troubleshooting.
+
+---
+
+## 2. Why Some Connections Might Not Appear
+
+### a. Browser and API Limitations
+
+Certain modern browsers and web technologies interfere with the visibility of all network requests:
+
+- **WebSocket (WS/WSS) Support:** While uBO Scope requests permissions for WebSocket URLs, if the browser restricts webRequest events on them, requests may not be tracked.
+
+- **New Network Protocols:** Emerging protocols or browser features might bypass APIs that extensions rely on, making some connections invisible.
+
+### b. DNS-Level or External Content Blocking
+
+Content blocking can occur:
+
+- Before the browser sends network requests (e.g., at DNS resolution level via VPN or DNS filtering services).
+- Via stealthy content blockers that prevent requests but do not expose blocking in the browser.
+
+uBO Scope only reports events the browser provides, so it will not show connections completely blocked before browser networking layers are engaged.
+
+### c. Extension Permissions and Host Access
+
+To monitor network requests effectively, uBO Scope’s manifest includes permissions and host access patterns. If:
+
+- The browser blocks these permissions or restricts access on certain sites,
+- The tab is inactive or in a context where network events are suppressed,
+- Or the extension has not been granted appropriate permissions,
+
+then uBO Scope may miss capturing some connections.
+
+---
+
+## 3. Steps to Resolve Visibility Issues
+
+Follow these best practice steps to maximize visibility:
+
+### Step 1: Verify uBO Scope Installation and Permissions
+
+- Ensure the extension is installed and enabled.
+- Confirm that the extension's host permissions cover the site you are visiting (check manifest host permissions).
+
+### Step 2: Use Supported Browsers and Version
+
+- uBO Scope requires minimum browser versions (e.g., Chrome 122+, Firefox 128+, Safari 18.5+).
+- Update your browser to meet or exceed minimum requirements for full capability.
+
+### Step 3: Confirm Tab Activity
+
+- Only the active tab's network connections are monitored and shown.
+- Switch to the appropriate tab or refresh it if connection data appears missing.
+
+### Step 4: Check for External Blocking Layers
+
+- If you use VPNs, DNS filtering services, or system-level content blockers, temporarily disable them.
+- Observe if this restores connection visibility, indicating external blocking.
+
+### Step 5: Test on a Simple Site
+
+- Visit a less complex website with minimal external dependencies (e.g., a plain static page).
+- This helps identify if missing data is site-specific or a broader issue.
+
+### Step 6: Reinstall or Reset uBO Scope
+
+- Reinstall the extension to ensure no corrupted settings.
+- Clear any stored data (if advanced usage) to reset internal state.
+
+---
+
+## 4. Additional Tips and Best Practices
+
+- **Regularly Update the Extension:** Although updates are infrequent by design, check for new versions that may improve detection or fix issues.
+
+- **Understand Stealth-Blocked Connections:** Some requests might be stealthily blocked and categorized differently within uBO Scope. Refer to its popup interface to see categorized domains.
+
+- **Use uBO Scope in Combination:** For comprehensive analysis, pair uBO Scope with other diagnostic tools or browser developer tools when needed.
+
+- **Consult the Popup Interface:** The popup shows connection outcomes (allowed, blocked, stealth-blocked). Absence in all categories means those connections are undetectable by uBO Scope given current conditions.
+
+---
+
+## 5. Common Troubleshooting Scenarios
+
+<AccordionGroup title="Common Visibility Issues and Solutions">
+<Accordion title="No Data in Popup for Active Tab">
+- Confirm the tab is active and page has finished loading.
+- Refresh the tab and open uBO Scope popup again.
+- Check extension icon for correct badge count.
+</Accordion>
+<Accordion title="Connections Missing on Certain Sites">
+- Investigate if the site uses technologies hiding requests (e.g., service workers, sandboxed iframes).
+- Temporarily disable DNS-level or VPN-based filtering.
+- Confirm extension has permissions for relevant URL patterns.
+</Accordion>
+<Accordion title="WebSocket Connections Not Displayed">
+- Verify browser version supports monitoring WS/WSS via webRequest.
+- Understand that some browsers limit visibility of WebSocket connections.
+</Accordion>
+<Accordion title="Extension Disabled or Permission Issues">
+- Re-enable uBO Scope if accidentally disabled.
+- Review extension settings to confirm activeTab and host permissions.
+- Restart browser if permissions seem stuck.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. When to Seek Further Assistance
+
+If you have followed all steps and still encounter missing connections:
+
+- Visit the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope) for known issues and updates.
+- Consult the [Troubleshooting Common Installation Issues](https://github.com/gorhill/uBO-Scope/blob/main/docs/getting-started/usage-validation-troubleshooting/troubleshooting-install.mdx) guide.
+- Reach out on community forums or support channels listed in the [Where to Get Support](https://github.com/gorhill/uBO-Scope/blob/main/docs/faq/support-community-faq/where-to-get-support.mdx).
+
+---
+
+## 7. Related Documentation
+
+- [Supported Browsers & Prerequisites](/getting-started/setup-installation/system-requirements): Ensure compatibility with your browser.
+- [Troubleshooting Common Installation Issues](/getting-started/usage-validation-troubleshooting/troubleshooting-install): Resolve installation and setup problems.
+- [Quickstart: See uBO Scope in Action](/getting-started/usage-validation-troubleshooting/quickstart-usage): Learn to use the popup interface effectively.
+- [How uBO Scope Works (Architecture Overview)](/overview/product-architecture-quick-feature-tour/architecture-overview): Understand underlying mechanisms.
+
+---
+
+By understanding the technical limitations and carefully following the recommended steps, you can maximize uBO Scope’s ability to reveal all network connections initiated by your browser, empowering you with complete insight into your web traffic exposure.
