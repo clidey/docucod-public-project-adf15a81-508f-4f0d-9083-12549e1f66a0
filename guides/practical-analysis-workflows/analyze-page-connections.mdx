@@ -1,0 +1,194 @@
+---
+title: "Analyzing Third-Party Connections on Any Page"
+description: "Show how to reveal and interpret all attempted and successful connections to remote servers from a webpage. Offers best practices for identifying excessive or suspicious third-party domains, including real-life use case examples."
+---
+
+# Analyzing Third-Party Connections on Any Page
+
+## Overview
+This guide helps you use uBO Scope to reveal and interpret all the remote server connections—both attempted and successful—that occur from any webpage you visit. Understanding these connections is essential to spot excessive third-party traffic, identify suspicious domains, and gain insight into your browser's network footprint.
+
+With uBO Scope, you will explore categorized connection outcomes shown in the popup interface and learn how to assess the data to strengthen your privacy and security stance.
+
+---
+
+## Prerequisites
+- **uBO Scope must be installed and activated** on your supported browser (Chrome ≥122, Firefox ≥128, Safari ≥18.5).
+- You should have an active browser tab open with the webpage you want to analyze.
+- Basic familiarity with web domains and network requests is helpful but not required.
+
+---
+
+## What You Will Achieve
+- See a comprehensive list of all third-party domains your browser connects to while loading and browsing a page.
+- Understand which connections were allowed, stealth-blocked, or blocked.
+- Interpret the badge count on the toolbar as the number of distinct third-party remote servers contacted.
+- Apply best practices to identify excessive or suspicious connections that may impact privacy.
+
+---
+
+## Estimated Time
+5-10 minutes for initial analysis and interpretation.
+
+---
+
+## Difficulty Level
+Beginner to Intermediate.
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Open the uBO Scope Popup
+- Click the uBO Scope toolbar icon while on the webpage you want to analyze.
+- The popup will load and display the domain you are currently viewing along with connection details.
+
+**Expected result:**
+- The popup heading shows the main tab hostname with its domain clearly separated.
+- Below, three sections display third-party domains grouped by outcome: `not blocked`, `stealth-blocked`, and `blocked`.
+
+---
+
+### 2. Understand Each Outcome Category
+
+- **Not blocked:** Domains to which network requests were successful and allowed by your content blockers or browser.
+- **Stealth-blocked:** Domains for which connections were redirected or partially blocked in a stealthy manner by some blockers to avoid breakage or detection.
+- **Blocked:** Domains for which connection attempts were completely blocked or failed, often by content blockers or browser protections.
+
+---
+
+### 3. Review the Domains and Connection Counts
+
+- Examine the list under each category, which shows third-party domains alongside the count of requests made.
+- Focus on the `not blocked` section to see which third-party servers your browser actually fetched data from.
+
+**Tip:**
+- Legitimate third parties like popular CDNs or analytics services often appear here.
+- A high number of unexpected or unknown third-party domains may indicate privacy risks.
+
+---
+
+### 4. Interpret the Toolbar Badge Count
+
+- The badge number on uBO Scope's icon corresponds to the count of distinct third-party domains with allowed connections.
+- A lower badge count generally indicates fewer third-party exposures and better privacy.
+
+**Note:**
+- This count excludes first-party connections (the domain shown in the header).
+- It updates dynamically as you navigate or reload pages.
+
+---
+
+### 5. Investigate Suspicious or Excessive Connections
+
+- Identify domains that seem unfamiliar or unnecessary.
+- Consider researching those domains outside the extension (e.g., via whois or domain reputation services).
+- Use this insight to adjust your content blocker settings or adopt stricter filters if desired.
+
+**Example scenario:**
+- On a news website, you see dozens of third-party domains under `not blocked`. This might indicate numerous trackers or ad networks.
+- On a known secure site, the domains are limited to one or two CDN domains, reflecting minimal third-party exposure.
+
+---
+
+### 6. Use the Popup for Ongoing Monitoring
+
+- Continue browsing with the popup open to see how third-party connections change as you interact with the page.
+- Pay attention to stealth-blocked and blocked domains for insights into what your blockers are actively filtering.
+
+---
+
+## Best Practices
+- **Regularly check the popup when visiting privacy-sensitive sites.**
+- **Compare allowed vs. blocked domain counts to evaluate your blocker’s effectiveness.**
+- **Watch for new or unexpected third parties appearing over time.**
+- **Use domain reputation tools to verify unknown domains before making blocker adjustments.**
+
+---
+
+## Common Pitfalls to Avoid
+- **Confusing allowed connections with safe connections:** Not all allowed third parties are benign; some may track or profile users.
+- **Assuming high block count means better protection:** The badge counts allowed third parties, not blocks. High block counts with also high allowed counts mean more network exposure.
+- **Relying solely on ‘ad blocker test’ pages:** These synthetic test pages do not reflect real browsing behavior and often cause misleading assessments.
+
+---
+
+## Examples & Real Use Cases
+
+### Example 1: News Website
+On a news website popup you see:
+- `Not blocked`: cdn.fastnews.com (15 requests), analytics.example.net (8 requests)
+- `Stealth-blocked`: tracker.adsprovider.com (3 requests)
+- `Blocked`: malicious.badtracker.com (5 requests)
+
+Interpretation: The news site loads essential content from its CDN and collects analytics, but your blocker stealthily blocks trackers and blocks known malicious domains outright. This is expected behavior.
+
+---
+
+### Example 2: Online Banking Site
+On a banking site, the popup shows:
+- `Not blocked`: bank.com (20 requests)
+- `Stealth-blocked` and `Blocked`: empty
+
+Interpretation: The site uses minimal third-party connections, focusing only on its own domain. No trackers or ads detected, a positive sign for privacy and security.
+
+---
+
+## Troubleshooting
+
+### Issue: Popup Shows "NO DATA" or Empty List
+- Ensure the tab you are on is fully loaded.
+- Refresh the page and reopen the popup.
+- Check that uBO Scope has the necessary permissions (`activeTab`, `storage`, `webRequest`).
+- Verify your browser version meets minimum requirements (Chrome ≥122, Firefox ≥128, Safari ≥18.5).
+
+### Issue: Badge Count Does Not Update
+- Reload the current tab.
+- Check if other extensions may conflict with webRequest API usage.
+- Restart your browser and try again.
+
+### Issue: Excessive Domains Listed
+- Some websites legitimately use many third-party services.
+- Consider tightening content blocker settings.
+- Research specific domains for questionable behavior before blocking.
+
+---
+
+## Diagram: Data Flow of Domain Connection Analysis
+```mermaid
+flowchart TD
+  UserTab["User Browser Tab"] --> WebRequestAPI["Browser webRequest API"]
+  WebRequestAPI --> BackgroundScript["uBO Scope Background Script"]
+  BackgroundScript --> SessionStorage["Session Data per Tab"]
+  BackgroundScript --> BadgeUpdate["Toolbar Icon Badge"]
+  BackgroundScript --> PopupInterface["Popup Page"]
+  SessionStorage --> PopupInterface
+  PopupInterface -->|Displays Connection Data| User
+
+  classDef browserAPI fill:#e0f7fa,stroke:#006064,stroke-width:2px;
+  classDef background fill:#ffe0b2,stroke:#e65100,stroke-width:2px;
+  class UserTab,User fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px;
+
+  class WebRequestAPI browserAPI;
+  class BackgroundScript,SessionStorage,BadgeUpdate background;
+  class UserTab,User;
+```
+
+---
+
+## Next Steps & Related Documentation
+- [Understanding the Popup and Badge](/guides/getting-started-essentials/understanding-the-popup) — for deeper insight into UI interpretation.
+- [Installing uBO Scope](/getting-started/installation-and-setup/installation) — if not yet installed.
+- [Comparing Content Blockers With Connection Metrics](/guides/practical-analysis-workflows/compare-content-blockers) — to evaluate blockers using connection data.
+- [Debunking Adblock Test Myths Using uBO Scope](/guides/practical-analysis-workflows/debunk-adblock-test-myths) — to avoid misleading test results.
+- [Troubleshooting and Common Questions](/guides/advanced-monitoring-tips/troubleshooting-and-faq) — for assistance with common issues.
+
+---
+
+## Summary
+By following this guide, you can confidently analyze and interpret all third-party connections initiated from any webpage. This empowers you to maintain greater privacy, optimize your content blocker settings, and better understand the network footprint of the pages you browse.
+
+For continuous mastery, leverage best practices and cross-reference related documentation, ensuring your digital footprint remains transparent, manageable, and secure.
+
+
+---
