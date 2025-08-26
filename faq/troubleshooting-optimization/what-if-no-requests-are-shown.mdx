@@ -1,0 +1,149 @@
+---
+title: "What if no requests are shown for a tab?"
+description: "Explains possible reasons for missing network request data, such as browser restrictions, use of privacy/security features, requests made outside of webRequest API scope, or bugs. Provides basic steps for investigation and resolution."
+---
+
+# What if no requests are shown for a tab?
+
+When using uBO Scope, it's expected that the extension displays network requests made by the active browser tab. However, there are scenarios where no requests appear in the popup panel for a given tab. This page helps you understand possible reasons why this happens and guides you through troubleshooting steps to resolve the issue.
+
+---
+
+## Why am I seeing no requests for a tab?
+
+If the uBO Scope popup shows no network requests for the active tab, consider these common causes:
+
+### 1. Browser restrictions or privacy features
+
+Modern browsers enforce strict privacy controls that can limit extensions' ability to observe network traffic:
+
+- **WebRequest API limitations:** Some browsers or browser configurations restrict or filter which requests `webRequest` listeners can observe.
+- **Private browsing/incognito mode:** Extensions may be disabled or have limited visibility in private windows.
+- **Cross-origin restrictions:** Some requests initiated by webpages may not be visible if the extension lacks appropriate permissions or browser support.
+
+### 2. Requests outside uBO Scope's observation scope
+
+uBO Scope relies on browser-provided APIs (`webRequest`) to track network requests. Requests made outside this scope won't be reported:
+
+- **Non-HTTP(s) protocols:** Requests not using HTTP, HTTPS, WS, or WSS schemes are not monitored.
+- **Network activity from service workers or other browser processes:** Some internal requests or cached accesses may bypass observable APIs.
+
+### 3. Browser or extension bugs
+
+Occasionally, bugs or glitches may cause missing data:
+
+- **Service worker eviction:** The extension's background service worker may be unloaded or unavailable temporarily, leading to loss or delay in request capture.
+- **Extension permissions not granted correctly:** Missing or incomplete permissions can block request monitoring.
+- **Browser version incompatibility:** Running uBO Scope on unsupported or outdated browser versions can cause erratic behavior.
+
+### 4. No network requests were actually made
+
+Sometimes, the webpage itself does not initiate network connections after loading, resulting in an empty request list.
+
+---
+
+## How to investigate and fix missing requests
+
+Follow these steps to identify and resolve why no requests are shown:
+
+<Steps>
+<Step title="Verify active tab and reload">
+Ensure you are viewing the popup while a tab is active that has recently made network requests. Navigate to that tab and reload the page to trigger new requests.
+</Step>
+<Step title="Check extension permissions">
+Confirm uBO Scope has all required permissions granted:
+
+- Active Tab access
+- Web Request access
+- Storage access
+
+Review the browser's extension settings and permissions.
+</Step>
+<Step title="Avoid private/incognito mode or configure extension for it">
+If using private windows, verify that uBO Scope is enabled there. Most browsers require explicit enabling of extensions in private mode.
+</Step>
+<Step title="Update browser and extension">
+Make sure your browser meets the **minimum supported version**:
+
+- Chrome/Chromium 122+
+- Firefox 128+
+- Safari 18.5+
+
+Update uBO Scope to the latest version from the official source.
+</Step>
+<Step title="Restart the browser">
+Sometimes restarting the browser refreshes service workers and extension state, restoring normal operation.
+</Step>
+<Step title="Confirm network requests are within monitored URLs">
+uBO Scope monitors requests to HTTP, HTTPS, WS, and WSS URLs. Requests using other protocols or filtered by other blockers may not show.
+</Step>
+<Step title="Check for other extensions or security settings">
+Some privacy or security extensions and browser settings may block or obscure requests from uBO Scope.
+Temporarily disable other extensions to test.
+</Step>
+</Steps>
+
+---
+
+## Additional tips and best practices
+
+- **Understand what uBO Scope measures:** The extension reflects the *actual network connections* your browser attempts or completes in real time, categorized as allowed, stealth-blocked, or blocked.
+- **Badge count is an aggregate:** It shows distinct third-party domains connected; if you see a zero badge, it's possible no unique third-party connections were made.
+- **Network requests may be subtle or delayed:** Some webpages fetch resources asynchronously or deeply within frames; a short observation window may miss them.
+- **Keep the uBO Scope popup open during browsing:** The extension collects data on network requests as they happen — closing the popup earlier loses immediate visual feedback.
+
+---
+
+## Troubleshooting common scenarios
+
+<AccordionGroup title="Common Causes and Recommendations">
+<Accordion title="No requests shown after page load">
+This usually happens if the webpage uses cached content, makes network requests before the popup opens, or the tab is inactive. Reload the tab while the popup is open to capture fresh data.
+</Accordion>
+<Accordion title="Popup shows NO DATA message">
+If the popup header shows 'NO DATA', it often indicates no usable network data is available for the active tab. Verify network activity and extension permissions.
+</Accordion>
+<Accordion title="Requests not appearing for WebSocket connections">
+On some platforms (e.g., Safari), WebSocket (ws:// or wss://) requests may not be monitored due to browser API limitations.
+</Accordion>
+<Accordion title="Badge count is not updating">
+Check that the extension's background service worker is active and the browser version is supported. Reload the extension or browser if needed.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Need more help?
+
+For advanced troubleshooting, consider visiting:
+
+- [Troubleshooting and Common Issues](../guides/realworld-usage/troubleshoot-common-issues)
+- [Troubleshooting Common Setup Issues](../../getting-started/first-use-and-validation/troubleshooting-common-issues)
+- [How does uBO Scope relate to content blockers?](../../faq/general-usage/how-does-ubo-scope-relate-to-content-blockers)
+
+GitHub Issues page: [https://github.com/gorhill/uBO-Scope/issues](https://github.com/gorhill/uBO-Scope/issues) 
+
+If you are a filter list maintainer or power user, reviewing the [Overall System Architecture](../../overview/core-concepts-arch/system-architecture) page will deepen your understanding of how uBO Scope collects and processes data.
+
+---
+
+## Summary
+
+Missing network request data in uBO Scope can arise from browser restrictions, extension permissions, private browsing modes, or lack of network activity. Systematic verification of permissions, browser version, and extension status usually resolves most issues. Remember that uBO Scope only observes requests within the browser's webRequest API scope and categorizes them transparently.
+
+By following the investigation steps and leveraging related documentation, users can restore full visibility of network connections and make informed privacy assessments.
+
+---
+
+[Back to FAQ Index](../)
+
+<br/>
+---
+
+<Check>
+Always keep your browser and uBO Scope up to date to ensure accurate and comprehensive network request reporting.
+</Check>
+
+<Info>
+Remember, uBO Scope does not block or modify connections but observes and reports them. Missing data is almost always caused by environmental or configuration issues.
+</Info>

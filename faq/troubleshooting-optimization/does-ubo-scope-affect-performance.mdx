@@ -1,0 +1,138 @@
+---
+title: "Does uBO Scope affect browser performance?"
+description: "Summarizes uBO Scope’s performance impact, architectural choices to minimize overhead, and tips for users concerned about resource usage. References the design choice to primarily use passive observation via webRequest listeners."
+---
+
+# Does uBO Scope affect browser performance?
+
+Understanding the performance impact of uBO Scope is essential for users who want to monitor their network connections without compromising their browsing experience. This page explains how uBO Scope is designed to minimize overhead, what architectural choices support this goal, and practical tips for users concerned about resource usage.
+
+---
+
+## How uBO Scope Minimizes Performance Impact
+
+uBO Scope is built with performance-conscious principles at its core. Its architecture primarily relies on *passive observation* using the browser’s `webRequest` API listeners. This design ensures it does not actively intercept or block requests, reducing computational load.
+
+### Key Architectural Choices
+
+- **Use of `webRequest` Listeners:**
+  uBO Scope listens to network events such as redirects, errors, and successful responses to record the outcome of network requests without interfering with the actual request flow.
+
+- **Batch Processing of Network Events:**
+  Rather than processing each network request immediately, uBO Scope queues events for up to 1 second then processes them in batches. This reduces overhead caused by frequent, fine-grained processing.
+
+- **Tab-focused Data Tracking:**
+  The extension efficiently tracks connection information on a per-tab basis, avoiding global heavy computations.
+
+- **Lightweight Data Structures:**
+  Use of efficient Maps and domain parsing techniques helps in maintaining low memory usage.
+
+- **Session Storage for State Persistence:**
+  Data is serialized and stored in session storage, enabling quick read/write operations without heavy disk I/O during runtime.
+
+### Resulting Performance Behavior
+
+Because uBO Scope observes but does not interfere with or block network requests, it adds only minimal overhead to normal browsing, even on sites with many network connections.
+
+> The badge count updating and popup rendering happen asynchronously and are optimized for responsive UI without bogging down the browser’s main thread.
+
+---
+
+## What Users Can Expect
+
+### Typical Resource Usage
+
+- **CPU:** Marginal increase during network event batch processing, typically imperceptible in normal browsing.
+
+- **Memory:** Low and stable footprint due to scoped tab data management and efficient data serialization.
+
+- **Network:** No additional network requests made by uBO Scope beyond initial loading of the public suffix list.
+
+### Visibility and Feedback
+
+- The toolbar badge updates smoothly without causing lag or delays.
+- Popup UI loads quickly and provides real-time connection insights without freezing.
+
+---
+
+## Best Practices to Minimize Impact
+
+If you are particularly concerned about resource usage, consider the following practical tips:
+
+- **Update to Latest Browser Versions:**
+  uBO Scope leverages modern browser APIs that perform better in the newest browser releases.
+
+- **Limit Open Tabs:**
+  Having very large numbers of tabs open with many connections may increase resource use, as data is tracked per tab.
+
+- **Avoid Using in Resource Constrained Environments:**
+  While lightweight, uBO Scope is best suited to typical desktop browsing conditions rather than very low-powered devices.
+
+- **Disable or Restart if Experiencing Slowness:**
+  Although rare, if noticing performance degradation, consider restarting the browser or disabling other extensions to isolate causes.
+
+---
+
+## Common Questions
+
+<AccordionGroup title="Performance FAQs">
+<Accordion title="Does uBO Scope block or delay network requests?">
+No. uBO Scope only observes network requests using passive listeners and does not block, modify, or delay them. This ensures minimal impact on browsing speed.
+</Accordion>
+<Accordion title="Will uBO Scope consume a lot of memory over time?">
+No. The extension maintains a scoped set of connection data per tab and periodically saves session data efficiently. Memory usage remains moderate even during extended use.
+</Accordion>
+<Accordion title="Can I use uBO Scope on low-end devices?">
+Yes, but keep in mind that running many extensions simultaneously or high tab counts may cumulatively impact performance. uBO Scope itself is designed to be lightweight and efficient.
+</Accordion>
+<Accordion title="Does the badge count updating affect performance?">
+The badge update happens asynchronously and only when connection data changes. This approach prevents UI lag or excessive resource usage.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Troubleshooting Performance Issues
+
+If you experience unexpected performance degradation while using uBO Scope, follow these steps:
+
+<Steps>
+<Step title="Check Browser Version">
+Ensure you are running a supported and up-to-date browser version to benefit from performance improvements in extension APIs.
+</Step>
+<Step title="Review Open Tabs and Activity">
+Close tabs with high network activity or reload them to reduce tracked network events.
+</Step>
+<Step title="Temporarily Disable Other Extensions">
+Conflicting or resource-heavy extensions may impact browser responsiveness.
+</Step>
+<Step title="Restart Browser">
+Restarting clears in-memory caches and can resolve temporary slowdowns.
+</Step>
+<Step title="Report Persistent Issues">
+If problems persist, submit details via [uBO Scope GitHub Issues](https://github.com/gorhill/uBO-Scope/issues) with your environment and scenario descriptions.
+</Step>
+</Steps>
+
+---
+
+## Summary
+
+uBO Scope’s design leverages passive network monitoring using `webRequest` listeners, asynchronous batch processing, and efficient data management to ensure minimal impact on browser performance. While it continuously tracks network connections per tab, its optimizations guarantee lightweight operation. Following best practices and maintaining updated software will keep your browsing experience smooth while benefiting from uBO Scope’s transparency.
+
+For detailed architectural insights, see [Overall System Architecture](../overview/core-concepts-arch/system-architecture).
+
+For practical usage tips and common troubleshooting scenarios, consult the [Troubleshooting Common Issues](../../guides/realworld-usage/troubleshoot-common-issues) guide.
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](../overview/intro-value-audience/what-is-ubo-scope) — Understand the core purpose and value of uBO Scope.
+- [Feature Quick Tour](../overview/quick-tour-integration/feature-overview) — Learn about main UI components, including badge and popup.
+- [Why is my badge count unexpectedly high?](../../faq/troubleshooting-optimization/why-is-my-badge-count-high) — Troubleshoot unexpected counts potentially impacting perceived performance.
+- [System Architecture](../overview/core-concepts-arch/system-architecture) — Explore the flow of network event data and component interactions.
+
+<Tip>
+For any concerns about performance, always ensure uBO Scope is running in a supported browser version and check that other extensions or browser settings are not contributing to slowdowns.
+</Tip>
