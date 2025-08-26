@@ -1,172 +1,182 @@
 ---
-title: "Interpreting Badge Counts and Extension Feedback"
-description: "Guides users through the meaning of the toolbar badge count and in-popup indicators, explaining why a lower count reflects improved privacy. Includes best practices for deciphering the significance of the extension's feedback and notes about the effect of different content blockers or DNS filters."
+title: "Interpreting the Toolbar Badge Count"
+description: "Understand the meaning behind the badge number on the toolbar icon. Learn how to properly interpret the count of distinct third-party servers and debunk common misconceptions about block metrics. Apply these insights to evaluate page privacy and content blockers."
 ---
 
-# Interpreting Badge Counts and Extension Feedback
+# Interpreting the Toolbar Badge Count
 
 ## Overview
 
-This guide explains how to understand the **toolbar badge count** and the detailed feedback shown inside the uBO Scope extension popup. It focuses on why a **lower badge count indicates better privacy** by showing fewer distinct third-party remote servers connected during browsing. You'll also learn best practices for decoding the extension's signals and how other content blockers or DNS filters influence these metrics.
+The badge count displayed on the uBO Scope toolbar icon represents a vital key to understanding your browsing exposure to third-party remote servers. This number reports the **count of distinct third-party domains that your browser has connected to during your current tab session**. By interpreting this badge correctly, you gain direct insight into your page's privacy footprint and the effectiveness of any content blockers you use.
+
+This guide helps you:
+
+- Understand precisely what the badge number means
+- Learn why this count is based on distinct third-party servers, not network requests or blocks
+- Debunk common misconceptions about block counts as a metric for privacy or filter strength
+- Apply this understanding to better evaluate page privacy and content blocker performance
 
 ---
 
-## What the Toolbar Badge Count Represents
+## 1. What the Toolbar Badge Count Represents
 
-The badge count displayed on the uBO Scope toolbar icon reports the **number of distinct third-party remote domains** your browser has connected to for the currently active tab. 
+### 1.1 Distinct Third-Party Domains
 
-- **Lower badge counts mean stronger privacy**, as fewer third-party servers are contacted.
-- This count is based on actual network requests observed by the browser's `webRequest` API — not estimations or blocked request counts.
+The badge number reflects the **number of unique third-party domains** contacted by the active browser tab, as perceived by uBO Scope. It counts domains regardless of how many times resources are requested from each domain — multiple requests to the same domain count as one.
 
-### Why Focus on Unique Third-Party Domains?
+<u>Example:</u> If you visit a news site that loads resources from 5 unique third-party servers (e.g., ad services, CDNs), the badge count will show "5" after the page finishes loading.
 
-Many users mistakenly assume more blocking badges or block counts mean better protection. uBO Scope shifts the focus to **distinct third-party domains connected**, which provides an accurate picture of the exposure surface:
+### 1.2 Allowed Connections Only
 
-- A **lower number means fewer external domains provided content or tracking vectors** on the page.
-- Counting block events alone can mislead because blockers with higher block counts may allow more domains through, thus increasing privacy risk.
+- The badge count tracks **allowed** remote connections made by the webpage.
+- Connections **blocked** by content blockers or stealth-blocked connections (those redirected or hidden from the web request API) are excluded from this count.
+
+This means a lower badge count generally indicates fewer third-party connections and thus a smaller exposure surface from the webpage.
+
+### 1.3 Third-Party vs. First-Party
+
+- Only **third-party domains** are counted, meaning domains different from the site you are visiting.
+- First-party domains (the site domain itself) are excluded from the badge count.
+
+---
+
+## 2. Common Misconceptions About the Badge Count
+
+### 2.1 Block Counts Are Not the Privacy Metric
+
+Many users wrongly assume that a higher block count or block badge means a more effective or "better" content blocker. This is **false**:
+
+- The block count corresponds to how many connections were actively **blocked**, not how many third-party servers were contacted.
+- A content blocker with a high block count may still allow connections to many distinct third parties, leading to a **higher badge count and lower effective privacy**.
+
+<u>Real-World Insight:</u> Some blockers stealthily allow more third-party connections to avoid webpage breakage, which results in a higher badge number despite blocking many requests.
+
+### 2.2 Ad Blocker Test Webpages Are Unreliable
+
+- Automated ad blocker test sites often generate artificial and unrealistic network scenarios.
+- They cannot see stealth-blocked or DNS-level blocked requests.
+- Their results don't reflect real-world browsing or extension stealth capabilities.
+
+uBO Scope’s badge count bypasses these unfair tests by directly reporting actual network connection outcomes using the browser’s own web request API.
+
+---
+
+## 3. How uBO Scope Calculates the Badge Count
+
+### 3.1 Tracking Network Requests
+
+uBO Scope listens to web request events including redirects, errors, and successful responses. For each request:
+
+- It extracts the hostname and domain.
+- It records whether the request was allowed, blocked, or stealth-blocked.
+
+### 3.2 Aggregating Domains
+
+The badge count is calculated as the number of unique **allowed** third-party domains in a tab's session.
+
+### 3.3 Reset on Main Frame Navigation
+
+The count resets each time a new main frame (tab) navigation occurs, tracking connections fresh per page load.
+
+---
+
+## 4. Practical Tips for Users
+
+### 4.1 Using the Badge for Privacy Awareness
+
+- Aim for a **lower** badge number to reduce third-party exposure.
+- Check the uBO Scope popup UI for detailed breakdowns of allowed, stealth, and blocked domains.
+- Use the badge together with the detailed popup view ( see [Navigating the Popup UI](../guides/getting-started/navigating-the-popup)) for more context.
+
+### 4.2 Evaluating Content Blockers
+
+- Don't rely on block counts or external "ad blocker tests" to assess effectiveness.
+- Use uBO Scope’s badge count as an independent metric:
+  - Lower badge count = fewer third-party connections = better real-world privacy.
+
+### 4.3 Understanding "Legitimate" Third Party Domains
+
+- Some third-party domains, like Content Delivery Networks (CDNs) or essential web services, are legitimate and usually low count.
+- A very high badge number indicates excessive third-party connections that may impact privacy.
+
+---
+
+## 5. Troubleshooting Badge Count Issues
+
+### 5.1 Badge Not Updating or Showing Zero
+
+- Ensure the extension is installed and permissions are granted.
+- Visit multiple pages with known third-party activity to observe changes.
+- Check for browser limitations on webRequest API usage.
+
+### 5.2 Badge Shows Unexpectedly High Counts
+
+- Check if you have visited complex sites with multiple third-party integrations.
+- Review the popup domain breakdown to identify domains causing the count.
+- Consider tightening your content blocking filters or using stricter privacy settings.
+
+### 5.3 Badge Count Remains Stuck After Navigation
+
+- Verify that the tab finished loading and triggered main frame navigation.
+- Reload the tab or restart the browser to refresh session tracking.
+
+If problems persist, consult the [Troubleshooting Common Setup Issues](../getting-started/making-first-use/troubleshooting-install) guide.
+
+---
+
+## 6. Summary
+
+Understanding the badge count on the uBO Scope toolbar icon empowers you to see your true exposure to third-party domains during browsing. Remember:
+
+- Badge = distinct allowed third-party domains per tab
+- Lower is better for privacy
+- Block counts or ad-block test page results do not indicate actual privacy
+
+Use these insights to make informed decisions about content blockers and your browsing habits.
+
+---
+
+## Related Documentation & Next Steps
+
+- [Navigating the Popup UI](../guides/getting-started/navigating-the-popup): Learn how to explore detailed domain lists behind the badge count.
+- [Tracking Third-Party Remote Connections](../guides/core-workflows/tracking-remote-connections): Deep dive into how uBO Scope monitors connections.
+- [Best Practices: Interpreting Network Results](../guides/advanced-tips/best-practices-interpreting-results): Advanced tips on making sense of network data.
+- [Troubleshooting Common Setup Issues](../getting-started/making-first-use/troubleshooting-install): Fix issues with badge count and popup display.
+
+---
+
+## Visual Summary of Badge Count Workflow
+
+```mermaid
+flowchart TD
+    Start([Page Load or Navigation]) --> Capture[Capture Network Requests]
+    Capture -->|For each request| Classify{Allowed, Blocked, or Stealth?}
+    Classify -->|Allowed| RecordAllowed[Record 3rd-Party Domain]
+    Classify -->|Blocked| RecordBlocked[Record Blocked Domain]
+    Classify -->|Stealth| RecordStealth[Record Stealth-Blocked Domain]
+    RecordAllowed --> UpdateBadge[Update Badge Count: Count Unique Allowed Domains]
+    RecordBlocked & RecordStealth --> UpdateBadge
+    UpdateBadge --> ShowBadge[Display Badge on Toolbar Icon]
+    ShowBadge --> End([User Sees Badge Number])
+    Start -->|New Main Frame| Reset[Reset Counts]
+    Reset --> Capture
+
+    classDef decision fill:#f96,stroke:#333,stroke-width:2px;
+    class Classify decision;
+```
+
+This workflow illustrates how the badge count dynamically reflects the active third-party domains successfully connected to, refreshed upon tab navigation.
+
+---
 
 <Tip>
-Always interpret the badge count as a **privacy indicator**: fewer remote domains connected equals better privacy protection.
+The badge count is your concise window into your browsing privacy. Regularly monitor it as you navigate the web to stay aware of your online exposure.
 </Tip>
 
-## Understanding In-Popup Indicators
-
-When you click the uBO Scope icon to open its popup, it breaks down remote domains into three categories with domain counts:
-
-### 1. Not Blocked (Allowed)
-
-- These domains are actively connected and loaded resources.
-- They are shown under the **`not blocked`** section with count badges indicating how often resources from each domain were accessed.
-- This category directly contributes to the toolbar badge count.
-
-### 2. Stealth-Blocked
-
-- Domains listed here represent those connections that were **diverted or redirected** by other blockers or mechanisms stealthily.
-- These requests do not appear as blocked errors but were prevented from connecting normally.
-- They reveal subtle blocking done behind the scenes.
-
-### 3. Blocked
-
-- Domains here correspond to requests that **failed or were explicitly blocked**, resulting in errors.
-- They show where connections were outright denied by content blockers or DNS filters.
-
 <Note>
-Seeing entries across all three categories is expected. Importantly, the badge count only counts domains in the **allowed** category.
+A lower toolbar badge count does not guarantee complete privacy, but it does mean fewer third-party remote servers were contacted by the webpage during the current session.
 </Note>
 
-## Best Practices to Decipher the Extension's Feedback
-
-1. **Prioritize the Badge Count:** Use the toolbar badge as the primary quick privacy metric.
-
-2. **Use the Popup for Detailed Analysis:** Open the popup to examine which domains are allowed, stealth-blocked, or blocked, to understand where potential privacy leaks occur.
-
-3. **Consider the Role of Other Content Blockers and DNS Filters:** uBO Scope works alongside other blockers and respects their effects.
-
-4. **Recognize Legitimate Domains:** Not all third-party domains are bad; content delivery networks (CDNs) and essential services often connect legitimately. The goal is to minimize unsolicited third-party connections.
-
-5. **Beware of High Block Counts Without Low Badge Counts:** High blocking without reducing distinct allowed domains indicates limited efficacy.
-
-6. **Use the Extension to Debunk Block Count Myths:** Never equate a higher block count with better protection. Instead, focus on reducing actual third-party connections.
-
-## How Other Content Blockers or DNS Filters Affect Badge Counts
-
-- uBO Scope actively listens to the browser's network traffic to detect connections even if another content blocker or DNS filter intercepts them.
-- If a DNS filter blocks a connection before the browser's `webRequest` API sees it, the extension might not detect the request.
-- For most modern browsers supporting `webRequest`, uBO Scope will accurately reflect connections allowed, stealth-blocked, or blocked regardless of content blocker layering.
-
 <Warning>
-The badge count reflects only the domains **connecting through the browser's network stack as observed via `webRequest`**. It cannot account for blocking mechanisms outside this scope, such as system-wide firewalls or DNS filters not visible to the browser.
+Beware of using block counts alone or 'ad blocker test' sites as a benchmark for content blocker effectiveness. Such metrics do not represent your true online privacy exposure.
 </Warning>
-
-## Step-by-Step: How to Use Badge Counts and Popup Indicators for Privacy Insights
-
-<Steps>
-<Step title="Check Toolbar Badge Count">
-Look at the badge on uBO Scope's extension icon. A smaller number means fewer third-party domains loaded on the active webpage.
-</Step>
-<Step title="Open the Popup">
-Click the extension icon to open the popup panel, which breaks down domains into allowed, stealth-blocked, and blocked.
-</Step>
-<Step title="Review Allowed Domains">
-Focus on domains under 'not blocked'. These are active connections contributing to your overall exposure.
-</Step>
-<Step title="Examine Stealth and Blocked Domains">
-Identify any stealth-blocked domains to understand subtle redirects or filtering, and blocked domains representing denied requests.
-</Step>
-<Step title="Assess Overall Privacy Posture">
-Combine insights from the badge and popup to judge privacy effectiveness. Aim for low allowed domains and understand blocked activity’s impact.
-</Step>
-<Step title="Investigate Outliers or Unexpected Domains">
-If you spot unusual or many allowed third-party domains, consider further investigation or tightening filters.
-</Step>
-</Steps>
-
-## Common Scenarios & Practical Examples
-
-| Scenario | Meaning | Action |
-| --- | --- | --- |
-| Badge count is 0 or 1 | Almost no external third-party connections | Excellent privacy; no further action usually required |
-| Badge count is high but popup shows mostly blocked domains | Many requests blocked but several allowed | Review allowed domains to verify necessity and potential privacy risks |
-| Stealth-blocked domains present but low allowed count | Some connections are quietly redirected or prevented | Recognize stealth blocking occurs silently—good for privacy |
-| Badge count increases after disabling content blocker | More third-party domains are connected | Confirms content blocker effectiveness |
-
-## Troubleshooting Badge Count & Indicator Issues
-
-<AccordionGroup title="Troubleshooting Common Badge and Popup Feedback Issues">
-
-<Accordion title="Badge Count Not Updating or Stuck">
-- Ensure the browser supports and allows the `webRequest` API.
-- Confirm uBO Scope is enabled and has required permissions.
-- Verify the tab is active and you’re viewing a web page (not browser&apos;s internal pages).
-- Reload the tab or restart the browser to refresh data.
-</Accordion>
-
-<Accordion title="Popup Shows No Data or Incomplete Data">
-- Check your network connection and content blockers around uBO Scope.
-- Some websites with complex frames or special networking might show limited data.
-- Reload the popup by closing and reopening.
-</Accordion>
-
-<Accordion title="Unexpectedly High Allowed Domains Count">
-- Consider whether other extensions or DNS filters are interfering.
-- Check if the site legitimately calls many third-party services (e.g., ads, widgets).
-- Review blocked and stealth-blocked domains for context.
-</Accordion>
-
-<Accordion title="Low Badge Count but Observed Trackers Are Present">
-- Understand uBO Scope counts unique remote domains, not individual tracking elements.
-- Trackers served from the same domain count once.
-- Use this tool alongside a dedicated blocker for tracking identification.
-</Accordion>
-
-</AccordionGroup>
-
-## Tips for Getting the Most from Badge Count Interpretation
-
-- Use badge count trends over time for a website to spot changes in privacy exposure.
-- Combine badge insights with domain analysis in the popup to decide if further blocking adjustments are necessary.
-- Remember that the goal is to minimize third-party connections, not just increase block counts.
-- Be patient: some domains are essential and unavoidable; focus on reducing unnecessary external connections.
-
-## Summary
-
-Understanding uBO Scope&apos;s badge count and popup feedback empowers you to see your web privacy at a glance. A lower badge count means fewer third-party domains connected and better privacy. Use the popup for deeper insight into which domains are allowed, stealth-blocked, or blocked to make informed decisions about your browsing protections.
-
----
-
-## Next Steps
-
-- Explore the **[Analyzing Allowed, Stealth, and Blocked Domains](https://docs.example.com/guides/core-workflows/analyzing-allowed-stealth-blocked)** guide to dig deeper into domain categorizations.
-- Review **[Understanding the uBO Scope Interface](https://docs.example.com/guides/getting-started/understanding-the-ui)** for a broader UI tour.
-- Check the **[Debunking Myths About Content Blockers](https://docs.example.com/guides/core-workflows/debunking-content-blocker-myths)** guide to avoid common misconceptions about blocking results.
-- For installation or setup issues, see **[Troubleshooting Common Setup Issues](https://docs.example.com/getting-started/troubleshooting/common-issues)**.
-
----
-
-## Resources
-
-- Official GitHub Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
-- Background on badge counts and network request processing in **[How uBO Scope Works (Architecture Diagram)](https://docs.example.com/overview/architecture-and-core-concepts/how-it-works-architecture-diagram)**
-
-
-
