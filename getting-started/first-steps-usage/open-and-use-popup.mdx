@@ -1,0 +1,182 @@
+---
+title: "Opening and Using the uBO Scope Popup"
+description: "See how to interact with the extension’s toolbar icon, launch the popup, and interpret the domain summary and categories (blocked, stealth, allowed). Designed for immediate insight."
+---
+
+# Opening and Using the uBO Scope Popup
+
+Discover how to interact with uBO Scope through its toolbar icon and popup interface to gain immediate insights into your browser's remote server connections. This guide walks you through launching the popup, understanding the domain summary categories, and interpreting connection data effectively for the active tab.
+
+---
+
+## 1. Launching the uBO Scope Popup
+
+uBO Scope integrates with your browser's toolbar as an extension icon. To access its core information panel:
+
+1. Locate the **uBO Scope icon** on your browser's toolbar. It uses a distinctive shield-like logo.
+2. **Click the icon** once to open the popup window.
+
+<Tip>
+If you do not see the icon, ensure the extension is installed and enabled in your browser (see the [Installing uBO Scope]( /getting-started/installation-setup/install-extension ) guide).
+</Tip>
+
+When opened, the popup automatically queries the active browser tab to retrieve detailed information about third-party network connections observed for that page.
+
+---
+
+## 2. Understanding the Popup Interface
+
+The popup interface provides a detailed breakdown of remote connections from the currently active tab, categorized as follows:
+
+### 2.1 Tab Hostname and Domain Display
+
+At the top, the popup shows:
+
+- **Host Name:** The full hostname of the active tab’s top-level page (e.g., `sub.example.com`).
+- **Domain:** The registered domain derived from the hostname (e.g., `example.com`).
+
+This split highlights subdomains separately, helping you understand the site's organizational structure.
+
+### 2.2 Domains Connected Summary
+
+Below the header is a **summary section** that displays the total number of distinct third-party domains contacted by the loaded page.
+
+### 2.3 Connection Outcome Categories
+
+The main content area splits connections into three outcome groups, each visually styled to help you quickly identify:
+
+- **Not Blocked (Allowed):** Domains from which resources were successfully fetched.
+- **Stealth-Blocked:** Connections that were redirected or stealthily blocked by content blockers.
+- **Blocked:** Connections that were explicitly blocked and failed to load.
+
+Each section lists the domains beneath it, along with a badge representing the number of requests made to each domain.
+
+<Tip>
+Domains are displayed in Unicode form, even if originally encoded in punycode, to improve readability.
+</Tip>
+
+---
+
+## 3. Interpreting Domain Information
+
+Each domain entry in the popup highlights:
+
+- **Domain Name:** The registered domain contacted.
+- **Count Badge:** The number of distinct network requests made to that domain.
+
+These metrics help you identify how many third-party services are contacted by the page and the volume of requests incurred.
+
+---
+
+## 4. Practical Usage Workflow
+
+Follow these steps each time you want to inspect network connections for a webpage:
+
+<Steps>
+<Step title="Navigate to a Webpage">
+Load any website you want to inspect in an active browser tab.
+</Step>
+<Step title="Click the uBO Scope Toolbar Icon">
+Open the popup by clicking the extension icon in the toolbar.
+</Step>
+<Step title="Review the Hostname and Domain">
+Confirm that the displayed hostname matches the active tab.
+</Step>
+<Step title="Analyze Connection Categories">
+Scroll through the "Not Blocked", "Stealth-Blocked", and "Blocked" sections to understand what third-party domains are contacted, redirected, or blocked.
+</Step>
+<Step title="Compare and Investigate">
+Use this information to assess browser network behavior, validate content blocker settings, or identify unexpected third-party connections.
+</Step>
+</Steps>
+
+<Tip>
+The badge count on the toolbar icon reflects the number of distinct allowed third-party domains contacted by the current tab, providing a quick privacy indicator.
+</Tip>
+
+---
+
+## 5. Tips and Best Practices
+
+- **Refresh the Popup:** Close and reopen the popup after navigating to a new page to load fresh network data.
+- **Interpreting Stealth-Blocked:** Domains in this category were not outright blocked but had requests redirected or silently handled. This may reflect advanced content blocking techniques.
+- **Blocked Domains:** Not all blocks indicate malicious or intrusive connections—some legitimate domains may be blocked due to strict filter rules.
+- **Use in Conjunction with Content Blockers:** uBO Scope complements traditional content blockers by revealing actual remote connections instead of just block counts.
+
+---
+
+## 6. Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Troubleshooting Popup Issues">
+<Accordion title="Popup Does Not Open or Show Data">
+- Verify that uBO Scope is properly installed and enabled.
+- Make sure the active tab is a web page (not a browser special page).
+- Reload the tab and reopen the popup.
+- Check if browser permissions allow the extension to access tab information.
+</Accordion>
+<Accordion title="Data Shows NO DATA or Empty Categories">
+- Network activity may not be available immediately after page load; wait a few seconds and refresh the popup.
+- The tab might not have generated network requests yet.
+- Some sites or browser states might limit webRequest API inspection.
+</Accordion>
+<Accordion title="Badge Count Not Updating">
+- Switch tabs to trigger updates.
+- The badge only counts distinct allowed third-party domains.
+- Restart the browser if issues persist.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Next Steps
+
+After getting comfortable with the popup interface:
+
+- Explore the [Understanding the Popup Interface](/guides/getting-started-essentials/understanding-the-popup-interface) guide for a deeper dive into visual elements.
+- Consult the [Monitoring Third-Party Connections: A Basic Workflow](/guides/getting-started-essentials/basic-usage-tutorial) to learn how to integrate uBO Scope into your privacy assessment routines.
+- Understand core terminology in [Key Concepts & Terminology](/overview/architecture-concepts/core-concepts-terminology) for clarity on connection outcomes.
+
+
+---
+
+For full source and ongoing updates, visit the [official uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+---
+
+## Appendix: XML Popup Structure Overview
+
+The following summarization provides insight into how the popup interface is structured in the code:
+
+```html
+<!-- popup.html excerpt -->
+<h2 id="tabHostname"><span></span><span>NO DATA</span></h2>
+<main>
+  <section id="summary">
+    domains connected: <span>?</span>
+  </section>
+  <section class="outcome allowed">
+    <h3>not blocked</h3>
+    <div class="domains"></div>
+  </section>
+  <section class="outcome stealth">
+    <h3>stealth-blocked</h3>
+    <div class="domains"></div>
+  </section>
+  <section class="outcome blocked">
+    <h3>blocked</h3>
+    <div class="domains"></div>
+  </section>
+</main>
+
+<!-- Template for domain rows -->
+<template id="domainRow">
+  <div class="row">
+    <span class="domain">_</span>
+    <span class="count badge">_</span>
+  </div>
+</template>
+```
+
+Each domain is rendered dynamically when the popup fetches data from the background script.
+
+---
