@@ -1,0 +1,163 @@
+---
+title: "Does uBO Scope detect stealthy or DNS-based content blocking?"
+description: "Clarifies how uBO Scope detects blocked requests, its reliance on the browser’s webRequest API, and what types of blocking (including DNS-based) may go unreported."
+---
+
+# Does uBO Scope detect stealthy or DNS-based content blocking?
+
+Understanding how uBO Scope detects content blocking is essential for interpreting its reports accurately. Unlike some content blockers, uBO Scope functions as an observatory tool that reports on all network requests made by web pages through the browser's `webRequest` API. This page clarifies what kinds of blocking uBO Scope can detect, which it cannot, and why.
+
+---
+
+## How uBO Scope Detects Network Requests and Blocking
+
+At its core, uBO Scope listens to browser network events via the `webRequest` API, capturing detailed information about requests initiated by web pages, including:
+
+- Requests that successfully connect to remote servers
+- Requests that are blocked or fail
+- Requests that are stealthily redirected
+
+The extension classifies each observed request into one of three categories:
+
+- **Allowed**: Connection to the remote server succeeded.
+- **Blocked**: The request was blocked or failed explicitly.
+- **Stealth-blocked**: Requests that were silently redirected or altered without explicit errors.
+
+These outcomes are reflected in the popup interface and the badge count, providing insight into which third-party domains a page connects to or attempts to connect to.
+
+
+## What About Stealthy Blocking?
+
+Stealth blocking refers to blocking methods designed to be undetectable by webpages or other extensions. Some content blockers apply stealth techniques to avoid detection and to prevent breakage of websites, making such blocking invisible in typical network request logs.
+
+**uBO Scope's capability:** 
+
+- It monitors actual network events reported by the browser. 
+- If stealth blocking causes network requests to fail or redirect in ways the browser registers, uBO Scope will capture these as blocked or stealth outcomes.
+- However, if the blocking occurs entirely outside or ahead of the browser's networking stack (e.g., at the DNS level 
+  or by the network infrastructure), and the browser's API does **not** report these requests, uBO Scope cannot detect them.
+
+
+## Can uBO Scope Detect DNS-Based Blocking?
+
+DNS-based blocking happens when the domain name resolution itself is prevented or altered by:
+
+- Blocking DNS servers,
+- Network-level filtering,
+- VPNs or proxy modifications.
+
+Because uBO Scope depends on the browser for network request information:
+
+- If the browser's `webRequest` API reports the network request attempt, uBO Scope will observe it regardless of DNS-based filtering.
+- If the DNS blocking causes the browser to never issue the HTTP or WebSocket request (for example, the DNS lookup fails before request initiation), the request never appears in the `webRequest` data.
+
+**Therefore:**
+
+- DNS blocking **can be invisible** to uBO Scope because it relies on browser-level network events.
+- uBO Scope will report only what the browser surfaces.
+
+
+## Realistic User Scenarios
+
+1. **Using uBO Scope alongside a DNS-based blocker (e.g., Pi-hole):**
+   - Requests blocked by Pi-hole may not be reported by the browser at all.
+   - These will be absent from uBO Scope's logs.
+
+2. **Using traditional browser extension blockers that leverage the `webRequest` API:**
+   - uBO Scope sees all requests, including those blocked or redirected.
+   - Thus, it effectively reports blocking outcomes except when stealth techniques completely hide the operation from the browser.
+
+3. **Evaluating reliability of content blockers:**
+   - uBO Scope is a transparency tool.
+   - If a blocker hides its activity from the browser's network stack (stealthily blocking), uBO Scope may report fewer blocked requests.
+   - This does not imply the blocker is ineffective; it implies stealth.
+
+
+## Practical Tips for Users
+
+- Use uBO Scope to confirm which third-party domains your browser actually connects to, regardless of your content blockers.
+- Understand that a **missing blocked request in uBO Scope does not necessarily mean the request is allowed**; network events might not be visible due to external DNS blocking or stealth.
+- When troubleshooting, consider combining uBO Scope's reports with other tools or network-level monitors for comprehensive visibility.
+- Remember, uBO Scope's badge count and popup data reflect **only network requests the browser knows about**.
+
+
+## Summary: What uBO Scope Sees and What It Does Not
+
+| Blocking Type           | Detectable by uBO Scope?                | Explanation                                                          |
+|------------------------|---------------------------------------|----------------------------------------------------------------------|
+| Extension-level blocking (normal) | ✅ Yes                               | Network events appear in browser API and get reported.               |
+| Stealth extension-level blocking  | ✅ Partially (if browser reports)    | If blocking is invisible to browser API, uBO Scope won't know.      |
+| DNS-based blocking                | ❌ No                                | Blocking at DNS level hides requests before browser's network layer. |
+| Network-level blocking (e.g., firewall) | ❌ No                              | Same as DNS blocking; requests not visible to browser.               |
+
+
+## How This Page Fits in Your uBO Scope Experience
+
+This information helps you correctly interpret the data presented by uBO Scope in the popup interface and toolbar badge.
+
+For more detailed insights into uBO Scope's design and workflow, explore:
+
+- [How uBO Scope Works (Architecture Overview)](/overview/product-architecture-quick-feature-tour/architecture-overview)
+- [Debunking Ad Blocker Badge and Test Myths](/guides/practical-use-cases/debunking-myths)
+- [Troubleshooting Common Installation Issues](/getting-started/usage-validation-troubleshooting/troubleshooting-install)
+
+
+---
+
+## Troubleshooting: If Network Requests or Blocking Are Not Showing Up
+
+If you notice that uBO Scope shows no blocked or stealth-blocked requests on sites you expect otherwise, consider:
+
+- Browser limitations: Some browsers or versions may have partial `webRequest` API support.
+- Permissions: Confirm that the extension has all required permissions.
+- DNS/blocking outside browser: DNS-based or network-level blocking makes requests invisible to the browser and hence to uBO Scope.
+
+Refer to the [Troubleshooting Common Installation Issues](/getting-started/usage-validation-troubleshooting/troubleshooting-install) guide for actionable steps.
+
+
+---
+
+## Additional Resources
+
+- **uBO Scope README** — Overview and core principles of uBO Scope's working model: [README.md](https://github.com/gorhill/uBO-Scope/blob/main/README.md)
+- **Popup Interface Tour** — Learn how to navigate and interpret the data in uBO Scope's popup: [Popup Tour Guide](/guides/getting-started/popup-tour)
+- **Understanding Badge Counts** — Explanation of the badge number and domain classifications: [Making Sense of Badge Counts and Domain Listings](/guides/getting-started/understanding-badge)
+
+
+<Tip>
+Because uBO Scope relies solely on what the browser’s `webRequest` API reports, it delivers highly reliable transparency **within the browser’s scope** but cannot detect blocking that happens at the DNS or network level before the browser is involved.
+</Tip>
+
+<Tip>
+Consider combining uBO Scope with other network diagnostic tools if you require visibility into content blocking that occurs outside the browser environment.
+</Tip>
+
+
+---
+
+## Summary
+
+- uBO Scope detects blocked, allowed, and stealthy network requests **only through the browser’s `webRequest` API**.
+- DNS-based and network-level blocking that prevents browser-initiated requests from appearing in the API will not be detected.
+- The popup and badge counts reflect network requests the browser is aware of, enabling reliable insight into extension-based blockers but with limitations on stealth and external blocking.
+
+
+---
+
+For issues or further understanding, visit the [Troubleshooting Common Installation Issues](/getting-started/usage-validation-troubleshooting/troubleshooting-install) and [Debunking Ad Blocker Badge and Test Myths](/guides/practical-use-cases/debunking-myths) pages.
+
+
+---
+
+_This page is part of the [Troubleshooting & Optimization FAQ](../troubleshooting-tips-faq)_
+
+
+---
+
+_Source and further technical detail are available in the [uBO Scope source code repository](https://github.com/gorhill/uBO-Scope).
+
+
+
+---
+
+<p style="font-size:0.85em; color:#666; margin-top:2em;">© Raymond Hill, uBO Scope Project 2024</p>
