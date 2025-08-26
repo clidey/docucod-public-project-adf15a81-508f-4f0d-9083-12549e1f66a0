@@ -1,0 +1,176 @@
+---
+title: "Core Concepts & Terminology"
+description: "Defines essential terms such as 'third-party remote server,' 'webRequest API,' 'badge count,' and 'network request outcome.' This page gives users the conceptual vocabulary needed to interpret what the extension reports, clarifying any ambiguity about what constitutes a tracked connection or outcome."
+---
+
+# Core Concepts & Terminology
+
+Understanding the language used throughout uBO Scope is crucial to effectively interpret the information the extension provides. This page presents the essential terms and concepts that define what uBO Scope tracks and reports, empowering you to decode the extension’s data with confidence.
+
+---
+
+## Third-Party Remote Server
+
+At the heart of uBO Scope’s functionality is the idea of a **third-party remote server**. This refers to any server that your browser attempts to connect to that is different from the domain of the website you are currently visiting (the first-party).
+
+- 
+  - For example, when browsing example.com, a connection to cdn.examplecdn.com counts as a third-party connection, because it differs from example.com.
+  - Third-party servers often deliver resources like images, ads, analytics scripts, or fonts.
+  - uBO Scope focuses on these to reveal how many distinct external servers your browsing touches.
+
+Recognizing third-party servers helps you grasp the real network footprint beyond the primary website.
+
+## WebRequest API
+
+uBO Scope relies on the browser’s **webRequest API** to listen to and analyze network requests made by webpages. This API provides visibility over requests such as loading a webpage, fetching images, or scripts.
+
+- It enables the extension to detect every connection attempt, whether it ultimately succeeds or fails.
+- This visibility is fundamental because uBO Scope reports on _all_ connections the browser tries to establish via HTTP, HTTPS, WebSocket, and Secure WebSocket protocols.
+
+### What uBO Scope Tracks
+
+- Requests initiated by standard browsing activities.
+- Network requests intercepted by content blockers or DNS-based filtering.
+- Redirects, errors, and successful network responses.
+
+This comprehensive tracking is possible only through the webRequest API, which is ubiquitous across modern browsers supported by uBO Scope.
+
+## Badge Count
+
+The **badge count** appears on the browser toolbar icon of uBO Scope. It represents:
+
+> The number of distinct third-party remote servers where connections were successfully established or verified by the extension.
+
+- This count is dynamic and updates as you browse.
+- Lower badge counts indicate fewer distinct third-party connections, which commonly suggest a leaner, potentially more privacy-respecting browsing session.
+- The number *excludes* blocked or failed connection attempts.
+
+### Practical Example
+
+Imagine visiting a news site:
+
+- The main domain loads (first-party).
+- Scripts from ads, analytics, and social networks initiate connections (third-parties).
+- Some requests may be blocked by your content blocker or network filters.
+- uBO Scope’s badge count shows how many of these third-party servers your browser actually connected to successfully.
+
+This visualization helps quantify exposure to third-party tracking or content delivery.
+
+## Network Request Outcome
+
+Every network request seen by uBO Scope is classified by an **outcome**, indicating what happened with the connection attempt.
+
+There are three key outcomes:
+
+- **Allowed (Success):** The request completed without being blocked. The third-party server responded successfully.
+- **Blocked (Error):** The request failed because it was actively blocked by content filtering or network restrictions.
+- **Stealth (Redirect):** The request was internally redirected — often as part of stealth-blocking techniques used by some content blockers to prevent detection or maintain page integrity.
+
+| Outcome       | Explanation                                                                                               |
+|---------------|-----------------------------------------------------------------------------------------------------------|
+| Allowed       | Network request succeeded and resource was loaded.                                                       |
+| Blocked       | Network request was blocked or failed, connection not established.                                        |
+| Stealth       | Request redirected stealthily, typically hidden from standard detection but still tracked by uBO Scope.  |
+
+These outcomes are aggregated and displayed in uBO Scope’s popup, enabling a granular view of your browsing network activity.
+
+## What Constitutes a Tracked Connection
+
+uBO Scope only tracks requests matching specific network protocols and URLs permitted by the extension’s host permissions:
+
+- Protocols: `http:`, `https:`, `ws:`, `wss:`
+- URLs granted by host permissions in the extension manifest (e.g., `https://*/*`, `http://*/*`)
+
+Any network activity outside these criteria is not visible to uBO Scope.
+
+### Why This Matters
+
+- Some browser or system-level connections that do not pass through the webRequest API are invisible to uBO Scope.
+- This limitation ensures the extension reports only what the browser itself allows it to observe.
+
+## Summary of Key Terms
+
+| Term                  | Definition                                                                                           |
+|-----------------------|--------------------------------------------------------------------------------------------------|
+| Third-Party Remote Server | A server outside the domain of the active website that the browser attempts to connect to.         |
+| WebRequest API         | The browser interface that uBO Scope uses to monitor network requests.                            |
+| Badge Count            | The number of distinct third-party servers successfully connected to during browsing.            |
+| Network Request Outcome| The result of a network request: allowed, blocked, or stealth-redirected, as tracked by uBO Scope. |
+| Tracked Connection     | Any network request visible to uBO Scope matching supported protocols and host permissions.      |
+
+---
+
+### Practical Tips
+
+- Use the badge count as a quick indicator of your exposure to third-party servers.
+- Review the categorized outcomes in the popup to understand which domains were blocked or allowed.
+- Remember stealth redirects are subtle and may indicate advanced content blocker behaviors.
+
+---
+
+## How This Fits in Your uBO Scope Workflow
+
+This terminology foundation prepares you to:
+
+- Interpret the information in the popup interface accurately.
+- Understand reports of allowed, blocked, and stealth connections.
+- Differentiate first-party vs third-party activity.
+
+For applied insights, see the [Interpreting Connection Insights](../guides/getting-started-essentials/interpreting-connection-insights) and the [Typical uBO Scope Investigation Workflow](../guides/getting-started-essentials/core-usage-workflow).
+
+---
+
+<Info>
+This page clarifies the key vocabulary enabling a clear understanding of uBO Scope’s tracking and reporting. Refer back to these terms whenever the extension’s data needs interpretation.
+</Info>
+
+---
+
+## Code Snippet: Identifying Hostname and Domain
+
+The extension normalizes URLs to hostnames and derives domains for third-party identification using the Public Suffix List:
+
+```javascript
+function hostnameFromURI(url) {
+  urlParser.href = url;
+  return urlParser.hostname || '';
+}
+
+function domainFromHostname(hostname) {
+  return psl.getDomain(hostname) || psl.getPublicSuffix(hostname);
+}
+```
+
+This ensures domains like `cdn.example.co.uk` resolve correctly to `example.co.uk` as the registered domain.
+
+---
+
+## Troubleshooting: Common Ambiguities
+
+<AccordionGroup title="Common Questions About Terminology">
+  <Accordion title="Is every network request recorded by uBO Scope?">
+  Not every network request is tracked; only those passing through the webRequest API and matching the host permission rules. Some browser internal connections or requests outside these protocols may be invisible.
+  </Accordion>
+  <Accordion title="What if badge count seems too high or too low?">
+  Remember the badge count reflects distinct third-party servers connected, not total requests. Dynamic resources, CDNs, or trackers may inflate this. Comparing badge counts across different browsers or blockers can be misleading without context.
+  </Accordion>
+  <Accordion title="What does 'stealth' outcome mean?">
+  Stealth denotes requests redirected silently, usually by content blockers employing stealth techniques. These redirects avoid breaking pages but still count as network activity.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Further Reading & Next Steps
+
+- [What Is uBO Scope?](./what-is-ubo-scope) — Understand the broader purpose.
+- [Key Benefits & Value Proposition](./value-prop-benefits) — Why these concepts matter.
+- [Interpreting Connection Insights](../../guides/getting-started-essentials/interpreting-connection-insights) — Apply these terms to real data.
+
+---
+
+## License & Source
+
+uBO Scope is open-source under the GNU GPLv3 license.
+
+Browse and contribute on GitHub: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
