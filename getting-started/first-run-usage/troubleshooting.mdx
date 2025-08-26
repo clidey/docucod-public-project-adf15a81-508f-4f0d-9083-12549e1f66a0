@@ -1,0 +1,164 @@
+---
+title: "Troubleshooting Common Setup Issues"
+description: "Troubleshoot typical installation or configuration problems, such as missing network data, permission denials, or badge not updating. Get fast solutions to ensure a seamless start."
+---
+
+# Troubleshooting Common Setup Issues
+
+This troubleshooting guide addresses common installation and configuration issues encountered when using uBO Scope. If you face problems such as no network data being displayed, permission denials, or the badge not updating as expected, this page provides fast, practical solutions to help you get back on track.
+
+---
+
+## 1. No Data Displayed in Popup
+
+If you open the uBO Scope popup and see a message like **NO DATA** or an empty report, follow these steps:
+
+### Step 1: Confirm Extension Installation
+- Verify the extension is installed and enabled in your browser’s extensions/add-ons page.
+- Check the extension’s icon appears in the toolbar.
+
+### Step 2: Reload or Restart Browser
+- Sometimes network data doesn’t appear immediately after installation.
+- Reload your active tab or restart the browser to initialize network monitoring.
+
+### Step 3: Verify Permissions
+- uBO Scope requires permissions to monitor web requests:
+  - `activeTab`
+  - `storage`
+  - `webRequest`
+- Ensure these permissions are granted in your browser.
+  - In Chromium and Firefox, go to the extension details page and check permissions.
+  - In Safari, verify minimum version (18.5) and permission settings.
+
+### Step 4: Open Supported Websites
+- uBO Scope tracks network connections for web pages loaded in tabs.
+- Open common websites (e.g., https://example.com) to generate network requests.
+
+<Tip>
+The extension reports connections only to third-party remote servers attempted by the current tab. If the tab is new, or no network requests are made, NO DATA will show.
+</Tip>
+
+## 2. Badge Not Updating or Showing Count
+
+If the toolbar icon badge does not show numbers or updates slowly, proceed with these checks:
+
+### Step 1: Wait for Network Events Processing
+- The extension batches network event processing on a short timer (about 1 second).
+- If you open the popup immediately after navigation, the badge might not be updated yet.
+
+### Step 2: Confirm Network Activity
+- The badge count equals the number of distinct third-party domains from which connections were allowed.
+- If you visit mostly first-party sites or offline pages, counts will be low or zero.
+
+### Step 3: Check Browser Compatibility
+- uBO Scope supports:
+  - Firefox 128 or later
+  - Chromium 122 or later
+  - Safari 18.5 or later
+- Using older browser versions may cause badge update failures.
+
+### Step 4: Inspect Extension Background Logs
+- In developer mode, open background script console to check for errors.
+- Ensure no conflicting extensions are blocking data flow.
+
+## 3. Permission Denied or WebRequest API Missing
+
+The extension requires the browser to expose the `webRequest` API for monitoring network connections.
+
+### Step 1: Verify Browser Support
+- Confirm you are using a supported browser and version as listed above.
+
+### Step 2: Check for Restricted Contexts
+- Certain secure or private browsing modes may limit extension APIs.
+- Switch to a normal browsing window and retry.
+
+### Step 3: Review Manifest Permissions
+- Inspect the relevant `manifest.json` for these permissions:
+  ```json
+  "permissions": ["activeTab", "storage", "webRequest"],
+  "host_permissions": ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"]
+  ```
+- Lack of these permissions will prevent network request monitoring.
+
+### Step 4: Reinstall Extension
+- Sometimes updates or corrupted installs remove permissions.
+- Remove and reinstall the extension from the official store for your browser.
+
+## 4. Network Requests Not Showing Correctly (Blocked, Allowed, or Stealth-blocked)
+
+If the popup’s outcome sections show incorrect or no network request data:
+
+### Step 1: Refresh and Navigate
+- Reload the tab to regenerate connection data.
+
+### Step 2: Clear Session Data
+- Restarting the browser clears session-based mapping used by uBO Scope.
+
+### Step 3: Verify Content Blocker Interaction
+- uBO Scope tracks network requests regardless of blocking, but some blockers may alter reporting.
+- Temporarily disable other blockers to isolate issues.
+
+### Step 4: Confirm Network Activity in Background
+- The background script processes network events and updates internal mapping.
+- A failure here may be due to extension permissions or browser limitations.
+
+## 5. Common Pitfalls and Best Practices
+
+- **Opening popup immediately after page load:** Wait 1 to 3 seconds for accurate network event processing.
+- **Using private or guest profiles:** These modes may restrict permissions needed.
+- **Conflicts with other security or content blocker extensions:** Disable others if inconsistent data appears.
+- **Browser updates:** Keep your browser updated to latest stable version for best extension compatibility.
+
+## 6. How to Reset or Reinstall Safely
+
+If problems persist after trying above:
+
+### Resetting uBO Scope Data
+- Close all tabs where the extension was used.
+- Restart the browser.
+- There is no explicit user control over cache: restarting resets session data.
+
+### Reinstalling the Extension
+- Remove the extension from your browser.
+- Install fresh from the official store:
+  - [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+  - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+  - Safari Extensions Gallery (for Safari 18.5+)
+
+## 7. Additional Resources and Support
+
+- Review the [First Launch & User Interface Overview](getting-started/first-run-usage/first-run) for UI insights.
+- Check [Validating Extension Functionality](getting-started/first-run-usage/validate-functionality) for testing steps.
+- Visit the [GitHub repository](https://github.com/gorhill/uBO-Scope) to report issues or view source.
+
+---
+
+# Appendices
+
+### Understanding uBO Scope Badge Behavior
+
+The badge indicates the **number of unique third-party domains** with allowed connections for the current browser tab. A badge of zero or blank is expected on new tabs or pages with no third-party requests.
+
+### Permissions Explained
+
+| Permission  | Purpose |
+|-------------|---------|
+| activeTab   | Access current tab info for focused monitoring |
+| storage     | Save session and public suffix data securely |
+| webRequest  | Intercept and monitor network request lifecycle |
+| host_permissions | Allow monitoring for HTTP, HTTPS, WebSocket requests |
+
+### Troubleshooting Checklist
+
+- Extension installed and enabled?
+- Browser version meets minimum requirement?
+- All permissions granted?
+- Network activity is occurring on the tab?
+- Other content blockers temporarily disabled?
+- Browser restarted after install or update?
+
+<Tip>
+Start troubleshooting with the simplest checks (installation, permissions, browser version) before exploring advanced configurations.
+</Tip>
+
+---

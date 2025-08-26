@@ -1,0 +1,154 @@
+---
+title: "Key Features & Typical Workflows"
+description: "Get a concise tour of uBO Scope’s essential features: monitoring network requests, tracking third-party connections per tab, displaying summary stats in the popup and badge, and supporting all content blockers. Learn what you can expect to see and what actions you can take."
+---
+
+# Key Features & Typical Workflows
+
+Explore the core capabilities of uBO Scope that enable you to monitor and understand your browser’s network activity in real time. This page walks you through its essential features: how it tracks network requests, categorizes third-party connections on a per-tab basis, presents clear summary statistics in the popup UI and badge, and remains compatible with all content blockers.
+
+---
+
+## Overview of uBO Scope’s Core Features
+
+### Real-Time Monitoring of Network Requests
+uBO Scope listens to your browser's network events to capture every connection attempt and outcome, including allowed, blocked, and stealth-blocked requests. This comprehensive monitoring lets you uncover all remote server connections your browser makes, regardless of which content blockers or filtering methods you use.
+
+### Tab-Specific Third-Party Connection Tracking
+The extension organizes connection data by browser tab, showing distinct counts for each third-party domain connected during that tab's session. This granularity helps you assess privacy exposure on a site-by-site basis accurately.
+
+### Intuitive Summary Presentation through Popup and Badge
+A concise connection summary is accessible via the extension's popup interface, breaking down the number of domains contacted according to the connection outcome:
+
+- **Not Blocked (Allowed):** Connections that were successful and permitted
+- **Stealth-Blocked:** Connections suppressed silently to avoid webpage breakage or detection
+- **Blocked:** Connections explicitly blocked by content blockers or network errors
+
+The badge on the browser toolbar updates dynamically to show the count of distinct third-party domains with allowed connections for the active tab, delivering at-a-glance privacy insights.
+
+### Seamless Support for Any Content Blocker
+uBO Scope's design ensures it reports accurate connection outcomes no matter what content blocker is used, including DNS-based filters or stealthy blocking techniques. As long as the browser exposes network requests via its `webRequest` API, uBO Scope tracks them reliably.
+
+---
+
+## Typical User Workflow
+
+1. **Open a Browser Tab and Browse:** As you navigate websites, uBO Scope silently captures the network requests your browser makes.
+
+2. **Click the uBO Scope Icon:** The badge number instantly informs you of how many distinct third-party domains your current tab contacted without being blocked.
+
+3. **Inspect the Popup UI:** Open the popup to see a detailed breakdown, including domain names and counts of allowed, stealth-blocked, and blocked connections.
+
+4. **Analyze Third-Party Connections:** Use this information to understand which external servers your browsing activity involves, helping you evaluate privacy exposure or filtration effectiveness.
+
+5. **Monitor Continuously:** Refresh pages or open new tabs to watch live updates reflected on the badge and popup.
+
+---
+
+## Detailed Feature Descriptions
+
+### Network Request Capture
+uBO Scope uses browser APIs (`webRequest.onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`) to capture network request events as they occur:
+
+- **Success Events:** Record allowed network connections with status codes and IP data where available.
+- **Error Events:** Record blocked or failed connection attempts signifying content blocking or network errors.
+- **Redirect Events:** Categorized as stealth blocks to flag connections hidden by certain blocking techniques.
+
+By consolidating these events, uBO Scope builds a comprehensive picture of your browser's network activity across tabs.
+
+### Tab Data Management and Session Handling
+Connection details are stored per tab session to maintain an accurate state of network activity:
+
+- Each tab maintains counts of hostnames and domains contacted per outcome category: allowed, blocked, and stealth-blocked.
+- Main frame navigations reset the tab’s session data, ensuring fresh measurement for each page load.
+- When tabs close, their data is cleared to preserve memory and relevance.
+
+### Popup Interface Summary
+The popup displays tab-specific data succinctly:
+
+- **Tab Hostname and Domain:** Displayed at the top, with Unicode-friendly domain representation.
+- **Connection Counts:** Number of distinct third-party domains contacted is prominently shown.
+- **Sectioned Lists:** Domains are split into "not blocked," "stealth-blocked," and "blocked" sections, each listing domain names alongside how many requests were observed.
+
+This organization helps users quickly assess the nature and scale of remote connections their browser encountered.
+
+### Badge Updates
+The extension badge reflects the real-time count of allowed third-party domains for the active tab:
+
+- When no allowed third-party domains are present, the badge is blank, indicating minimal exposure.
+- The number updates as network activity occurs, giving continuous feedback.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Focus on the Badge Number:** Use the badge count as your main privacy exposure metric—a lower number means fewer external parties seen.
+- **Use the Popup for Deep Dives:** When concerned or curious, open the popup to get detailed domain-level insights.
+- **Remember Stealth-Blocked Connections:** These represent connections silently blocked to avoid breaking websites—they are important for understanding true exposure.
+- **Check Across Tabs:** Since data is tab-specific, monitor multiple tabs independently for accurate assessments.
+- **Combine with Filter Lists Efforts:** If you maintain or evaluate filtering lists, leverage uBO Scope to verify the real-world impact of your rules.
+
+---
+
+## Common Pitfalls & Troubleshooting
+
+- **No Data in Popup:** Ensure you have an active tab loaded with network traffic. uBO Scope shows data only for the active tab.
+- **Badge Not Updating:** Sometimes browser permission changes or background script restarts might temporarily delay badges. Switching tabs or refreshing should resolve this.
+- **Missing Connections Due to Browser Limitations:** Requests initiated outside the `webRequest` API scope (like some WebSocket traffic) may not be tracked.
+
+For setup issues, consult the [Troubleshooting Common Setup Issues](/getting-started/first-run-usage/troubleshooting) page.
+
+---
+
+## Code Illustration: How Tab Data Aggregation Works
+
+Below is a conceptual overview of how uBO Scope organizes and counts connections per tab and outcome.
+
+```javascript
+// Simplified pseudocode
+function recordOutcome(tabId, request) {
+    let tabDetails = session.tabIdToDetailsMap.get(tabId) || createNewTabDetails();
+    let hostname = extractHostname(request.url);
+    let domain = extractDomain(hostname);
+
+    switch (request.event) {
+       case 'success':
+           addCount(tabDetails.allowed, hostname, domain);
+           break;
+       case 'redirect':
+           addCount(tabDetails.stealth, hostname, domain);
+           break;
+       case 'error':
+           addCount(tabDetails.blocked, hostname, domain);
+           break;
+    }
+
+    session.tabIdToDetailsMap.set(tabId, tabDetails);
+}
+
+function addCount(outcomeMap, hostname, domain) {
+    outcomeMap.hostnames[hostname] = (outcomeMap.hostnames[hostname] || 0) + 1;
+    outcomeMap.domains[domain] = (outcomeMap.domains[domain] || 0) + 1;
+}
+```
+
+This approach ensures detailed, accurate recording of connection outcomes.
+
+---
+
+## Summary
+uBO Scope empowers you to see the full landscape of your browser’s network interactions with third-party servers. Its core features—network monitoring, tab-specific tracking, clear UI summaries, and universal content blocker support—equip you with transparent insights to protect your privacy and understand connection dynamics effortlessly.
+
+For more on these features and how they fit into uBO Scope’s architecture, see the [System Architecture Overview](/overview/architecture-feature-overview/system-architecture-overview) and [Primary Use Cases & Target Audience](/overview/product-intro-core-concepts/primary-use-cases-audience).
+
+---
+
+## Next Steps
+- Install uBO Scope and observe the badge count to start monitoring third-party connections.
+- Familiarize yourself with the [Popup UI Overview](/getting-started/first-run-usage/first-run) to navigate connection data.
+- Learn more about how uBO Scope measures outcomes in the [Core Concepts & Terminology](/overview/product-intro-core-concepts/core-concepts-terminology) page.
+- Explore advanced workflows like [Validating Content Blocker Effectiveness](/guides/advanced-scenarios/validating-content-blockers) to deepen impact analysis.
+
+---
+
+<uBOScope>uBO Scope is your dedicated companion for revealing the hidden connections your browser makes, bringing clarity and control to your browsing privacy.</uBOScope>
