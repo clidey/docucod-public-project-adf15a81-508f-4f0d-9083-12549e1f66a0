@@ -1,0 +1,117 @@
+---
+title: "System Architecture Diagram"
+description: "Visualize the flow of network request data from browser events to the extension’s popup interface. This diagram illustrates the interaction between core components, such as background scripts, the popup, and the browser's webRequest API."
+---
+
+# System Architecture Diagram
+
+Understanding how uBO Scope captures, processes, and displays network request data is key to appreciating its role in providing transparent insight into remote connections. This page visualizes the data flow and interactions among the core components: the browser, extension background scripts, and the popup interface.
+
+---
+
+## Overview
+
+uBO Scope listens to network events triggered by the browser's `webRequest` API, collects outcomes of those network requests, processes them in the extension's background script, and displays summarized data in the popup interface when requested by the user.
+
+### Key Components
+
+- **Browser `webRequest` API**: Emits events before redirects, on errors, and when responses start, providing raw network request data.
+- **Background Script (`background.js`)**: Central orchestrator that captures events from the browser API, records outcomes per browser tab, maintains session data including domain associations, and supplies this data on demand.
+- **Popup Interface (`popup.html` and `popup.js`)**: The user-facing panel presenting a summarized and categorized view of allowed, stealth-blocked, and blocked remote domains for the active tab.
+
+---
+
+## Data Flow Description
+
+### 1. Capturing Network Events
+- The browser emits `webRequest` events:
+  - `onBeforeRedirect` when a redirect is about to occur.
+  - `onErrorOccurred` for network failures.
+  - `onResponseStarted` when a response begins.
+- uBO Scope listens on these events, filtering URLs within its allowed host permissions.
+
+### 2. Queuing and Processing Requests
+- Each event is queued with a tag indicating its network outcome (`redirect`, `error`, or `success`).
+- A timer batches these queued requests to process after a short delay (1 second), optimizing performance by avoiding to handle each event immediately.
+
+### 3. Outcome Recording
+- `recordOutcome` associates each network request with the corresponding browser tab.
+- For main frame requests (`frameId === 0`), it resets or initializes tab-specific data, extracting the hostname and domain using the Public Suffix List.
+- Outcomes classify domains as:
+  - **Allowed**: Successful connections.
+  - **Stealth-blocked**: Redirected requests considered stealth-blocked.
+  - **Blocked**: Requests with errors.
+- Each domain and hostname is tracked with counts, facilitating badge updates and popup summaries.
+
+### 4. Badge and Session Management
+- After processing, the extension updates the browser action badge showing the count of distinct allowed domains per active tab.
+- Session data storing tab details and the Public Suffix List is persistently saved and loaded across sessions.
+
+### 5. Popup Data Request
+- When the user opens the popup, a message is sent to the background script requesting data for the active tab.
+- The background script serializes and sends back the tab-specific network connection data.
+- The popup script deserializes this data and renders categorized lists, translating punycode to Unicode for readability.
+
+---
+
+## Visualization
+```mermaid
+flowchart TD
+
+  subgraph Browser
+    WRAPI["webRequest API Events"]
+  end
+
+  subgraph Extension_Background["Background Script (background.js)"]
+    Queue["Queue Network Requests"]
+    Process["Process Network Request Journal"]
+    Recorder["Record Outcome per Tab"]
+    Badge["Update Browser Action Badge"]
+    Session["Session Data Storage"]
+    PSL["Public Suffix List"]
+    OnMessage["Receive Messages from Popup"]
+    Serialize["Serialize/Deserialize Data"]
+  end
+
+  subgraph Popup_Interface
+    PopupHTML["Popup UI (popup.html) & JS (popup.js)"]
+    Render["Render Connection Summary and Domain Lists"]
+  end
+
+  WRAPI -->|onBeforeRedirect, onErrorOccurred, onResponseStarted| Queue
+  Queue --> Process
+  Process --> Recorder
+  Recorder --> Badge
+  Recorder --> Session
+  Process --> Session
+  PSL --> Recorder
+  OnMessage --> Serialize
+  Serialize --> OnMessage
+  OnMessage --> PopupHTML
+  PopupHTML --> Render
+
+  classDef extbg fill:#f9f,stroke:#333,stroke-width:1px,color:#000;
+  class Extension_Background extbg;
+
+  classDef browser fill:#bbf,stroke:#333,stroke-width:1px,color:#000;
+  class Browser browser;
+
+  classDef popup fill:#bfb,stroke:#333,stroke-width:1px,color:#000;
+  class Popup_Interface popup;
+
+  %% Annotations
+  class WRAPI browser;
+  class Queue,Process,Recorder,Badge,Session,PSL,OnMessage,Serialize extbg;
+  class PopupHTML,Render popup;
+
+  %% Notes
+  Note1["Network events represent all types of web requests."]
+  Note2["Background script centralizes data handling and storage."]
+  Note3["Public Suffix List is used to extract TLD/domain info."]
+  Note4["Popup renders user-friendly connection summaries."]
+  WRAPI -.-> Note1
+  Session -.-> Note2
+  PSL -.-> Note3
+  PopupHTML -.-> Note4
+
+

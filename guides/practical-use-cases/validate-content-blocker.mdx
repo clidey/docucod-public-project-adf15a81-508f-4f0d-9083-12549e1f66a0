@@ -1,0 +1,194 @@
+---
+title: "Validating Content Blocker Effectiveness"
+description: "Step-by-step instructions for using uBO Scope alongside your favorite content blocker. Learn how to assess which third-party connections are truly being blocked or allowed, and avoid common misconceptions about block counts."
+---
+
+# Validating Content Blocker Effectiveness with uBO Scope
+
+## Overview
+This guide walks you through using uBO Scope alongside your favorite content blocker to validate which third-party connections are truly blocked or allowed. You will learn how to interpret the connection outcomes shown by uBO Scope, avoid common misconceptions about blocker counts, and verify your content blocker's real effectiveness by cross-referencing network connection data.
+
+---
+
+## What You Will Gain
+- Clear understanding of how uBO Scope reports remote server connections.
+- Ability to differentiate between truly blocked, stealth-blocked, and allowed connections.
+- Skills to validate the actual performance of your content blocker beyond misleading block count metrics.
+
+---
+
+## Prerequisites
+Before beginning this validation workflow, ensure the following:
+
+- uBO Scope is installed in your browser. Refer to the [Installing and Setting Up uBO Scope](../getting-started/install-setup) guide if needed.
+- Your preferred content blocker extension (e.g., uBlock Origin, AdGuard) is installed and enabled.
+- You understand basic network security and third-party connections concepts. Review [Core Concepts & Key Terms](../../overview/getting-started/core-concepts-and-terminology) for background.
+
+---
+
+## Time Estimate
+Allow approximately 15-20 minutes for running through initial validations on several webpages.
+
+---
+
+## How uBO Scope Helps Validate Content Blockers
+uBO Scope monitors all network requests (both allowed and blocked) from webpages and reports the domains involved, independent of any content blocking in place. It provides three key outcome categories:
+
+- **Not Blocked (Allowed):** Domains with successful network connections.
+- **Stealth-Blocked:** Requests blocked silently before reaching the network.
+- **Blocked:** Requests that failed with errors or explicit block outcomes.
+
+This data enables you to see which third-party servers your content blocker is effectively preventing connections to, rather than relying on simplistic block counts that can be misleading.
+
+---
+
+## Step-by-Step Validation Workflow
+
+<Steps>
+<Step title="Open uBO Scope Popup on a Test Webpage">
+Navigate to the webpage you want to test in your browser. Click the uBO Scope icon to open the popup panel. This panel lists all remote server domains contacted by the page during your current session, categorized by their connection outcome.
+
+**Expected Result:** You see the hostname of the current tab at the top and three sections: 'not blocked', 'stealth-blocked', and 'blocked', each listing domains with request counts.
+
+**Tip:** The number next to 'domains connected' summarizes the unique third-party domains allowed.
+</Step>
+
+<Step title="Interpret Connection Outcomes">
+Review the three outcome sections:
+
+- **Not Blocked:** These domains represent servers the webpage connected to successfully. Allowed connections here are indicative of your content blocker permitting these requests.
+- **Stealth-Blocked:** These are requests blocked silently, often without any error shown to the browser, reflecting stealthy blocking by your content blocker.
+- **Blocked:** Domains showing in this section had requests that failed due to errors or explicit blocking.
+
+**Decision Point:** If you see many connections under 'not blocked' for third-party domains you expected to be blocked, your content blocker might be allowing network activity from those servers.
+</Step>
+
+<Step title="Cross-Check with Your Content Blocker's Interface">
+Open your content blocker's dashboard or logger if available (e.g., uBlock Origin's logger). Compare the blocked domain listings with what uBO Scope reports in 'blocked' and 'stealth-blocked.'
+
+Confirm that domains your blocker lists as blocked ideally appear in uBO Scope's blocked or stealth-blocked sections.
+
+**Expected Result:** A good content blocker will minimize allowed third-party connections while maximizing stealth and blocked outcomes on problematic domains.
+</Step>
+
+<Step title="Repeat on Multiple Sites">
+To confidently assess content blocker effectiveness, run uBO Scope on different websites:
+
+1. High-traffic sites with numerous third-party requests.
+2. Privacy-focused websites where fewer third parties load.
+3. Sites known for aggressive tracking or ads.
+
+Analyze the consistency of allowed vs blocked domains.
+
+**Expected Result:** High-quality blockers will consistently reduce allowed third-party connections while maintaining webpage functionality.
+</Step>
+
+<Step title="Avoid Counting Blocked Request Numbers as Sole Metric">
+<u>You must not rely solely on your content blocker's reported "block count" badges or numbers.</u>
+
+Many users mistakenly equate a higher block count with better protection. However, a higher block count can mean more requests are made and then blocked, which might indicate the page successfully contacts more third-party servers.
+
+Use uBO Scope to see the actual number of distinct allowed third-party servers connected instead.
+
+**Tip:** Lower unique allowed domain counts reflect stronger content blocking.
+</Step>
+
+<Step title="Interpret Your Findings and Adjust Settings if Needed">
+If you find many unwanted third-party connections allowed:
+
+- Review your content blocker's filter lists.
+- Enable or add stricter blocking rules.
+- Consider advanced settings like stealth blocking, or enable privacy features.
+
+Run uBO Scope again after changes to observe improvements.
+</Step>
+</Steps>
+
+---
+
+## Practical Example
+
+Suppose you visit a news website known to load third-party advertisements. You open uBO Scope and find:
+
+- Allowed domains include `cdn.example.com` and `tracking.ads.com`.
+- Stealth-blocked includes `ads.example.net`.
+- Blocked domains list `malicious.tracker.io`.
+
+You check your content blocker's dashboard:
+
+- It reports blocking `ads.example.net` and `malicious.tracker.io`.
+- There is no entry for `tracking.ads.com`.
+
+This shows your blocker is stealth-blocking some ad domains, but `tracking.ads.com` connections are allowed, possibly leaking tracking data.
+
+You then update your blocker lists to add blocking rules targeting `tracking.ads.com` and rerun the test, confirming the domain moves to 'stealth-blocked' or 'blocked' in uBO Scope.
+
+---
+
+## Best Practices & Tips
+
+- **Refresh the page before opening uBO Scope**: Network requests are captured per tab session, so reloading ensures fresh data.
+- **Use uBO Scope’s badge count on the toolbar icon** as a quick metric: it displays the number of distinct allowed third-party domains.
+- **Combine with browser developer tools** for deeper network request analysis.
+- **Understand stealth blocking:** It’s a powerful method your blocker uses to silently cancel requests, resulting in no error but effective blocking.
+- **Avoid relying on external "ad blocker test" sites:** They often simulate unrealistic behavior and cannot measure stealth blocking.
+
+---
+
+## Troubleshooting
+
+<AccordionGroup title="Common Issues During Validation">
+<Accordion title="uBO Scope Shows No Data or 'NO DATA'">
+- Ensure uBO Scope is installed and enabled in your browser.
+- Refresh the current tab.
+- Verify that permissions like `webRequest` are granted to the extension.
+- Restart your browser if necessary.
+- Consult [Troubleshooting Installation & Startup Issues](../../getting_started/first_run_validation/troubleshooting_installation) for assistance.
+</Accordion>
+
+<Accordion title="Mismatched Blocked Domains Between uBO Scope and Content Blocker">
+- Understand uBO Scope categorizes stealth blocking separately; some blockers silently cancel requests.
+- Some domains may be blocked at the DNS or network level and not appear consistently.
+- Check that content blocker logger settings are fully enabled for accurate data.
+</Accordion>
+
+<Accordion title="High Number of Allowed Domains Unexpectedly">
+- Confirm that your content blocker filter lists are up-to-date.
+- Consider increasing blocking strictness temporarily for testing.
+- Review if browser settings or other extensions interfere with blocking.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+- Explore the [Understanding the Popup & Badge Count](../getting-started/understand-popup-badge) guide to fully decode uBO Scope’s interface.
+- Run your [First Network Analysis](../getting-started/first-analysis) to deepen understanding of network connections.
+- Consult [Debunking 'Ad Blocker Test' Webpages](../practical-use-cases/debunk-test-myths) to avoid misleading validation methods.
+
+---
+
+## Additional References
+- [What is uBO Scope?](../../overview/getting-started/what-is-ubo-scope)
+- [Core Concepts & Key Terms](../../overview/getting-started/core-concepts-and-terminology)
+- [Validating Installation & Quick Function Check](../../getting_started/first_run_validation/first_validation)
+
+---
+
+## Summary
+By using uBO Scope, you gain transparent insight into the third-party network connections that your content blocker is allowing or blocking. Validating your blocker’s effectiveness with this tool avoids common pitfalls based on block count misinterpretation and reveals stealth blocking results that conventional methods miss. This approach empowers you to tune your content blocker settings for optimal privacy protection backed by real connection data.
+
+---
+
+<Check>
+Pro Tip: Remember to disable cache when testing to ensure uBO Scope observes all requests freshly.
+</Check>
+
+---
+
+## Support & Contributions
+For bugs or feature requests related to uBO Scope, visit the [official GitHub repository](https://github.com/gorhill/uBO-Scope). Contributions and feedback from users help improve the tool's accuracy and usefulness.
+
+
+---
