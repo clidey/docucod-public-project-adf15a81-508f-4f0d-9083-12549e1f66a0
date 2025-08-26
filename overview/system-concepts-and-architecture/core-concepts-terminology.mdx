@@ -1,0 +1,152 @@
+---
+title: "Core Concepts & Terminology"
+description: "Clear definitions of essentials like 'third-party remote server', 'badge count', 'blocked/allowed/stealth', and explanations of how uBO Scope measures and categorizes network connections. Equips users with the necessary vocabulary to understand and use the product confidently."
+---
+
+# Core Concepts & Terminology
+
+Understanding uBO Scope begins with mastering a set of foundational concepts and terms. This knowledge empowers you to interpret the extension’s data accurately and make informed decisions about your web privacy.
+
+---
+
+## Third-Party Remote Server
+
+A **third-party remote server** is any external server contacted by a webpage you visit, which is not part of the primary domain. When you load a website, your browser may reach out to various servers owned by other companies or services to fetch additional resources like ads, images, analytics, or social media content.
+
+**Why It Matters:**
+- uBO Scope tracks these third-party servers to expose every connection attempt a website makes beyond its own domain.
+- A lower number of third-party servers connected often indicates better privacy, as fewer external companies can track or profile you.
+
+
+## Badge Count
+
+The **badge count** is the number displayed on uBO Scope’s toolbar icon. It represents:
+
+> **The number of distinct third-party remote servers with which there was a connection attempt or success during page loading.**
+
+**Key points:**
+- This count includes all connections *regardless* of whether they were blocked or allowed, focusing on unique server domains.
+- A *lower badge count* indicates fewer unique external servers contacted, enhancing privacy.
+- This count is a more reliable indicator of your online exposure than traditional block counts shown by ad blockers.
+
+
+## Connection Classifications: Blocked, Allowed, and Stealth
+
+uBO Scope categorizes third-party connections into three outcomes based on how network requests were handled.
+
+### Allowed
+Connections that were successful and not blocked by any content blocker or filtering mechanism. These represent actual data exchanged between your browser and external servers.
+
+### Blocked
+Connections that were explicitly prevented from loading by content blockers or network-level filters, resulting in network errors or request failures.
+
+### Stealth
+Connections that were intercepted or redirected by content blockers in a way that hides their blocking action from the webpage. This 'stealth' mode ensures the webpage behaves normally without knowing a resource was blocked.
+
+**Benefit:**
+- This classification helps you understand not just what was blocked or allowed but also what was blocked invisibly, providing a full picture of network activity.
+
+
+## How uBO Scope Measures Network Connections
+
+### Using WebRequest API
+
+uBO Scope relies on the browser's [`webRequest` API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest) to capture detailed information about network requests initiated by webpages. This API reports:
+- The URL being requested
+- The status of the request (success, error, redirect)
+- The type of resource being fetched (main page, script, image, websocket, etc.)
+
+Even connections filtered through DNS-based content blockers or intermediate proxies are reported as long as the `webRequest` API receives the event.
+
+### Hostname and Domain Extraction
+
+To group requests meaningfully, uBO Scope extracts:
+- **Hostname:** Fully qualified name from the URL.
+- **Domain:** Registered domain plus one additional label (e.g., `example.com` from `sub.example.com`) using the public suffix list.
+
+This classification condenses multiple requests to the same domain for a clearer summary.
+
+<u>Note:</u> Hostnames and domains are converted from Unicode to Punycode and vice versa for both storage and display.
+
+### Public Suffix List (PSL)
+
+The extension uses the [Mozilla Public Suffix List](https://publicsuffix.org/) to accurately determine what constitutes a registered domain versus a public suffix. This is critical because many domain extensions are multi-level (e.g., `.co.uk`).
+
+<u>Technical insight:</u> uBO Scope utilizes a compact and optimized JavaScript implementation of the PSL (`publicsuffixlist.js`), enabling efficient domain parsing and classification.
+
+
+## Terminology Recap
+
+| Term                     | Description                                                                                   |
+|--------------------------|-----------------------------------------------------------------------------------------------|
+| Third-party remote server| External servers contacted by a website beyond its main domain.                              |
+| Badge count              | The number shown on the toolbar icon indicating distinct third-party servers connected.     |
+| Allowed connections      | Network requests permitted and successfully completed.                                       |
+| Blocked connections      | Requests prevented by content blocking mechanisms.                                          |
+| Stealth connections      | Requests blocked without webpage awareness for stealthy blocking.                           |
+| Hostname                 | The exact host portion of a URL (e.g., `ads.example.net`).                                  |
+| Domain                   | The registered domain derived from hostname using the public suffix list (e.g., `example.net`).|
+
+
+## Why This Vocabulary Matters
+
+Grasping these terms allows you to:
+- Accurately interpret the numbers and lists displayed by uBO Scope.
+- Understand the difference between blocking individual resources versus blocking entire third-party domains.
+- Assess the true exposure of your browsing session by focusing on unique third-party servers rather than raw block counts.
+- Engage confidently with the tool, filter lists, and the community discussions around privacy and network connections.
+
+
+## Practical Examples
+
+1. **Example of Third-Party Server Identification:**
+   - Visiting `https://news.example.com` triggers resources from `cdn.examplecdn.com` and `ads.tracker.com`.
+   - `cdn.examplecdn.com` and `ads.tracker.com` are distinct third-party remote servers.
+   - uBO Scope’s badge count increases by 2.
+
+2. **Understanding Badge Count Impact:**
+   - You switch from one ad blocker to another.
+   - Old blocker shows 150 blocked requests, new one shows 300.
+   - uBO Scope shows the first blocker connected to 10 third-party domains but the second connected to 20.
+   - The new blocker is potentially less effective even though it blocked more requests; it allowed more distinct external connections.
+
+3. **Stealth Blocking:**
+   - Some requests to trackers are blocked silently to avoid webpage breakage.
+   - uBO Scope separates these from outright blocked requests.
+   - This enables you to verify stealth techniques and understand their impact.
+
+
+## Tips & Best Practices
+
+- Use the badge count as your primary privacy metric, not raw block counts.
+- Regularly consult this terminology when reviewing popup data and network summaries.
+- Remember that not all third-party servers are harmful; some are essential services like CDNs.
+- Keep in mind stealth blocking helps maintain website usability while protecting privacy.
+
+
+<Note>
+Understanding these core concepts unlocks the full value of uBO Scope’s network visibility. Armed with this vocabulary, you can confidently explore connection details and assess privacy exposure.
+</Note>
+
+---
+
+## Additional Resources
+
+- [What is uBO Scope?](../product-introduction-and-value/what-is-ubo-scope) — For an introduction to the product and its goals.
+- [Quick Feature Overview](../product-introduction-and-value/quickstart-and-feature-glance) — To see how connection data is presented to users.
+- [Step-by-Step: Monitoring Website Connections](../../guides/analyzing-connections/workflow-monitoring) — Learn how to leverage these concepts during browsing.
+- [Public Suffix List](https://publicsuffix.org/) — Learn more about domain parsing standards.
+
+---
+
+## Glossary
+
+| Term                  | Definition                                                  |
+|-----------------------|-------------------------------------------------------------|
+| `webRequest` API      | Browser API used to monitor and intercept network requests. |
+| Punycode              | Encoding for converting Unicode domain names to ASCII.      |
+| Registered Domain     | The base domain registered by an entity (e.g., example.com). |
+| Public Suffix         | A domain under which internet users cannot directly register names (e.g., .com). |
+| Network Request Event | An event indicating the status of a resource request (success, error, redirect). |
+
+---
