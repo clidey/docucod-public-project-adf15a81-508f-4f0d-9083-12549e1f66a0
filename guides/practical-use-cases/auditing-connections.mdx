@@ -1,0 +1,174 @@
+---
+title: "Auditing Third-Party Network Connections"
+description: "Walks users through analyzing which domains a web page connects to, differentiating between first-party and third-party servers, and identifying potential privacy or security issues using uBO Scope's reporting features."
+---
+
+# Auditing Third-Party Network Connections with uBO Scope
+
+uBO Scope is designed to provide you transparent insight into the remote servers a web page connects to. This guide walks you through how to use uBO Scope to analyze these network connections, distinguish between first-party and third-party domains, and identify privacy or security risks through its reporting features.
+
+---
+
+## 1. Understanding the Auditing Workflow
+
+### What This Guide Helps You Accomplish
+- Learn how to interpret network connection data for the active browser tab.
+- Identify which domains are contacted by the page—including allowed, blocked, and stealth-blocked connections.
+- Differentiate between first-party and third-party domains.
+- Use domain data to evaluate potential privacy or security concerns.
+
+### Prerequisites
+- Have uBO Scope installed and activated in your browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+- Basic understanding of domain names and third-party web connections.
+
+### Expected Outcome
+After following this guide, you will be able to confidently audit the network behavior of any web page using uBO Scope's popup interface and interpret the detailed domain listings.
+
+### Estimated Time
+Approximately 10–15 minutes to fully review and practice with real websites.
+
+### Difficulty Level
+Beginner to intermediate—no advanced technical expertise required.
+
+---
+
+## 2. Step-by-Step Instructions to Audit Connections
+
+### Step 1: Open uBO Scope Popup for the Active Tab
+1. Navigate to the browser tab whose network connections you want to analyze.
+2. Click the uBO Scope extension icon in your browser toolbar.
+3. The popup window will open, displaying data specific to that tab.
+
+**Expected Result:** The popup loads the domain data and shows the page’s hostname near the top.
+
+### Step 2: Read the Hostname Header
+- The header shows the hostname and the registered domain of the active web page.
+- This is considered the _first-party_ domain.
+
+**Example:** If the page is `news.example.com`, you might see:
+
+```
+news. example.com
+```
+
+Where "example.com" is the registered domain.
+
+### Step 3: Understand the Badge Count
+- The badge on the extension icon displays the number of _distinct third-party domains_ that successfully had connections for the page.
+- This count summarizes the number of unique external domains the page requested resources from.
+
+**Important:** A _lower_ badge count generally means better privacy, indicating fewer third-party connections.
+
+### Step 4: Explore the Domain Categories
+The popup classifies domains into three groups:
+
+- **Not Blocked (Allowed):** Domains from which resources were successfully fetched.
+- **Stealth-Blocked:** Domains where connections were blocked transparently or indirectly by your content blocker or other mechanisms.
+- **Blocked:** Domains where connections were explicitly blocked and requests failed.
+
+Each category lists the domains alongside the number of requests made to them.
+
+### Step 5: Differentiate Between First-Party and Third-Party Domains
+- The first-party domain is the same as the active page’s registered domain.
+- Any other domain shown in the allowed, stealth, or blocked lists is considered third-party.
+
+**Tip:** Use this distinction to understand what external services or trackers a page contacts.
+
+### Step 6: Analyze Privacy and Security Implications
+- Review the third-party domains in the allowed and stealth-blocked sections to identify potential trackers or analytics services.
+- Domains in the blocked list indicate resources or connections your content blocker prevented, helping you identify threats or unwanted connections.
+
+---
+
+## 3. Practical Example: Auditing a News Website
+
+Imagine you visit `https://news.example.com` and open uBO Scope's popup.
+
+- The hostname header shows "news. example.com" indicating the first-party domain.
+- The badge count reads "5", meaning five distinct third-party domains were allowed.
+- The "not blocked" section might list domains like `cdn.examplecdn.com` and `analytics.exampletracker.com`.
+- The "stealth-blocked" list could have `ads.exampleadnetwork.com` indicating these connections were blocked stealthily.
+- The "blocked" list may include domains known for aggressive tracking that your content blocker halted.
+
+By reviewing this data, you decide whether you are comfortable with the external connections or need to adjust your blocking settings.
+
+---
+
+## 4. Tips, Best Practices, and Troubleshooting
+
+### Tips for Effective Auditing
+- **Regularly check multiple sites** to understand typical third-party network behaviors.
+- **Watch for unexpected domains** especially in the allowed list; these could signal intrusive trackers.
+- **Use the registered domain view** as your baseline to distinguish legitimate first-party subdomains from third-party domains.
+- **Consider the stealth-blocked list** carefully; these connections might still have some impact despite being blocked stealthily.
+
+### Common Issues and Solutions
+- **No data shown or popup is empty:**
+  - Make sure uBO Scope is active and permissions are granted.
+  - Confirm the tab is fully loaded and network activity has occurred.
+  - Check browser compatibility as per [Supported Browsers & Prerequisites](/getting-started/setup-installation/system-requirements).
+
+- **Badge count does not update:**
+  - Reload the tab to refresh network monitoring.
+  - Restart your browser and validate the extension is enabled.
+
+- **Confusing domain names (punycode or internationalized domains):**
+  - uBO Scope converts punycode domains to their readable form in the popup for clarity.
+
+### Performance Considerations
+- uBO Scope monitors network requests in real-time with minimal performance impact.
+- Badge count updates batch network events efficiently, avoiding browser slowdowns.
+
+### Alternative Workflows
+- Combine uBO Scope analysis with content blocker configuration to customize what connections you allow or block.
+- Use the extension to verify the effectiveness of privacy add-ons by observing stealth-blocked vs. blocked domains.
+
+---
+
+## 5. Next Steps & Related Documentation
+
+### What's Next
+- Deepen your understanding by exploring [Navigating the Popup Interface](/guides/getting-started/popup-tour) for UI details.
+- Learn to interpret badge counts further through [Making Sense of Badge Counts and Domain Listings](/guides/getting-started/understanding-badge).
+- Validate your installation with [Validating uBO Scope Is Working](/getting-started/usage-validation-troubleshooting/validation-steps).
+
+### Related Guides
+- [Debunking Ad Blocker Badge and Test Myths](/guides/practical-use-cases/debunking-myths) to understand common misconceptions.
+- [Supporting Filter List Maintainers](/guides/practical-use-cases/supporting-filter-maintainers) to contribute to enhancing content blocking.
+
+### Additional Resources
+- Official GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List information used internally: [https://publicsuffix.org/](https://publicsuffix.org/)
+
+---
+
+## Appendix: Underlying Concepts (Brief)
+
+uBO Scope uses the Public Suffix List to accurately determine the registered domain from any hostname. This allows it to classify domains correctly into first-party and third-party categories. It listens to network request events (`webRequest` API) reported by the browser to track actual network communication outcomes — whether requests succeed, fail, or are redirected.
+
+
+<AccordionGroup title="Common Questions About Auditing">  
+<Accordion title="Why does uBO Scope report distinct domains instead of requests?">  
+The badge count and domain lists focus on _distinct_ domains contacted, rather than total request count, because this better reflects unique external services a page depends on, impacting privacy.
+</Accordion>  
+<Accordion title="What is the difference between stealth-blocked and blocked domains?">  
+Stealth-blocked domains were blocked in a way that the webpage cannot directly detect (e.g., via silent blocking or indirect failures), whereas blocked domains had explicit blocking events.
+</Accordion>  
+<Accordion title="Can uBO Scope report requests blocked by DNS or other network tools?">  
+Yes, as long as the browser's `webRequest` API reports the network request events, uBO Scope observes them regardless of how the blocking occurs.
+</Accordion>  
+<Accordion title="Does uBO Scope impact browser performance?">  
+The extension is optimized to minimize overhead, batching network events and managing data efficiently.
+</Accordion>  
+</AccordionGroup>  
+
+---
+
+For full details on installation, first use, and interface navigation, consult the Getting Started guides.
+
+---
+
+_Last updated: main branch_
+
+
+[Return to Guide Overview](../index.mdx)
