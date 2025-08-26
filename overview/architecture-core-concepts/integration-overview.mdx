@@ -1,0 +1,124 @@
+---
+title: "Integration & Compatibility"
+description: "See where uBO Scope fits in your privacy stack. Learn how it is independent of specific blockers (like uBlock Origin or DNS-based filtering), yet coexists to report outcomes accurately as long as the browser's reporting allows. Provides a summary of supported browsers and integration points."
+---
+
+# Integration & Compatibility
+
+Discover where uBO Scope fits within your privacy and content-blocking toolkit. This page explains how uBO Scope operates independently of your installed content blockers or DNS filters, reporting all outbound network connections based on the browser's native reporting capabilities. It also outlines supported browsers and highlights how uBO Scope seamlessly integrates to provide accurate, unbiased insight into third-party connections.
+
+---
+
+## Why Integration & Compatibility Matter
+
+As a privacy-conscious user, you want a clear, unfiltered view of which third-party connections your browser attempts or successfully makes. uBO Scope fills this need by observing network activity through the browser's built-in `webRequest` API rather than relying on or interfering with specific content blockers.
+
+This means:
+
+- uBO Scope reports network request outcomes regardless of the content-blocking extension or DNS filtering in use.
+- It works alongside popular blockers like uBlock Origin without conflict.
+- Its insight is consistent across different browsers, as long as they expose network requests to extensions.
+
+Understanding this separation helps you better assess your privacy posture and verify the true scope of remote connections initiated by web pages.
+
+## Supported Browsers
+
+uBO Scope supports modern browsers that implement the WebExtensions API with access to network request events (`webRequest`). Supported browsers include:
+
+- **Chromium-based browsers (e.g., Google Chrome, Microsoft Edge)**
+- **Mozilla Firefox (desktop and Android, minimum version 128.0)**
+- **Apple Safari (version 18.5 and later)**
+
+### Permission and API Use
+
+To operate effectively, uBO Scope requires the following:
+
+- Permission to access webRequest events on all HTTP and HTTPS URLs matching `http://*/*`, `https://*/*`, and WebSocket equivalents where supported.
+- Storage permissions to maintain session data reliably.
+- ActiveTab permission to associate network requests with browser tabs accurately.
+
+These permissions are declared explicitly in the extension manifest for each browser platform, ensuring clarity and security transparency.
+
+#### Example Manifest Permissions (Chromium & Firefox):
+```json
+"permissions": [
+  "activeTab",
+  "storage",
+  "webRequest"
+],
+"host_permissions": [
+  "https://*/*",
+  "http://*/*",
+  "wss://*/*",
+  "ws://*/*"
+]
+```
+
+Safari’s manifest similarly requests these permissions but uses background scripts due to platform-specific constraints.
+
+## How uBO Scope Coexists with Other Content Blockers
+
+uBO Scope does **not** block or modify any network requests. Instead, it passively listens to the browser's network activity reporting to track every connection attempt and its outcome. This design ensures:
+
+- **Independence from block lists or DNS filtering:** It reports even those connections that content blockers may stealth-block or DNS servers may intercept.
+- **Accurate outcome tracking:** It distinguishes between allowed, stealth-blocked, and fully blocked connections as reported by the browser.
+- **Compatibility:** No interference occurs with other extensions or privacy tools, allowing you to use uBO Scope simply as a measurement tool.
+
+### What This Means Practically
+
+Suppose you're running uBlock Origin alongside DNS-level blocking. uBO Scope will show all connections the browser tries, marking those that DNS blocked as **blocked** and those uBlock Origin stealth-blocked with the **stealth** designation. This comprehensive visibility reveals the true network landscape behind browser requests.
+
+## Integration Points
+
+- **Session Data Management:** uBO Scope uses browser session storage to keep per-tab connection details, preserving context when switching tabs or windows.
+- **Real-Time Network Listening:** It taps into events like `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` to capture every network request outcome.
+- **Popup UI:** The extension popup accesses this data to present a categorized overview of all third-party domains connected on the active tab.
+
+These points allow uBO Scope to compile and present meaningful, real-time data without introducing latency or blocking behavior.
+
+## Practical Implications for Users
+
+- You get **transparent, unbiased reporting** on third-party connections regardless of your blocking setup.
+- uBO Scope helps you **debunk misleading badge counts** or block metrics presented by content blockers alone.
+- It works on **resource-constrained devices** and with **restricted environments**, provided the browser reports requests through its API.
+
+## Best Practices for Use
+
+- Keep your browser up to date to ensure the latest API features and permissions support uBO Scope fully.
+- When using multiple blocking tools, use uBO Scope as a **verifier** rather than a blocker.
+- Consult the extension's badge count and popup for an immediate snapshot of unique third-party connections.
+
+## Troubleshooting Compatibility Issues
+
+<u>Common Issues and Solutions:</u>
+
+<AccordionGroup title="Compatibility Troubleshooting">
+<Accordion title="uBO Scope shows no connections or stale data">
+Ensure your browser supports the `webRequest` API and that uBO Scope has the required permissions. Some browsers or versions might restrict network monitoring for background tabs or privacy reasons.
+</Accordion>
+<Accordion title="Conflicts with other extensions causing inaccurate readings">
+uBO Scope is designed for compatibility and does not interfere with other extensions. However, browser security or experimental features might alter the network API behavior causing minor discrepancies. Update your browser and uBO Scope to the latest versions.
+</Accordion>
+<Accordion title="Extension popup does not update after navigation">
+Switching tabs or reloading a page triggers uBO Scope to update its internal session data. If the popup doesn't refresh, try closing and re-opening it. Background script reloads during browser updates might cause temporary data misses.
+</Accordion>
+</AccordionGroup>
+
+## Summary
+
+Understanding integration and compatibility clarifies how uBO Scope reliably reports third-party connections across browsers and blocking scenarios. It complements existing privacy tools by filling the critical role of unbiased network connection measurement.
+
+---
+
+## Further Reading & Related Documentation
+
+- [What is uBO Scope?](/overview/intro-core-value/product-purpose) — Understand product purpose and value
+- [How uBO Scope Works](/overview/architecture-core-concepts/system-architecture) — Learn system architecture and workflow
+- [Supported Browsers & Prerequisites](/getting-started/setup-installation/supported-browsers-prereqs) — Details on browser support and requirements
+- [Combining uBO Scope with Other Content Blockers](/guides/best-practices/workflow-content-blockers) — Best practices for integration
+
+---
+
+<Note>
+For the broadest compatibility, ensure your browser exposes the full `webRequest` API to extensions and grants them required permissions during installation.
+</Note>

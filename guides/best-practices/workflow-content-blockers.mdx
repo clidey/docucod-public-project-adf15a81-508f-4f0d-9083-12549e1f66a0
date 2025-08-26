@@ -1,0 +1,208 @@
+---
+title: "Combining uBO Scope with Other Content Blockers"
+description: "How to use uBO Scope alongside existing content blockers or DNS filters to assess their effectiveness. Step-by-step workflow for comparing browsers/extensions, validating stealth-blocking, and verifying which requests are truly blocked."
+---
+
+# Combining uBO Scope with Other Content Blockers
+
+## Workflow Overview
+
+This guide helps you use **uBO Scope** alongside existing content blockers or DNS filters to gain a clear, unbiased view of network connections and the effectiveness of those blockers. Whether you want to validate stealth blocking, compare different browsers or extensions, or verify blocking accuracy, this workflow will guide you through actionable steps.
+
+### Prerequisites
+
+- uBO Scope installed and enabled in your browser.
+- Your primary content blocker or DNS filtering solution active.
+- Basic familiarity with opening and interpreting the uBO Scope popup.
+- Access to multiple browsers or profiles if comparing blockers.
+
+### Expected Outcome
+
+By following this guide, you will:
+- Accurately compare third-party connection counts across different blockers.
+- Identify stealth-blocked domains versus truly blocked ones.
+- Verify which network requests are actually blocked (not just hidden).
+- Develop confidence in the transparency of your content blocking setup.
+
+### Time Estimate
+
+Approximately 15-30 minutes to complete initial comparisons and validations.
+
+### Difficulty Level
+
+Intermediate: Familiarity with browser extensions and navigating browser developer tools is helpful but not mandatory.
+
+---
+
+## Step-by-Step Instructions
+
+### Step 1: Install and Enable uBO Scope Alongside Your Existing Blocker
+
+1. Ensure your preferred content blocker (e.g., uBlock Origin, DNSSinkhole) is fully enabled and working.
+2. Install uBO Scope from your browser’s official add-on store:
+   - [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+   - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+3. Confirm uBO Scope has the necessary permissions:
+   - `webRequest`
+   - `storage`
+   - Access to all URLs
+4. Verify uBO Scope toolbar icon appears in your browser.
+
+**Expected result:** uBO Scope is active but not conflicting with your other content blocker.
+
+<Check>
+Do not disable or uninstall your main blocker; uBO Scope passively monitors and reports network requests.
+</Check>
+
+---
+
+### Step 2: Load a Test Website and Observe uBO Scope Behavior
+
+1. Open a website where you want to observe network activity (preferably one with third-party content).
+2. Wait a few seconds for all resources to load.
+3. Look at the uBO Scope badge count on the toolbar icon; this reflects the number of distinct third-party domains contacted.
+4. Click the uBO Scope icon to open the popup.
+5. Review the three sections:
+   - **Not Blocked (Allowed):** Domains for which connections were successful.
+   - **Stealth-Blocked:** Domains where requests were blocked invisibly by your content blocker.
+   - **Blocked:** Domains for which network requests resulted in errors or were explicitly blocked.
+
+**Expected result:** You see a clear summary of third-party domains with counts. The sum of allowed, stealth, and blocked domains corresponds to observed network attempts.
+
+<Info>
+The badge count is most meaningful when fewer unique third-party domains appear—indicating better blocking.
+</Info>
+
+---
+
+### Step 3: Compare Blocker Effectiveness Across Browsers or Profiles
+
+1. Repeat Step 2 using different browsers or browser profiles, each running different content blockers.
+2. Note the badge counts and popup domain lists.
+3. Pay particular attention to stealth-blocked domains; these indicate when a content blocker prevented network requests without causing visible errors.
+4. Also compare which domains appear in the "Blocked" list.
+
+**Tips:**
+
+- To get consistent results, reload pages fully before comparison.
+- Use websites with well-known third-party resources for realistic benchmarking.
+
+**Expected result:** You can confidently observe which blocker reduces third-party domain connections most effectively.
+
+---
+
+### Step 4: Validate Stealth-Blocking and Confirm True Blocking
+
+1. Focus on domains reported under **Stealth-Blocked** in the uBO Scope popup.
+2. Use browser developer tools (Network tab) to verify if requests to these domains were sent or prevented.
+3. Confirm uBO Scope is correctly reporting stealth-blocked connections (requests that the browser never completed).
+4. If a domain is stealth-blocked, it won't appear as a network error but is prevented before the request reaches the server.
+
+<Warning>
+Stealth-blocking is crucial: it means your content blocker silently prevents unwanted requests without triggering typical network errors.
+</Warning>
+
+**Expected result:** The stealth-blocked list matches domains your main blocker prevents silently.
+
+---
+
+### Step 5: Investigate Blocked Domains and Troubleshoot Unexpected Connections
+
+1. Review **Blocked** domains in uBO Scope, representing requests blocked with errors or failures.
+2. If unexpected domains appear as allowed or stealth-blocked when you expect them blocked, consider:
+   - The content blocker's lists may permit those domains.
+   - DNS filtering or other network layers might interfere or bypass blocking.
+   - Browser/network quirks may prevent full detection.
+3. Refresh the site and repeat to confirm consistency.
+
+<Note>
+Some network requests are outside the scope of browser `webRequest` API and will not be detected by uBO Scope.
+</Note>
+
+---
+
+### Step 6: Record and Analyze Data Over Time
+
+1. Perform tests on multiple sites you use frequently.
+2. Compare domain counts and stealth/blocked lists to detect unusual patterns.
+3. Track changes after updating content blockers or filter lists.
+
+**Expected result:** You develop an objective understanding of your content blocking effectiveness and can adjust filters or blockers accordingly.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Reload fully:** Before checking popup data, reload the webpage completely to capture all requests.
+- **Multiple checks:** Use various websites to avoid bias from sites with minimal third-party calls.
+- **Beware false positives:** Some legitimate CDNs or service providers may be included and are not necessarily harmful.
+- **Use uBO Scope badge count as a privacy metric:** Lower counts generally indicate fewer third-party connections.
+- **Combine with developer tools:** For detailed inspection, cross-reference uBO Scope data with browser Network monitoring.
+
+---
+
+## Troubleshooting & Common Issues
+
+### uBO Scope Badge Not Updating Correctly
+
+- Make sure the extension has required permissions to all URLs.
+- Confirm your browser supports the `webRequest` API fully (see [Supported Browsers & Prerequisites](../getting-started/setup-installation/supported-browsers-prereqs)).
+- Reload the extension or browser if data appears stale.
+
+### Stealth-Blocked Domains Missing
+
+- Not all content blockers use stealth blocking; some may simply drop or cancel requests.
+- Browsers may report requests differently; some stealth blocking may not appear.
+
+### Unexpected Allowed Domains
+
+- Check your filter list settings and whitelist rules.
+- Some third-party domains may be essential for site functionality and therefore intentionally allowed.
+- Refer to [Debunking Content Blocker Myths](/guides/best-practices/debunking-myths) for insights.
+
+### Inconsistent Data Across Browsers
+
+- Differences in `webRequest` API implementation can lead to varying data.
+- uBO Scope relies on browser network reporting; some connections (e.g., service workers, non-HTTP(s) protocols) may not be visible.
+- Read more on [Known Limitations](/getting-started/troubleshooting/known-limitations).
+
+---
+
+## Examples & Use Cases
+
+### Scenario: Comparing uBlock Origin vs. DNS-based Blocking
+
+1. Install and enable uBO Scope with uBlock Origin active.
+2. Visit a set of websites, note badge counts and domain lists.
+3. Disable uBlock Origin, enable DNS filtering instead.
+4. Visit the same websites, compare badge counts and domain results.
+5. Analyze which method reduces third-party domains more effectively.
+
+### Scenario: Validating Stealth Blocking
+
+1. On a site known to use many trackers, observe stealth-blocked domains in the popup.
+2. Open Developer Tools, filter Network requests by those domains.
+3. Confirm no requests are sent to stealth-blocked domains.
+
+---
+
+## Next Steps & Related Content
+
+- Explore [Understanding Toolbar Badge Counts](/guides/core-workflows/understanding-badge-counts) to deepen your understanding of badge metrics.
+- Read [Analyzing Third-Party Connections](/guides/core-workflows/analyzing-connections) for advanced insight on connection patterns.
+- Consult [Debunking Content Blocker Myths](/guides/best-practices/debunking-myths) to avoid common misconceptions.
+- Review the [Installation & Setup guides](/getting-started/setup-installation) if you encounter setup issues.
+
+You are now equipped to combine uBO Scope with other blockers to transparently assess network connections and make informed privacy decisions.
+
+---
+
+## References
+
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- Official extension stores for installation
+- Browser documentation on `webRequest` API
+
+<br/>
+
+---
