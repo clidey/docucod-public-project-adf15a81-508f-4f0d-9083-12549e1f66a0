@@ -1,0 +1,153 @@
+---
+title: "Key Terminology and Concepts"
+description: "Defines central terms such as 'third-party remote server', 'connection attempt', 'stealth blocking', and 'public suffix list', helping users interpret popup statistics and badge counts correctly."
+---
+
+# Key Terminology and Concepts
+
+Understanding key terms and foundational concepts is essential to effectively interpret uBO Scope's data presentation and accurately make sense of the connection statistics it reports. This page defines critical terms such as ‘third-party remote server’, ‘connection attempt’, ‘stealth blocking’, and the importance of the ‘public suffix list’. By mastering these concepts, users can confidently read popup statistics and badge counts without misinterpretation.
+
+---
+
+## Third-Party Remote Server
+
+A *third-party remote server* refers to any server contacted by a webpage that is different from the website domain the user is visiting directly. 
+
+- **Why it matters:**
+  - uBO Scope counts connections to these distinct third-party servers to indicate potentially privacy-impacting or externally loaded content.
+  - Not all third-parties are malicious or undesirable; many third parties are legitimate content delivery networks (CDNs) and essential services.
+
+**Example scenario:**
+
+When visiting `example.com`, a connection to `cdn.example.com` is first-party (part of the same domain). But any connection to `analytics.tracker.net` or `ads.provider.org` counts as third-party.
+
+
+## Connection Attempt
+
+A *connection attempt* is any network request initiated by the browser from the loaded webpage that tries to establish communication with a remote server.
+
+- **Types of outcomes:**
+  - *Allowed:* The connection was successful.
+  - *Blocked:* The connection failed due to blocking (e.g., by a content blocker).
+  - *Stealth-blocked:* The connection appears to have been blocked without any overt error or indication to the webpage (hidden blocking).
+
+- **Why it matters:**
+  - uBO Scope tracks these connection attempts to provide transparency into which remote servers are accessed or blocked.
+  - Distinguishing outcomes helps users understand the real exposure of their browsing session beyond simple block count metrics.
+
+
+## Stealth Blocking
+
+*Stealth blocking* is a method used by content blockers or browser features where blocking occurs silently without triggering explicit errors or typical network failure signals visible to the webpage.
+
+- **Why it matters:**
+  - Some blockers opt for stealth blocking to avoid breaking webpages or making blocking activities detectable.
+  - uBO Scope identifies these stealth blocks separately to give users insight into hidden network filtering.
+  - This prevents misleading assumptions based solely on error counts or visible blocks, revealing the true extent of content blocking.
+
+
+## Public Suffix List (PSL)
+
+The *Public Suffix List* is a maintained list of domain suffixes under which Internet users can directly register names, such as `.com`, `.co.uk`, or `.github.io`.
+
+- **Role in uBO Scope:**
+  - It helps uBO Scope correctly determine the "registrable" or "effective" domain of any hostname.
+  - This is crucial for grouping hostnames meaningfully and for defining what constitutes a unique third-party domain.
+
+- **Example:**
+  - Given `sub.site.example.co.uk`, the PSL helps identify `example.co.uk` as the registered domain, not just `co.uk`.
+
+- **Technical note:**
+  - uBO Scope uses a JavaScript implementation of the PSL to parse and extract these domains accurately.
+
+
+## Outcome Categories Explained
+
+uBO Scope organizes connection attempts into three categories based on their observed outcomes:
+
+| Outcome         | Description                                 | User Value                                |
+|-----------------|---------------------------------------------|-------------------------------------------|
+| **Not Blocked (Allowed)** | Connections that succeeded or were allowed to complete. | Shows active third-party connections exposing data or functionality. |
+| **Blocked**           | Connections that were explicitly blocked and resulted in failure. | Indicates overt content blocking and network requests which never went through. |
+| **Stealth-Blocked**   | Connections blocked silently without visible failure.  | Reveals covert blocking that can evade detection by webpages. |
+
+
+## Relating These Terms to Badge Counts and Popup UI
+
+- The **toolbar badge count** reflects the number of distinct third-party remote domains with *allowed* connection attempts in the current tab.
+- The **popup UI** breaks down all third-party connections observed for the active tab into the three categories: allowed, stealth-blocked, and blocked.
+  - Each category lists domains and connection counts, helping users distinguish between visible and hidden network activity.
+  - Thanks to the PSL, domains shown correspond to meaningful entities, avoiding confusion over subdomains or related hostnames.
+
+
+## Practical Tips for Users
+
+- **Low badge count is desirable:** The badge shows how many third-party remote servers were not blocked, implying a lower privacy or tracking exposure.
+- **Not every third-party domain is harmful:** Legitimate services often appear, so evaluate the domains in context.
+- **Use the popup UI to investigate:** Expanding your understanding of which domains were blocked or stealth blocked helps audit content blockers and fine-tune filter lists.
+- **Understanding stealth blocking avoids misinterpretation:** A low explicit block count does not always mean little blocking occurred; stealth blocking may be quietly active.
+
+
+## Common Pitfalls and Misconceptions
+
+- **Mistaking block counts for blocker quality:** A higher block count does not necessarily indicate a better ad or content blocker.
+- **Ignoring stealth blocking:** Without recognizing stealth blocking, users may underestimate the extent of network filtering.
+- **Confusing subdomains for unique third-parties:** Thanks to the PSL, uBO Scope provides clarity here; users should avoid manual assumptions.
+
+
+---
+
+## Summary
+
+Mastering these fundamental terms empowers users to interpret uBO Scope’s data precisely, avoiding common misunderstandings and leveraging the extension’s full value.
+
+For deeper insights into data presentation, visit the [Interpreting Badge Counts and the Popup UI](/overview/concepts-terminology/interpreting-badge-and-popup) page.
+
+---
+
+### For More Information
+
+- See the [What is uBO Scope?](/overview/product-intro/what-is-uboscope) page for a general introduction.
+- Understand the [Architecture Overview](/overview/how-it-works/architecture-overview) for technical context.
+- Explore [Data Flow](/overview/how-it-works/data-flow-connection-tracking) to learn how connections are tracked.
+- Consult the official [Public Suffix List](http://publicsuffix.org/) to learn about domain hierarchies.
+
+---
+
+## Appendix: Technical Example — Using PSL to Determine Domains
+
+For example, the hostname `cdn.somesite.co.uk` is analyzed as follows:
+
+```js
+import psl from './lib/publicsuffixlist.js';
+
+const hostname = 'cdn.somesite.co.uk';
+
+const domain = psl.getDomain(hostname);
+// domain here is 'somesite.co.uk'
+
+const publicSuffix = psl.getPublicSuffix(hostname);
+// publicSuffix here is 'co.uk'
+
+console.log(`Hostname: ${hostname}`);
+console.log(`Domain: ${domain}`);
+console.log(`Public Suffix: ${publicSuffix}`);
+```
+
+This determination ensures that connections to any subdomain of `somesite.co.uk` are counted collectively as one third-party domain when presented.
+
+
+---
+
+If you encounter any questions or unusual readings from these terms, consult the [Troubleshooting Common Setup Issues](/getting-started/usage-validation/troubleshooting-installation) guide or join the community discussions on the official GitHub repository.
+
+
+---
+
+# Footnotes
+- The concept of stealth blocking is a cornerstone for understanding why some blockers show fewer network errors but still effectively prevent certain requests.
+- The Public Suffix List is a critical resource ensuring accurate domain parsing beyond naive hostname splitting, improving analysis reliability.
+
+
+
+
