@@ -1,0 +1,186 @@
+---
+title: "Basic Configuration"
+description: "Find out how uBO Scope operates out-of-the-box, what minimal configuration is needed (if any), and how permissions work. Discover any recommended adjustments to maximize usefulness from day one without added complexity."
+---
+
+# Basic Configuration
+
+Discover how uBO Scope functions immediately after installation, what minimal setup (if any) you need, and how permissions are managed. This guide also offers recommended tweaks to maximize the value of uBO Scope from your first use without unnecessary complexity.
+
+---
+
+## 1. How uBO Scope Operates Out-of-the-Box
+
+uBO Scope is designed to work immediately after installation, with zero configuration required. Its default behavior provides real-time reporting of network connections initiated by your browser tabs, categorizing them based on outcomes such as allowed, stealth-blocked, or blocked.
+
+### Key Characteristics:
+
+- **Automatic Monitoring:** Once installed, uBO Scope listens to all relevant network requests made from your browser, without needing manual setup.
+- **Minimal UI:** The toolbar badge shows a count of unique third-party domains contacted per tab, reflecting network exposure.
+- **Popup Interface:** Clicking the toolbar icon opens a detailed popup (`popup.html`) that categorizes connected domains by status.
+
+<u>Example scenario:</u> After installing uBO Scope and browsing to a website, the extension automatically displays the number of distinct third-party domains contacted (including successful and blocked connections) directly on its toolbar icon. This happens without any further user interaction.
+
+<Tip>
+No adjustments are required to begin leveraging the core functionality — the extension is ready to provide network connection insights immediately.
+</Tip>
+
+## 2. Permissions and Security Model
+
+uBO Scope requires certain browser permissions to function effectively and securely. These permissions are declared in the extension’s manifest files and automatically approved during installation.
+
+### Permissions Required:
+
+- **`webRequest`**: Enables monitoring of network requests to report whether they were allowed, blocked, or redirected.
+- **`storage`**: Allows persistent and session-based data storage for connection statistics.
+- **`activeTab`**: Provides access to the currently active tab for real-time tracking and popup display.
+
+### Host Permissions:
+
+- The extension requests broad `host_permissions` matching all HTTP, HTTPS, WebSocket URLs depending on the browser platform, ensuring it captures all relevant network activity.
+
+- For example, Chromium and Firefox versions include WebSocket (`ws://`, `wss://`), while Safari currently requests only `http://*/*` and `https://*/*`.
+
+<Note>
+These permissions are essential and reflect uBO Scope’s purpose: to transparently report on all remote server connections your browser makes. The extension does not interfere with blocking itself but reports outcomes regardless of any content blockers you have.
+</Note>
+
+## 3. Minimal Configuration Needed (If Any)
+
+uBO Scope is intentionally minimalistic; most users will find the default settings ideal for immediate use.
+
+### What You Need to Do:
+
+- **Install the extension** from your browser’s official extension/add-on store.
+- **Allow requested permissions** — these are prompted automatically and must be granted for full functionality.
+
+### Optional Adjustments:
+
+Currently, uBO Scope does not expose configuration options for end users within the extension interface. It is designed to keep complexity out of the hands of typical users.
+
+### Developer or Advanced User Notes:
+
+Should you want to customize or build upon uBO Scope, the source files include:
+
+- Host permissions and API scopes defined in `manifest.json` for each supported platform.
+- Background scripts that handle request logging and session data.
+
+## 4. Recommended Adjustments for Maximizing Usefulness
+
+While no mandatory configuration is necessary, here are best practices to ensure you get the most out of uBO Scope immediately:
+
+### a. Keep Browser Updated
+
+Make sure your browser version meets minimum requirements (e.g., Chrome 122+, Firefox 128+, Safari 18.5+) to guarantee compatibility and permission support.
+
+### b. Grant Full Permissions
+
+Accept all permission prompts during installation to ensure uBO Scope can monitor all network traffic, including WebSocket connections.
+
+### c. Understand Badge and Popup Usage
+
+- The badge count represents unique third-party domains contacted — a lower count generally indicates fewer third-party connections.
+- Use the popup to inspect detailed lists of domains categorized as `not blocked`, `stealth-blocked`, and `blocked`.
+
+### d. Avoid Disabling Storage
+
+Do not disable extension storage permissions or restrict access to local/session storage, as this can impair session persistence and data accuracy.
+
+### e. Use in Conjunction with Content Blockers
+
+uBO Scope complements content blockers by revealing the true nature of network requests and which third parties are reachable or blocked.
+
+<Tip>
+If you are a filter list maintainer or privacy analyst, embrace uBO Scope’s zero-configuration design to get transparent insights without overhead.
+</Tip>
+
+## 5. How Permissions Work Across Browsers
+
+uBO Scope supports Chromium, Firefox, and Safari, each with slight differences in permission requirements due to browser capabilities:
+
+| Browser  | Permissions Requested                                         | Notes                       |
+|----------|--------------------------------------------------------------|-----------------------------|
+| Chromium| `activeTab`, `storage`, `webRequest`, `host_permissions` for `http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*` | Supports WebSocket tracking natively |
+| Firefox | `activeTab`, `storage`, `webRequest`, `host_permissions` for `http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*` | Similar to Chromium, supports WebSocket |
+| Safari  | `activeTab`, `storage`, `webRequest`, `host_permissions` for `http://*/*`, `https://*/*` only                      | WebSocket not supported currently |
+
+<Warning>
+Safari users will not see WebSocket connection details due to platform limitations.
+</Warning>
+
+## 6. Troubleshooting Basic Configuration
+
+If uBO Scope does not appear to be functioning as expected right after installation, verify the following:
+
+<AccordionGroup title="Troubleshooting Configuration Steps">
+<Accordion title="Extension Permissions Not Granted">
+- Go to your browser’s extensions/settings page.
+- Ensure uBO Scope is enabled.
+- Review permission requests; if any are denied, re-enable or reinstall the extension.
+</Accordion>
+<Accordion title="Browser Version Outdated">
+- Check your browser version.
+- Update to the latest stable release compatible with uBO Scope’s minimum requirements.
+</Accordion>
+<Accordion title="Storage Access Disabled">
+- Confirm that your browser does not block extension data storage.
+- In rare cases, privacy settings or external tools may prevent storage access—disable those temporarily.
+</Accordion>
+<Accordion title="Network Request API Limitations">
+- Some browsers or custom configurations might block the `webRequest` API.
+- Ensure no conflicting extensions or settings interfere with uBO Scope’s background service worker.
+</Accordion>
+</AccordionGroup>
+
+## 7. Next Steps
+
+Once confirmed that uBO Scope is working with minimal or default configuration, proceed to:
+
+- Explore the [popup interface](popup.html) to understand network connection outcomes.
+- Review the [Quick Validation Steps]( /getting-started/usage-and-troubleshooting/quick-validation-steps) to verify expected behavior.
+- Consult the [Troubleshooting Common Issues]( /getting-started/usage-and-troubleshooting/troubleshooting-common-issues) guide if problems persist.
+
+---
+
+For a deeper understanding of uBO Scope’s architecture and how network requests are captured, see the [System Architecture Overview]( /overview/architecture/system-architecture-overview) documentation.
+
+
+---
+
+## Example Manifest Permission Section (Chromium Platform)
+
+```json
+"permissions": [
+    "activeTab",
+    "storage",
+    "webRequest"
+],
+"host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+]
+```
+
+This sets the necessary permissions for full network request monitoring.
+
+
+---
+
+## Summary
+- uBO Scope functions automatically with no mandatory configuration.
+- Permissions for network request monitoring, storage, and active tab access are essential.
+- Minimal configuration optimizes immediate usefulness while avoiding complexity.
+- Browser compatibility influences WebSocket monitoring support.
+- Troubleshooting tips help resolve setup issues related to permissions and browser versions.
+
+<Tip>
+Installing uBO Scope and granting permissions upon install is the primary step toward seamless network connection visibility.
+</Tip>
+
+---
+
+For additional context on uBO Scope’s use and features, consult the related documents in the Getting Started and Overview sections.
+
+---

@@ -1,0 +1,145 @@
+---
+title: "Supported Browsers & Extensions"
+description: "Summarizes browser compatibility, cross-platform support (Chromium, Firefox, Safari), and basic integration touchpoints with the wider content-blocker ecosystem or browser features."
+---
+
+# Supported Browsers & Extensions
+
+## Empowering Privacy Across Major Browsers
+
+uBO Scope is designed to provide transparent and comprehensive visibility into your browser's network activity, seamlessly integrating with the leading browsers and their extension ecosystems. This documentation details the supported browsers, cross-platform compatibility, and how uBO Scope fits into the wider content-blocker landscape.
+
+---
+
+## What Browsers Does uBO Scope Support?
+
+uBO Scope supports the three major browser platforms, ensuring consistent and reliable reporting across diverse environments:
+
+- **Chromium-based browsers** (e.g., Google Chrome, Microsoft Edge): Supports Manifest Version 3 with a service worker-based background script, requiring Chrome 122 or newer.
+- **Mozilla Firefox**: Supports Manifest Version 3 with a module background script, requiring Firefox 128 or newer, including Firefox for Android.
+- **Apple Safari**: Supports strict minimum version 18.5, using a module background script with Safari's native web extension model.
+
+This broad support ensures you can use uBO Scope across your favorite browsers without losing insight, creating a consistent experience.
+
+## Seamless Integration With Browser Features
+
+uBO Scope leverages modern web extension APIs across these platforms, specifically:
+
+- The **`webRequest` API** to monitor network requests from each browser tab in real time.
+- The **browser action (toolbar icon)** to display the badge count of distinct third-party connections.
+- The **popup interface** linked from the toolbar icon to detail connection outcomes.
+- Storage APIs (`storage.local` and `storage.session`) for session data persistence, customized per platform capabilities.
+
+By aligning with these APIs, uBO Scope fits smoothly alongside other content blockers, extensions, and browser privacy features without conflict.
+
+## Cross-Platform Considerations & Differences
+
+While uBO Scope maintains feature parity across platforms, subtle platform-specific differences exist due to browser API implementations:
+
+| Feature               | Chromium                     | Firefox                        | Safari                        |
+|-----------------------|-----------------------------|-------------------------------|-------------------------------|
+| Background Script     | Service Worker Module       | Module Script Background       | Module Script Background       |
+| Minimum Browser Version| 122.0+                      | 128.0+                        | 18.5+                        |
+| WebSocket Support     | Fully supported             | Fully supported               | Limited or no support          |
+| Host Permissions      | Supports HTTP, HTTPS, WS, WSS| Supports HTTP, HTTPS, WS, WSS | Supports only HTTP, HTTPS       |
+
+For example, WebSocket (`ws://` and `wss://`) monitoring is supported fully in Chromium and Firefox but limited or absent in Safari due to API restrictions. This impacts how uBO Scope captures some connection types on Safari.
+
+## Integration Touchpoints With Content Blockers
+
+uBO Scope operates independently but in harmony with your existing content blockers:
+
+- It listens to **all network requests** passing through the browser’s `webRequest` API, regardless of how or whether content blockers modify or block them.
+- It **accurately reports connection outcomes** — whether requests are allowed, blocked, or stealth-blocked — complementing your content blocker’s activity.
+- It handles **third-party domain aggregation** per tab to provide an honest measure of remote connections, uninfluenced by content blocker-specific heuristics.
+- It can reveal connections blocked by DNS-based or stealth blocking methods, as long as the browser reports the network requests.
+
+This transparency lets you validate the effectiveness of content blockers without relying on block count alone or misleading tests.
+
+## Practical Installation Sources and Requirements
+
+You can install uBO Scope conveniently from official browser marketplaces:
+
+- **Chromium**: [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+- **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+- **Safari**: Installation through Safari Extensions Gallery or developer-provided distribution (requires Safari 18.5+)
+
+All platforms require browsers meeting the minimum version requirements to ensure compatibility with Manifest Version 3 and necessary APIs.
+
+## Summary of Platform Manifest Highlights
+
+Below are key configuration points illustrating platform-specific manifest attributes:
+
+### Chromium Manifest (manifest.json excerpt)
+```json
+{
+  "minimum_chrome_version": "122.0",
+  "background": {
+    "service_worker": "/js/background.js",
+    "type": "module"
+  },
+  "host_permissions": ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"]
+}
+```
+
+### Firefox Manifest (manifest.json excerpt)
+```json
+{
+  "background": {
+    "scripts": [ "/js/background.js" ],
+    "type": "module"
+  },
+  "host_permissions": ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"]
+}
+```
+
+### Safari Manifest (manifest.json excerpt)
+```json
+{
+  "background": {
+    "scripts": [ "/js/background.js" ],
+    "type": "module"
+  },
+  "host_permissions": ["https://*/*", "http://*/*"]
+}
+```
+
+Notice Safari’s manifest excludes WebSocket host permissions due to API restrictions.
+
+---
+
+## Troubleshooting & Common Issues With Browser Support
+
+<u>These tips will help optimize your experience:</u>
+
+- **Verify browser version:** Ensure your browser is at or above the minimum version for uBO Scope.
+- **Check permissions:** Confirm that uBO Scope has necessary permissions enabled in your extension settings.
+- **Account for WebSocket monitoring differences:** Understand that Safari’s limitations on WebSocket monitoring may result in fewer counted connections compared to Chromium or Firefox.
+- **Avoid conflicts:** Running multiple network-monitoring extensions simultaneously may lead to inconsistent reporting.
+
+If you encounter issues, consult the [Troubleshooting Common Issues](/getting-started/usage-and-troubleshooting/troubleshooting-common-issues) guide for additional help.
+
+---
+
+## How uBO Scope Fits Into Your Privacy Workflow
+
+By supporting all major browsers with native and consistent integration, uBO Scope ensures:
+
+- Reliable visibility into your browser’s network activity wherever you browse.
+- Consistent measurement of third-party connections despite differences in browser extension APIs.
+- Confidence that your content blockers are operating as expected, with no hidden connections escaping notice.
+
+Empower your privacy analysis with uBO Scope across Chromium, Firefox, and Safari.
+
+---
+
+## Additional Resources
+
+- [What is uBO Scope?](/overview/introduction/what-is-ubo-scope) — Understand core purpose and value
+- [Feature Overview](/overview/foundations/feature-overview) — Explore detailed feature capabilities
+- [Troubleshooting Common Issues](/getting-started/usage-and-troubleshooting/troubleshooting-common-issues) — Resolve integration or browser-specific challenges
+- [README on GitHub](https://github.com/gorhill/uBO-Scope) — Source code and installation references
+
+---
+
+For questions about browser-specific behavior or integration help, please refer to the above resources or contact support via the project GitHub repository.
