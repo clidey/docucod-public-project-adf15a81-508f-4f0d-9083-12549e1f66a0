@@ -1,0 +1,141 @@
+---
+title: "Supported Browsers & Integrations"
+description: "Survey the browsers officially supported by uBO Scope (Chromium, Firefox, Safari) and learn about extension installation. Understand how uBO Scope operates alongside other content blockers or DNS filters, and what integration boundaries exist due to browser API limitations."
+---
+
+# Supported Browsers & Integrations
+
+uBO Scope is designed to provide transparent insight into your browser's network activity across multiple popular browsers. This page details which browsers officially support uBO Scope, how to install the extension on each, and explains how uBO Scope interacts with other privacy tools such as content blockers and DNS filters. Understanding these integration boundaries and browser API limitations ensures you get the fullest, most accurate picture of network connections without confusion or conflicts.
+
+---
+
+## Officially Supported Browsers
+
+uBO Scope supports installations on the following browsers, selected for their modern extension APIs and broad usage:
+
+- **Chromium-based browsers** (including Google Chrome, Microsoft Edge, Brave, and others)
+- **Mozilla Firefox**
+- **Apple Safari**
+
+Each browser has been carefully vetted to ensure stable operation with uBO Scope's unique connection-reporting features.
+
+### Installation Details
+
+- All supported browsers use a version 3 (MV3) WebExtension manifest, tailored for each platform.
+- uBO Scope’s UI is consistent across browsers, featuring the same popup interface (`popup.html`) that categorizes connections into allowed, stealth-blocked, and blocked.
+- Background processing utilizes the appropriate service worker or background script methods depending on the browser (e.g., service worker for Chromium, module background script for Firefox and Safari).
+
+#### Minimum Browser Versions
+
+| Browser       | Minimum Version |
+|---------------|-----------------|
+| Chromium-based| 122             |
+| Firefox       | 128             |
+| Safari        | 18.5            |
+
+(These minimums guarantee support for the required extension APIs.)
+
+---
+
+## How to Install uBO Scope
+
+Installing uBO Scope is straightforward but varies by browser:
+
+- **Chromium:** Install as a standard extension from Chrome Web Store or load the unpacked extension manually during development.
+- **Firefox:** Similar installation paths, with the extension ID set and strict minimal version enforced.
+- **Safari:** Requires enabling Safari web extensions support and loading the packaged `.safariextz` or zipped extension.
+
+Refer to the [Installing uBO Scope guide](/getting-started/installation-and-prerequisites/installing-ubo-scope) for step-by-step instructions specific to your browser.
+
+---
+
+## Integration with Other Content Blockers and Network Filters
+
+### Coexistence with Other Content Blockers
+
+uBO Scope is designed to complement — not replace — your existing content blocking tools, including uBlock Origin and other blockers. It:
+
+- Operates independently and does not block connections itself.
+- Reports all network connections' outcomes (allowed, blocked, stealth-blocked) in real time.
+- Accurately counts distinct third-party domains connected, revealing your true privacy footprint beyond what standard block counts show.
+
+### Behavior with DNS-Level Filters and Other Network Tools
+
+- Since uBO Scope relies on browser API events monitoring web requests, DNS filtering or system-wide VPN content filtering that blocks requests before they reach the browser will affect what uBO Scope sees.
+- Connections blocked outside the browser's webRequest API may show as errors or may not be reported, depending on the API support in the browser.
+
+### Browser API Limitations and Boundary Scenarios
+
+- **Stealth Mode Categorization:** Due to API limitations, some redirect events or blocked requests may only be identifiable as "stealth-blocked" rather than fully exposed.
+- **Browser-Specific API Support:** Some browsers restrict certain webRequest or storage APIs that uBO Scope depends on, which can limit feature completeness.
+- **Session Persistence:** uBO Scope persists session data locally but this is limited by browser storage APIs' capacity and eviction policies.
+
+Understanding these constraints helps users interpret data accurately and avoid confusion when network outcomes differ due to environmental factors.
+
+---
+
+## Practical Tips & Best Practices
+
+- Always keep your browser updated to meet or exceed the minimum required versions for best compatibility.
+- Install uBO Scope alongside your primary content blocker to get holistic insight into network activity.
+- Be aware that DNS-level filters or system firewalls may hide some connections from uBO Scope’s reports.
+- Use the badge and popup to quickly assess third-party domain connections per tab, and cross-reference with other blockers if needed.
+
+---
+
+## Troubleshooting Common Integration Issues
+
+<AccordionGroup title="Common Support & Integration Questions">
+<Accordion title="Why don't some blocked connections appear in uBO Scope?">
+uBO Scope monitors browser-level webRequest events. If connections are blocked at the DNS or network layer before reaching the browser, they may not appear in reports. This is normal and expected behavior.
+</Accordion>
+<Accordion title="Can I use uBO Scope with multiple content blockers?">
+Yes. uBO Scope is compatible with other blockers and runs independently. It does not interfere with their blocking functionality and helps you see comprehensive connection data alongside their activity.
+</Accordion>
+<Accordion title="Why does the badge count sometimes not update instantly?">
+Badge updates are throttled and processed in batches to improve performance and reduce API overhead. Expect small delays (up to a second) in badge count reflecting new connections.
+</Accordion>
+<Accordion title="Are all browsers equal in functionality?">
+No. Slight variations exist due to browser API support differences. Firefox, Chromium, and Safari each have browser-specific manifestations of APIs, which uBO Scope adapts to for best effort consistency.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Architecture Overview in Context of Supported Browsers
+
+```mermaid
+flowchart TD
+    Browser["User's Browser"] -->|Installs| uBO_Scope_Extension["uBO Scope Extension"]
+    uBO_Scope_Extension -->|Injects| Background_Process["Background Script / Service Worker"]
+    Background_Process -->|Intercepts webRequest| Web_Requests["Network Requests"]
+    Web_Requests -->|Reports| Tab_Data["Per-Tab Network Domain Data"]
+    Tab_Data -->|Persists| Browser_Storage["Browser Local & Session Storage"]
+    Browser --> Popup_UI["Popup Interface"]
+    Popup_UI -->|Displays| Tab_Data
+    Background_Process -. Browser_APIs .-> Browser
+
+    subgraph "Browser Specific"
+      Direction LR
+      Chromium_Manifest["Chromium manifest.json"]
+      Firefox_Manifest["Firefox manifest.json"]
+      Safari_Manifest["Safari manifest.json"]
+    end
+
+    Chromium_Manifest & Firefox_Manifest & Safari_Manifest -->|Defines Permissions & Execution| uBO_Scope_Extension
+```
+
+This diagram illustrates the flow of network data interception and display within supported browsers using their respective extension manifests and APIs.
+
+---
+
+For further practical guidance on installing and using uBO Scope on your browser, visit the [Getting Started Guide](/getting-started/installation-and-prerequisites/installing-ubo-scope).
+
+Explore the documentation on [Understanding the Toolbar Badge](/getting-started/setup-and-first-use/understanding-the-badge) to learn how badge counts represent third-party connections.
+
+For in-depth explanations about the recorded connection outcomes and their meanings, see [Key Concepts & Terminology](/overview/introduction-core-concepts/key-concepts-terminology).
+
+
+<Note>
+Understanding the browser environment and its limitations ensures you can rely confidently on uBO Scope’s data without misinterpretation caused by external filters or partial API support.
+</Note>
