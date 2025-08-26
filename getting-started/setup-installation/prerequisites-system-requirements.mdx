@@ -1,183 +1,162 @@
 ---
 title: "Prerequisites & System Requirements"
-description: "Outlines supported browsers, operating systems, and user permissions required to run uBO Scope smoothly. Guides users on verifying browser compatibility and highlights any important extension permissions related to network monitoring."
+description: "Covers the minimum browser versions and platform requirements needed to use uBO Scope, ensuring compatibility before you begin. This page helps prevent setup issues by clarifying the necessary conditions for installation on Chrome, Firefox, and Safari."
 ---
 
-# Prerequisites & System Requirements for uBO Scope
+# Prerequisites & System Requirements
 
-This guide ensures you have the right environment and permissions to run **uBO Scope** smoothly. Before installing or using the extension, validate your browser compatibility, operating system support, and necessary extension permissions related to network monitoring.
-
----
-
-## 1. Supported Browsers and Versions
-
-uBO Scope integrates directly with the browser's network stack to monitor third-party connections. To work correctly, your browser must support the `webRequest` API with the required permissions.
-
-| Browser           | Minimum Version | Notes                         |
-|-------------------|-----------------|-------------------------------|
-| **Chrome / Chromium-based Browsers** | 122.0+         | Includes Edge, Brave, Vivaldi  |
-| **Firefox (Desktop & Android)**       | 128.0+         | Full support with webRequest API |
-| **Safari**                         | 18.5+          | Web extension support available |
-
-
-### How to Check Your Browser Version
-
-- **Chrome/Chromium:**
-  - Navigate to `chrome://settings/help`
-  - Version info displayed at the top
-- **Firefox:**
-  - Go to `about:support` and locate "Application Basics" 
-  - Version displayed under "Firefox Version"
-- **Safari:**
-  - Click Safari > About Safari from the menu bar
-
-
-<Tip>
-Always keep your browser updated. uBO Scope leverages modern browser APIs that older versions might not fully support.
-</Tip>
+Before installing and using uBO Scope, ensure your system and browser meet the necessary prerequisites to guarantee full compatibility and optimal performance. This page guides you through the supported browsers, minimum version requirements, and key permissions needed.
 
 ---
 
-## 2. Operating System Compatibility
+## 1. Supported Browsers and Minimum Versions
 
-uBO Scope runs as a browser extension, so it inherits compatibility from the browser itself. Supported operating systems include:
+uBO Scope is designed as a lightweight browser extension compatible with major modern browsers. However, due to its reliance on certain browser APIs, it requires specific minimum versions.
 
-- **Windows 10 and later** (compatible with Chromium-based browsers and Firefox)
-- **macOS 12 Monterey and later** (Safari 18.5+ required for Safari users)
-- **Linux distributions** where Chromium-based browsers or Firefox support is available
-- **Android 64-bit devices** running Firefox 128+ for Firefox version of uBO Scope
+| Browser  | Minimum Version | Notes                                 |
+|----------|-----------------|---------------------------------------|
+| **Chrome / Chromium**  | 122.0          | Required because of Manifest V3 and Web Request API behavior.
+| **Firefox**            | 128.0          | Supports Manifest V3 with gecko-specific settings.
+| **Safari**             | 18.5           | Requires Safari Web Extensions support with specific manifest versioning.
 
+
+Ensure your browser is updated to or beyond these versions before proceeding.
 
 <Note>
-Mobile browser support is currently limited to Firefox on Android. Chromium-based browsers on Android do not yet support all required extension APIs for uBO Scope.
+Using versions below these minimums may cause uBO Scope to fail silently or malfunction because key APIs or manifest requirements are not available.
 </Note>
 
 ---
 
-## 3. Extension Permissions Required
+## 2. Platform and Environment
 
-uBO Scope requires several permissions to fully monitor network requests and provide accurate third-party connection data:
+uBO Scope is a browser extension and therefore runs within browser environments on the following platforms:
 
-| Permission      | Purpose                                         |
-|-----------------|------------------------------------------------|
-| `webRequest`    | To track all network requests made by webpages |
-| `host_permissions` | Access URLs across HTTP and HTTPS schemes for monitoring requests |
-| `storage`       | To save session data and preferences            |
-| `activeTab`     | To access the currently active browser tab      |
+- **Desktop Operating Systems:** Windows, macOS, Linux
+- **Supported Browsers:** Chrome-based browsers (Chrome, Edge, Brave), Firefox desktop, Safari on macOS
 
-
-Check that your browser grants these permissions to uBO Scope during or after installation.
+While the extension supports Firefox on Android (via `gecko_android` manifests), users should confirm the version meets the Firefox minimum version requirement.
 
 ---
 
-## 4. Network and Host Permissions
+## 3. Permissions Required
 
-Because uBO Scope observes network requests, it requires access to data that flows between your webpages and remote servers. It specifically requests permissions on host patterns:
+To perform its tasks, uBO Scope requires explicit permissions granted by the browser:
 
-- **Chromium:**
-  - `https://*/*`
-  - `http://*/*`
-  - `wss://*/*`
-  - `ws://*/*`
+- **`activeTab`**: Allows the extension to access the currently active tab to retrieve network request data.
+- **`storage`**: Utilized to save network request session data locally for persistence between browser sessions.
+- **`webRequest`**: Grants the extension the ability to monitor network requests in real time.
 
-- **Firefox:**
-  - Same as Chromium, including WebSocket schemes
+Additionally, it requests host permissions to monitor requests across HTTP, HTTPS, and websocket protocols:
 
-- **Safari:**
-  - Limited to `https://*/*` and `http://*/*` due to platform restrictions
+- `http://*/*`
+- `https://*/*`
+- `ws://*/*` (Chromium and Firefox only)
+- `wss://*/*` (Chromium and Firefox only)
 
-
-<Tip>
-This network permission scope enables uBO Scope to capture all relevant connection attempts, including web sockets, ensuring comprehensive monitoring.
-</Tip>
+<Warning>
+During installation, you will be prompted to allow these permissions. Denying them will prevent uBO Scope from functioning correctly.
+</Warning>
 
 ---
 
-## 5. Verifying Browser Compatibility for uBO Scope
+## 4. Network and Security Considerations
 
-Follow these steps to verify your environment is compatible:
+- **Connectivity:** uBO Scope requires internet access to fetch the public suffix list used to parse domains correctly. This is done once and cached for future use.
+- **Security:** The extension respects browser sandboxing; all data collection is local and only records network requests reported by the browser.
+
+<Info>
+No external servers receive your browsing data from uBO Scope.
+</Info>
+
+---
+
+## 5. Summary of Manifest Specifications
+
+Each supported browser uses a slightly tailored manifest file appropriate to its extension platform:
+
+- **Chromium:** Uses Manifest V3 with `service_worker` background script.
+- **Firefox:** Uses Manifest V3 with `scripts` for background.
+- **Safari:** Uses Manifest V3, requiring strict minimum version 18.5.
+
+These manifest details ensure uBO Scope installs correctly and gains the required access rights.
+
+---
+
+## 6. Verifying Your Environment
+
+Follow these steps to verify your environment before installation:
 
 <Steps>
 <Step title="Check Browser Version">
-Verify that your browser meets the minimum version requirements listed above.
+- Open your browser.
+- Navigate to 'About' in the settings (e.g., `chrome://settings/help`, `about:support` in Firefox).
+- Confirm your browser version matches or exceeds the minimum required version listed above.
 </Step>
-<Step title="Confirm Extension Permissions">
-After installation, open your browser's extensions page and check "Permissions" for uBO Scope. Ensure it has access to "Read and change all your data on websites you visit" or the equivalent.
+<Step title="Verify Permission Availability">
+- Check that your browser supports Manifest V3 extensions.
+- Ensure the `webRequest` API is accessible and enabled.
 </Step>
-<Step title="Validate WebRequest API Availability">
-
-1. Open your browser console (usually F12 or Ctrl+Shift+I).
-2. Navigate to your extensions or add-on debug page (platform-specific).
-3. Confirm that the 'webRequest' API is enabled and no errors about missing permissions are present.
-
-</Step>
-<Step title="Test Network Monitoring">
-Visit a website and observe that the uBO Scope badge updates with connection counts, indicating it is capturing network requests.
+<Step title="Software Updates">
+- If necessary, update your browser to its latest version via official channels.
 </Step>
 </Steps>
 
 ---
 
-## 6. User Permissions and Browser Settings
+## 7. Troubleshooting Prerequisite Issues
 
-uBO Scope relies on permissions granted during installation and active participation in browser events.
+<AccordionGroup title="Common Prerequisite Issues and Solutions">
+<Accordion title="Browser Version Too Low">
+If your browser version is older than the minimum required:
 
-- **Ensure you allow all requested permissions** at install time to enable full functionality.
-
-- Certain browsers may require you to enable extension access explicitly in their settings under "Site Access" or "Allow this extension to read and change site data".
-
-- When browsing in private/incognito modes, make sure to enable the extension's permission separately if you want monitoring in those sessions.
-
----
-
-## 7. Common Pitfalls & Troubleshooting
-
-<AccordionGroup title="Common Issues Related to Prerequisites and Compatibility">
-<Accordion title="Browser Version Too Old">
-Make sure your browser is upgraded to the listed minimum version or above. Older browsers lack critical APIs, preventing uBO Scope from working correctly.
+- Update your browser through its official updater.
+- If your platform does not support newer versions, uBO Scope will not function properly.
+- Consider upgrading your operating system or browser alternative.
 </Accordion>
-<Accordion title="Insufficient Extension Permissions">
-If uBO Scope badge remains empty or shows no domains, verify that you've granted all permissions. Reinstall or manually adjust extension permissions if needed.
+<Accordion title="Permissions Not Granted During Installation">
+- Verify browser extension permission prompts carefully.
+- Re-install the extension and explicitly accept all permissions requested.
 </Accordion>
-<Accordion title="Restricted Network Permissions on Safari">
-Safari's restrictive API may limit websocket monitoring; uBO Scope may capture fewer connections compared to Chromium or Firefox.
-</Accordion>
-<Accordion title="Using Unsupported Browsers or Platforms">
-uBO Scope is tested only on Chromium 122+, Firefox 128+, and Safari 18.5+. Other browsers, older versions, or mobile platforms besides Firefox Android may not work.
-</Accordion>
-<Accordion title="Extension Disabled in Private Mode">
-If you want monitoring when browsing privately, explicitly enable uBO Scope in the browser's extension management for incognito or private sessions.
+<Accordion title="Network Access Blocked or Restricted">
+- Ensure that your firewall or network policies do not block internet access required for extensions.
+- Check if browser security settings or privacy tools interfere with webRequest API.
 </Accordion>
 </AccordionGroup>
 
 ---
 
-## 8. Summary Checklist Before Proceeding
+## 8. Next Steps
 
-- [ ] Browser version meets or exceeds minimum requirement
-- [ ] Operating system supports your browser version
-- [ ] Extension permissions requested by uBO Scope are granted
-- [ ] Site and network access permissions are enabled
-- [ ] Extension enabled for private/incognito mode (if applicable)
+Once your environment meets all prerequisites, proceed to the [Installing on Your Browser](/getting-started/setup-installation/installing-on-your-browser) page for detailed installation instructions.
 
+---
+
+## Additional Resources
+
+- [What is uBO Scope?](/overview/introduction-and-value/what-is-ubo-scope) — Understand the value and purpose of uBO Scope.
+- [Who Should Use uBO Scope?](/overview/use-cases-and-users/who-should-use-ubo-scope) — Identify if uBO Scope fits your needs.
+- [Understanding Allowed, Blocked, and Stealth Connections](/overview/core-concepts-and-key-ideas/domain-connection-types) — Learn how uBO Scope classifies network outcomes.
+
+
+---
+
+## References
+
+- Official GitHub Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+
+- Manifest Files for Browsers:
+  - Chrome: `platform/chromium/manifest.json`
+  - Firefox: `platform/firefox/manifest.json`
+  - Safari: `platform/safari/manifest.json`
+
+
+---
+
+<Tip>
+Keeping your browser updated to meet the minimum version requirements is critical to using uBO Scope effectively and securely.
+</Tip>
 
 <Check>
-Completing this checklist guarantees that uBO Scope can monitor network connections effectively and provide accurate, actionable insights.
+Confirm all prerequisite checks before moving forward to installation. This proactive step avoids setup issues and ensures smoother operation.
 </Check>
-
----
-
-## 9. Next Steps
-
-Now that your environment is prepared, proceed to [Installing uBO Scope](/getting-started/setup-installation/extension-installation) to add the extension to your browser, followed by [Activating and Configuring uBO Scope](/getting-started/setup-installation/extension-activation-configuration) to customize and start monitoring your network activity.
-
----
-
-## Important Resources
-
-- [Browser Integration & Compatibility]( /overview/core-concepts-architecture/integration-browser )
-- [Installing uBO Scope]( /getting-started/setup-installation/extension-installation )
-- [Troubleshooting Installation & Setup Issues]( /getting-started/first-use-validation/common-setup-troubleshooting )
-- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
-
----

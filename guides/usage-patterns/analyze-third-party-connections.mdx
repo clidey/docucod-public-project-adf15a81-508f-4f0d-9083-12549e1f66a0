@@ -1,0 +1,170 @@
+---
+title: "Analyzing Third-Party Connections"
+description: "How to identify all third-party remote servers contacted by a page, understand which are allowed, blocked, or stealth-blocked, and tips for evaluating which connections are legitimate."
+---
+
+# Analyzing Third-Party Connections
+
+## Workflow Overview
+
+### Task Description
+This guide shows you how to use uBO Scope to identify all third-party remote servers a webpage connects to, understand whether these connections are allowed, blocked, or stealth-blocked, and evaluate which third parties are legitimate or potentially unwanted.
+
+### Prerequisites
+- You have successfully installed and enabled the uBO Scope extension on your supported browser (Chrome 122+, Firefox 128+, or Safari 18.5+).
+- You have visited a webpage where you want to analyze third-party connections.
+- Familiarity with the uBO Scope popup interface basics. If new, see the [First Steps: Analyzing a Webpage](../getting-started/first-steps) guide.
+
+### Expected Outcome
+- You will be able to open the uBO Scope popup to view a categorized list of all third-party domains contacted by the current webpage.
+- You will understand the difference between allowed, blocked, and stealth-blocked connections.
+- You will have practical tips to evaluate which connections are necessary and which may be privacy or security concerns.
+
+### Time Estimate
+Approximately 5-10 minutes to analyze and get familiar with the interface and connection types.
+
+### Difficulty Level
+Beginner to intermediate.
+
+---
+
+## Step-by-Step Instructions
+
+### Step 1: Open uBO Scope Popup on the Active Tab
+1. Click the uBO Scope extension icon in your browser toolbar.
+2. The popup will load connection data for the currently active tab.
+3. Observe the header, which displays the main hostname and the domain of the page you are analyzing.
+
+#### Expected Result
+You see the top of the popup indicating the tab's hostname and domain.
+
+---
+
+### Step 2: Review the Total Number of Connected Domains
+- Look under the “domains connected” summary near the top.
+- This number represents the count of distinct third-party domains contacted by the page.
+
+#### Expected Result
+A numeric count of unique third-party domains connected during the current tab session.
+
+---
+
+### Step 3: Examine Connection Categories
+The popup divides connections into three outcome categories:
+
+- **Allowed (not blocked)**: Domains from which network requests successfully loaded resources without being blocked.
+- **Stealth-Blocked**: Domains that were blocked in a way that tries to remain invisible to the webpage (e.g., through redirects or internal rules).
+- **Blocked**: Domains for which network requests failed or were explicitly blocked by the content blocker.
+
+Each category lists domains along with a count of connection attempts.
+
+---
+
+### Step 4: Inspect Domains in Each Category
+- Expand the lists in each section to see individual third-party domains.
+- Counts indicate how many requests were made to each domain.
+- Use these details to infer which third parties your page relies on and which are blocked to protect your privacy.
+
+#### Example
+If you see `cdn.example.com` listed under **Allowed**, this likely represents a Content Delivery Network supporting the webpage.
+
+---
+
+### Step 5: Interpret the Badge Count in the Toolbar
+- The toolbar icon’s badge number correlates with the count of distinct allowed third-party domains.
+- A lower badge count typically means fewer third-party connections; higher counts might indicate more external tracking or resource fetching.
+
+Use this number as a quick indicator of third-party exposure per tab.
+
+---
+
+### Step 6: Evaluate Third-Party Legitimacy
+- Consider whether listed third-party domains align with the webpage’s expected content (e.g., known CDNs like Cloudflare, AWS, or Google).
+- Unknown or suspicious domains might indicate tracking, advertising, or malicious activity.
+- Use domain knowledge or perform domain lookups if necessary.
+
+---
+
+### Verification Steps
+- Confirm the popup updates when you reload the page or switch tabs.
+- Verify the badge count changes accordingly.
+- If the data is missing or inconsistent, consult troubleshooting guides.
+
+---
+
+## Examples & Scenarios
+
+### Scenario: Analyzing a News Website
+- Open a news article.
+- Launch uBO Scope popup.
+- Observe allowed connections to known CDNs (e.g., `cloudfront.net`), analytics domains (e.g., `google-analytics.com`), and social media widgets.
+- Review any blocked or stealth-blocked domains, which may include ad servers.
+- Decide if interventions (like custom filters) are needed.
+
+### Visualization
+
+| Category       | Example Domains                   | Notes                               |
+|----------------|---------------------------------|-----------------------------------|
+| Allowed        | `cdn.google.com`, `fonts.gstatic.com` | Usually safe and necessary for content |
+| Stealth-Blocked| `tracking.adserver.com`, `redirection.proxy` | Hidden blocking to prevent detection |
+| Blocked        | `ads.badads.net`, `malicious.track`       | Explicitly blocked due to privacy/security |
+
+---
+
+## Troubleshooting & Tips
+
+### Common Issues
+- **Popup shows NO DATA**: Ensure the tab is fully loaded and that the extension has permission.
+- **Badge count stays empty or inaccurate**: Check if browser supports `webRequest` API fully; some browsers or versions may limit reporting.
+- **No domains appearing under allowed or blocked**: Content blocker or browser may be interfering; try disabling other conflicting extensions.
+
+### Best Practices
+- Regularly refresh the popup when analyzing dynamically loading sites.
+- Use the domain counts to prioritize which third parties to investigate further.
+- Combine uBO Scope insights with other tools (e.g., network developer tools) for thorough audits.
+
+### Performance Considerations
+- The extension batches updates to avoid browser performance impact; counts may update shortly after network activity.
+
+### Alternative Approaches
+- Use uBO Scope together with filter list maintainers’ techniques for precise blocking.
+
+---
+
+## Next Steps & Related Content
+
+- After mastering this page, proceed to [Interpreting the Badge Count and Results](../usage-patterns/interpreting-badge-counts) to deepen understanding.
+- Explore [Understanding Allowed, Blocked, and Stealth Connections](../../overview/core-concepts-and-key-ideas/domain-connection-types) for conceptual clarity.
+- For setup issues, refer to [Troubleshooting Common Setup Issues](../../getting-started/getting-to-first-results/troubleshooting-common-setup-issues).
+- For practical usage, see [First Steps: Analyzing a Webpage](../getting-started/first-steps).
+- Consult the [What is uBO Scope?](../../overview/introduction-and-value/what-is-ubo-scope) page for overall product context.
+
+---
+
+## Appendix: Understanding Domains via the Public Suffix List
+
+uBO Scope uses the extensive Public Suffix List (PSL) to extract the 'registrable domain' part of hostnames. This helps aggregate requests by top-level domains (e.g., grouping subdomains under `example.com`).
+
+This PSL is sourced directly from [publicsuffix.org](https://publicsuffix.org/list/public_suffix_list.dat), a comprehensive list maintained by the Mozilla Foundation, including all known top-level domains (TLDs), country-code TLDs (ccTLDs), and many branded or specialized suffixes.
+
+By recognizing the PSL, uBO Scope more accurately categorizes third-party connections, avoiding misleading fragmentation by subdomains or uncommon domain suffixes.
+
+
+---
+
+<AccordionGroup title="Quick Tips & Common Pitfalls">
+<Accordion title="Why is the badge count important?">
+The badge count reflects the number of distinct allowed third-party domains your browser connected to for the active tab, not just raw request counts. This provides a clear perspective on third-party exposure.
+</Accordion>
+<Accordion title="Can a high badge count mean better blocking?">
+No. A high badge count means more third-party domains were contacted successfully. This often indicates weaker blocking, not stronger. uBO Scope helps clarify this misconception.
+</Accordion>
+<Accordion title="What if a domain appears under stealth-blocked?">
+Stealth-blocking means requests were blocked without alerts to the webpage to minimize detection. These generally indicate successful blocking of trackers or ads.
+</Accordion>
+<Accordion title="How to handle unknown third-party domains?">
+Use online domain lookup tools to research unfamiliar domains. Consider blocking if they seem suspicious or unnecessary, but beware of overblocking legitimate services.
+</Accordion>
+</AccordionGroup>
+
+---
