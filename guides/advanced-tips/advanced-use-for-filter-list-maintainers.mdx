@@ -1,0 +1,152 @@
+---
+title: "Advanced Use: For Filter List Maintainers"
+description: "Uncover workflows that benefit filter list maintainers: investigating missed/allowed network requests, adapting lists based on uBO Scope output, and techniques for working without browser developer tools (such as on constrained devices)."
+---
+
+# Advanced Use: For Filter List Maintainers
+
+## Overview
+
+This guide is crafted for filter list maintainers seeking deeper insights into the network requests observed during browsing sessions by uBO Scope. It reveals strategies to investigate why certain network requests are missed or allowed, how to adapt filter lists efficiently based on uBO Scope’s output, and techniques for analyzing network behavior on devices with limited access to browser developer tools.
+
+Filter list maintainers gain a practical toolkit here for auditing, debugging, and improving filter rules without relying solely on traditional browser debugging environments.
+
+---
+
+## Prerequisites
+
+- You must have uBO Scope installed and active in your browser.
+- Familiarity with basic filter list syntax and functioning.
+- Access to uBO Scope’s popup UI with current network request data.
+- Understanding of domain vs hostname distinctions and network request outcomes (allowed, blocked, stealth-blocked).
+
+---
+
+## Expected Outcome
+
+By following this guide, you will be able to:
+
+- Investigate missed or erroneously allowed network requests effectively.
+- Correlate third-party domains with filter list rules using uBO Scope data.
+- Adapt and optimize filter lists with confidence using real-world observations.
+- Use uBO Scope’s output for analysis even on constrained devices lacking full developer toolsets.
+
+---
+
+## Step-by-Step Workflow
+
+### 1. Examine Network Request Outcomes in uBO Scope
+
+- Open uBO Scope’s popup for the relevant browser tab.
+- Review the three categorized sections:
+  - **Allowed**: Domains where requests passed through unblocked.
+  - **Blocked**: Domains where requests were actively blocked.
+  - **Stealth-blocked**: Domains where requests were blocked via redirect or stealth methods.
+
+Focus on domains under **Allowed** to identify potential candidates for new or stricter filtering.
+
+<Tip>
+Always start with verifying if the domain is actually third-party relative to the main site to avoid filtering first-party domains accidentally.
+</Tip>
+
+### 2. Understand Domain vs Hostname Impact
+
+- Use the hostname and domain distinctions shown in uBO Scope to assess filter specificity.
+- Domains represent broader parent entities, whereas hostnames are specific endpoints.
+- If you observe allowed requests for suspicious hostnames under an otherwise blocked domain, consider updating your filter rules to target these hostnames explicitly.
+
+<Note>
+uBO Scope utilizes the Mozilla Public Suffix List (PSL) to accurately determine registrable domains, helping you interpret these distinctions precisely.
+</Note>
+
+### 3. Correlate uBO Scope Data with Your Filter List
+
+- Export or note domains from the popup that are unexpectedly allowed or stealth-blocked.
+- Open your filter list rules and search for entries matching these domains or subdomains.
+- Investigate if any exceptions, whitelist entries, or mismatches allow these connections.
+
+### 4. Adapt Filter Rules Based on Observations
+
+- If a domain should be blocked but is allowed:
+  - Add or adjust filter rules targeting that domain or specific hostnames.
+  - Use wildcards and domain anchors carefully to avoid overblocking.
+
+- If stealth-blocked domains cause undesired side effects:
+  - Review your filter list for potentially over-aggressive filters causing indirect blocking.
+  - Modify or loosen rules to maintain webpage functionality.
+
+### 5. Use uBO Scope Without Developer Tools
+
+- On constrained devices or remote debugging scenarios without browser DevTools:
+  - Use the popup’s domain lists as your primary data source.
+  - Utilize the toolbar badge count as a quick health indicator of third-party exposure.
+  - Iteratively open relevant pages and note changes in allowed or blocked domain counts.
+
+<Tip>
+Document session data by screenshots or notes from uBO Scope’s popup to track changes over time or before/after filter updates.
+</Tip>
+
+### 6. Troubleshooting Common Investigation Scenarios
+
+- **Issue: Unexpected allowed third-party domains**
+  - Verify if filter rules contain exceptions or whitelist entries.
+  - Ensure filters are not shadowed by broader allow rules.
+  - Use domain and hostname granularity in your filters.
+
+- **Issue: Stealth blocking causing breakage**
+  - Examine if redirects originate from stealth blocks.
+  - Adjust filter rules gradually to isolate breaking patterns.
+
+- **Issue: Popup shows no data or stale data**
+  - Reload the tab or uBO Scope popup.
+  - Confirm the extension has the required permissions.
+  - Check for conflicts with other extensions or browser security policies.
+
+---
+
+## Practical Examples
+
+### Example 1: Investigating an Allowed Domain
+
+1. uBO Scope popup shows `cdn.innocentdomain.com` as an allowed domain.
+2. Search your filter list for `cdn.innocentdomain.com` or parent domain `innocentdomain.com`.
+3. Discover no blocking rules exist.
+4. Add a filter rule: `||cdn.innocentdomain.com^` to block all requests to that hostname.
+5. Reload the webpage and verify the domain moves to the blocked section in uBO Scope.
+
+### Example 2: Adjusting Stealth Blocking
+
+1. A domain `tracker.stealthblock.com` appears in the “stealth-blocked” section.
+2. Check if your filter list has aggressive wildcard rules targeting broad hostnames.
+3. Modify filters to be less inclusive, e.g., instead of blocking `*.stealthblock.com`, block only `tracker.stealthblock.com`.
+4. Monitor webpage functionality to ensure no breakage.
+
+---
+
+## Best Practices for Filter List Maintainers
+
+- Start from domains with the highest counts in uBO Scope to prioritize impactful rules.
+- Use the Public Suffix List-based domain information to avoid mistakenly blocking registrable domains under shared suffixes.
+- Document changes and test on multiple webpages to minimize unintended consequences.
+- Consider the context of requests (main frame vs subresources) to better understand impact.
+
+---
+
+## Next Steps & Related Documentation
+
+- Explore [Tracking Third-Party Remote Connections](../core-workflows/tracking-remote-connections) to better understand network event classification.
+- Consult [Interpreting the Toolbar Badge Count](../core-workflows/interpreting-badge-counts) for insights into badge meaning.
+- Use [Best Practices: Interpreting Network Results](../advanced-tips/best-practices-interpreting-results) for refining your investigative approach.
+- Refer to [Navigating the Popup UI](../getting-started/navigating-the-popup) for detailed descriptions of the popup interface.
+
+---
+
+## Resources
+
+- uBO Scope GitHub Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List Official Site: [https://publicsuffix.org](https://publicsuffix.org/)
+- Mozilla Public Suffix List integration details: see `js/lib/publicsuffixlist.js`
+
+---
+
+By mastering this guide, filter list maintainers will enhance their ability to refine blocking rules and achieve comprehensive yet precise filtering outcomes based on real network data, even in environments with limited debugging tools.
