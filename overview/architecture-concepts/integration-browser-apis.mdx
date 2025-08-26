@@ -1,0 +1,149 @@
+---
+title: "Integration with Browsers and Content Blockers"
+description: "See how uBO Scope relies on browser APIs (like webRequest) and why it works independently of specific content blockers. Learn about its compatibility across Chromium, Firefox, and Safari, and limitations with respect to DNS-level blocking or requests outside the browser’s view."
+---
+
+# Integration with Browsers and Content Blockers
+
+Discover how uBO Scope leverages browser APIs to independently reveal all remote server connections associated with your browsing activities. This documentation explains the extension's compatibility with major browsers—including Chromium, Firefox, and Safari—and clarifies how it operates alongside, yet separate from, content blockers. You'll also learn about inherent limitations tied to DNS-level blocking and network requests that bypass the browser's webRequest API.
+
+---
+
+## Why Integration Matters
+
+Web browsing involves numerous background network requests to various servers. Understanding and auditing these requests is essential for privacy-conscious users and filter list maintainers. uBO Scope integrates directly with browser network monitoring APIs to capture this data in real time, providing unprecedented transparency independent of any content blocking solution.
+
+Unlike many content blockers that rely on heuristic filtering or injected scripts, uBO Scope connects directly to the browser's `webRequest` API. This direct access ensures it captures accurate network telemetry for every tab without interfering with the content blocking process.
+
+
+## Browser API Foundations
+
+uBO Scope’s core functionality depends on the browser's `webRequest` API. This powerful API enables extensions to observe, intercept, and analyze network requests initiated by web pages. 
+
+- **Real-Time Network Observation:** uBO Scope listens to network events such as requests starting, redirects, errors, and responses.
+- **Outcome Reporting:** It categorizes requests into allowed, stealth-blocked (requests silently blocked or redirected), and explicitly blocked.
+- **Per-Tab Tracking:** Details are organized by browser tab to give contextually relevant information to users.
+
+
+## Compatibility Across Major Browsers
+
+uBO Scope is designed to work seamlessly on the most popular browsers by adapting to their platform-specific behaviors:
+
+| Browser  | Manifest Highlights                               | Notes                     |
+|----------|--------------------------------------------------|---------------------------|
+| **Chromium** | Uses `service_worker` background script for MV3 compliance. Requires minimum Chrome version 122. | Full support for `webRequest` listeners. |
+| **Firefox**  | Runs a `background.js` module script with Gecko-specific settings (minimum version 128). | Leverages Firefox's full WebExtensions API. |
+| **Safari**   | Supports module background scripts, with minimum version 18.5. | Limited `host_permissions` (no websocket URLs). |
+
+These manifest files (detailed in the source repository) explicitly declare permissions for comprehensive network monitoring:
+
+- Allowed URL schemes (`https://*/*`, `http://*/*`, and websocket variants where supported)
+- Permissions for `webRequest`, `activeTab`, and storage
+
+
+## Operating Independently from Content Blockers
+
+uBO Scope does _not_ block or alter network requests itself. Instead, it listens passively to the network activity reported by the browser, regardless of how content blocking is implemented:
+
+- **Works alongside any content blocker:** Whether you use uBlock Origin, other ad blockers, or DNS-based blocking, uBO Scope observes the resulting network behaviors without affecting them.
+- **Detects stealth blocking:** Some content blockers employ stealth techniques to silently block or redirect requests; uBO Scope reports these events categorized as "stealth-blocked".
+
+
+## Limitations and Important Considerations
+
+While uBO Scope provides thorough network telemetry from the browser perspective, there are inherent boundaries to what it can observe:
+
+- **No visibility outside the browser's `webRequest` API:** Any network activity originating outside the scope of this API, such as DNS-level blocking or network requests from external apps, will not be detected.
+- **Variability across browser versions:** Support for certain features, like web socket monitoring, depends on browser compliance with the latest WebExtension standards.
+- **Permission-bound:** Proper permissions must be granted during installation for full functionality.
+
+
+## Real-World Impact: Understanding What You See
+
+When you use uBO Scope, the list of remote server connections you observe includes all network requests reported by the browser:
+
+- Allowed connections that successfully fetched resources
+- Requests that were blocked or failed to connect
+- Stealth-blocked requests that block silently or redirect
+
+This unconditional reporting gives users, auditors, and filter list maintainers an unbiased view of network exposure, highlighting the true impact of any content blocking strategy.
+
+
+## How This Fits Within uBO Scope’s Architecture
+
+To visualize how uBO Scope integrates with the browser environment, consider this simplified flow:
+
+```mermaid
+flowchart TD
+  subgraph Browser Environment
+    NetworkRequests["User Initiates Network Requests"]
+    webRequestAPI["Browser's webRequest API"]
+    ContentBlocker["Content Blocker (Adblockers, etc.)"]
+  end
+
+  subgraph uBO-Scope Extension
+    BackgroundScript["Background Script\n(Listens via webRequest API)"]
+    SessionStorage["Session Data Storage"]
+    PopupUI["Popup Interface\n(Displays connection data)"]
+  end
+
+  NetworkRequests --> webRequestAPI
+  webRequestAPI --> ContentBlocker
+  webRequestAPI --> BackgroundScript
+  BackgroundScript --> SessionStorage
+  SessionStorage --> PopupUI
+
+  BackgroundScript -.-> ContentBlocker
+  ContentBlocker -.-> webRequestAPI
+
+  classDef ext fill:#eef,stroke:#669,stroke-width:1px;
+  class uBO-Scope_Extension BackgroundScript,SessionStorage,PopupUI ext;
+
+  classDef browserEnv fill:#ffe,stroke:#cc9,stroke-width:1px;
+  class Browser_Environment NetworkRequests,webRequestAPI,ContentBlocker browserEnv;
+```
+
+This diagram shows that uBO Scope passively observes the network traffic flowing through the browser’s webRequest API and maintains session-level details. It remains agnostic and non-interfering with any content blocker that may be active.
+
+
+## Practical Tips for Users
+
+- **Ensure proper permissions:** When installing uBO Scope, accept all requested permissions — especially `webRequest` and host permissions — to enable full network visibility.
+- **Use latest browser versions:** To maximize compatibility and tracking precision, keep your browser updated.
+- **Understand badge counts:** The toolbar icon badge displays the number of distinct third-party domains connected by the active tab.
+- **Interpret stealth-blocked and blocked categorizations carefully:** These provide insights into how content blockers interact with network requests but do not themselves block anything.
+
+
+## Troubleshooting Common Scenarios
+
+<AccordionGroup title="Common Integration Questions">
+<Accordion title="Why don't some connections show up in uBO Scope?">
+Connections that originate outside the browser's `webRequest` API scope—such as DNS-level blocking or external applications—cannot be tracked. Also, certain web socket connections may not report consistently depending on the browser.
+</Accordion>
+<Accordion title="I see different results compared to my content blocker’s dashboard. Why?">
+uBO Scope reports raw network telemetry unaffected by heuristic or inferred blocking logic. Some content blockers report via their internal logic differently, and stealth blocking might not appear in their dashboards.
+</Accordion>
+<Accordion title="Is uBO Scope blocking any content itself?">
+No. uBO Scope only reports network connection outcomes and does not modify or block requests.
+</Accordion>
+</AccordionGroup>
+
+
+## Summary
+
+uBO Scope’s tight integration with browser network APIs gives you an unobstructed window into all remote server connections triggered during browsing. Supported across Chromium, Firefox, and Safari, it works independently from any content blocker, relying purely on the browser's event notifications for accuracy.
+
+Understanding these integrations empowers you to interpret uBO Scope’s insights effectively, enhancing your privacy auditing and filter list efforts.
+
+
+---
+
+For more details on interpreting these connections and working effectively with uBO Scope, please review the related documentation pages:
+
+- [Who Is uBO Scope For?](/overview/introduction-core-value/audience-usecases)
+- [Key Features at a Glance](/overview/introduction-core-value/feature-glance)
+- [How uBO Scope Works (with Diagram)](/overview/architecture-concepts/system-architecture)
+- [Core Concepts & Terminology](/overview/architecture-concepts/core-terminology)
+
+
+Explore the [GitHub repository](https://github.com/gorhill/uBO-Scope) for source code and manifest details.
