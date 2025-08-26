@@ -1,0 +1,142 @@
+---
+title: "How uBO Scope Measures Connections"
+description: "Outlines uBO Scope’s architectural model for observing, recording, and reporting third-party connections. Includes a mermaid diagram mapping the flow from browser network requests, through background measurement, to the badge and popup UI."
+---
+
+# How uBO Scope Measures Connections
+
+Understanding how uBO Scope observes, records, and reports third-party network connections is key to leveraging its full potential. This page outlines the architectural model underlying uBO Scope's measurement process, clarifying the flow from network request observation to the user interface presentation.
+
+---
+
+## Core Architecture Overview
+
+uBO Scope acts as a vigilant companion extension that listens closely to your browser's network activities. Its primary mission is to accurately track every remote server your browser attempts to connect to during a browsing session. This is achieved through a layered approach:
+
+- **Browser Network Requests:** The extension leverages browser-provided `webRequest` APIs to intercept network requests at various lifecycle stages—before redirects, on response starts, and upon errors.
+- **Background Measurement Service:** A background script processes each network event, classifying connection outcomes with precision.
+- **UI Reflectors:** Results feed directly into the toolbar badge and popup panel, delivering clear, real-time insights into connection statuses.
+
+This architecture ensures comprehensive visibility into all network connections, whether allowed, stealth-blocked (redirected silently), or explicitly blocked.
+
+---
+
+## Measurement Workflow Explained
+
+Every time your browser initiates a network request, uBO Scope's background service gets involved to analyze and record the connection outcome.
+
+### Step 1: Capturing Network Requests
+
+uBO Scope listens to three key events through the browser's `webRequest` interface:
+
+- **`onBeforeRedirect`**: Detects when a request is redirected.
+- **`onErrorOccurred`**: Captures when a request encounters an error (often representing a blocked connection).
+- **`onResponseStarted`**: Marks a successful request.
+
+Each network event is queued and processed in batches, minimizing performance impact while maintaining responsiveness.
+
+### Step 2: Classifying Connection Outcomes
+
+The background script maintains detailed records for each tab via a data structure called `tabDetails`. For every observed request linked to a tab:
+
+- **Allowed Connections:** Successful connections recorded normally.
+- **Stealth-Blocked Connections:** Redirects that generally indicate stealthy blocking by other tools.
+- **Blocked Connections:** Error events, typically representing explicit blocking.
+
+These are aggregated at both the domain and hostname levels, enabling nuanced insight.
+
+### Step 3: Updating the User Interface
+
+The recorded data serves as the source for dynamic UI updates:
+
+- **Toolbar Badge:** Shows a count of distinct allowed third-party domains connected within the active tab.
+- **Popup Panel:** Presents a categorized summary showing all domains by their connection status—allowed, stealth-blocked, or blocked.
+
+This immediate feedback loop empowers users to gauge their privacy exposure on the fly.
+
+---
+
+## Detailed Flow Diagram
+
+Below is a Mermaid diagram illustrating the flow of data and control from network requests in the browser, through the background measurement processing, to the UI components.
+
+```mermaid
+flowchart TD
+
+  BrowserNetwork["Browser Network Requests"] -->|webRequest Events| BackgroundService["Background Measurement Service"]
+
+  subgraph BackgroundService
+    direction TB
+    OnRedirect["onBeforeRedirect"] --> Queue(("Queue Network Event"))
+    OnError["onErrorOccurred"] --> Queue
+    OnResponse["onResponseStarted"] --> Queue
+    Queue --> ProcessEvents["Process & Classify Events"]
+    ProcessEvents --> UpdateTabData["Update tabDetails (allowed, stealth, blocked)"]
+    UpdateTabData --> BadgeUpdate["Update Toolbar Badge"]
+    UpdateTabData --> SaveSession["Persist Session Data"]
+    UpdateTabData --> PopupMessage["Send Data to Popup UI"]
+  end
+
+  PopupUI["Popup Interface (popup.html)"] <-- PopupMessage
+
+  BadgeUpdate -->|Badge Count| Toolbar["Browser Toolbar Icon Badge"]
+
+  classDef browser fill:#f9f,stroke:#333,stroke-width:1px;
+  classDef background fill:#bbf,stroke:#333,stroke-width:1px;
+  class BrowserNetwork browser;
+  class BackgroundService background;
+
+```
+
+---
+
+## Practical Insights and Best Practices
+
+- **Session Persistence:** uBO Scope stores session data such as public suffix list and tab details using browser storage APIs, ensuring your measurements persist across browsing sessions when possible.
+  
+- **Domain Normalization:** Hostnames are normalized to their eTLD+1 (effective top-level domain plus one level) using the public suffix list. This prevents fragmentation of domain counts and maintains clarity.
+
+- **Handling Complex Scenarios:** Redirects and network errors are carefully categorized to differentiate stealth blocking (common in advanced content blockers) from outright blocking.
+
+- **Performance Optimization:** Network events are processed in a batched fashion with a short debounce timer, balancing real-time updates with low overhead.
+
+- **Tab-Specific Data:** All connection measurements are scoped per browser tab for precise, contextual insight on a webpage-by-webpage basis.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Common Issues in Connection Measurement">
+<Accordion title='Why does the badge count sometimes appear delayed or not update immediately?'>
+Network events are queued and processed with a short delay to optimize performance. This means badge counts refresh roughly every second to avoid excessive resource use.
+</Accordion>
+<Accordion title='What if some network requests are missing from the report?'>
+uBO Scope relies on the browser's `webRequest` API which may not cover all network requests, especially those outside browser control (e.g., some WebSocket or system-level connections).
+</Accordion>
+<Accordion title='Why are some domains shown as "stealth-blocked"?'>
+Stealth-blocked connections usually represent redirects that content blockers perform silently to avoid detection or breakage.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+Ready to see uBO Scope in action? Explore the related pages to get started with installation, interpreting popup panels, and understanding badge logic:
+
+- [What is uBO Scope?](../getting-started-core-value/product-what-why)
+- [Quick Start: See uBO Scope in Action](../../getting-started/first-use-validation/quick-start-guide)
+- [Understanding the Popup Panel: Domains and Statuses Explained](../../guides/interpreting-results/understanding-popup)
+
+Harness the full power of uBO Scope by combining knowing how it measures connections with understanding how to read its insightful results.
+
+---
+
+## References
+
+- Background Measurement Service: `js/background.js`
+- Popup Interface: `popup.html` and `js/popup.js`
+- External Storage & Messaging Utilities: `js/ext.js`
+- Public Suffix List usage for domain normalization
+
+For full source code and updates, visit the [uBO-Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
