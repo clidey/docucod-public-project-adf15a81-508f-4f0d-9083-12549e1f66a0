@@ -1,0 +1,155 @@
+---
+title: "How uBO Scope Reveals Connections"
+description: "Explains the extension’s monitoring model: using browser webRequest listeners to observe all network attempts, record their outcomes, and present this as actionable insight. Emphasizes that uBO Scope operates transparently alongside any content blocker and makes visible not just what is blocked, but what actually happens."
+---
+
+# How uBO Scope Reveals Connections
+
+uBO Scope operates as a transparent network observer within your browser, revealing **every attempted and successful connection to remote servers** made by webpages. This page dives into the core monitoring model behind uBO Scope — how it listens to network activity, records detailed outcomes, and transforms raw data into actionable insights that empower you to understand what truly happens beneath the surface of web browsing.
+
+---
+
+## Understanding the Monitoring Model
+
+At the heart of uBO Scope is the **browser's webRequest API** — a powerful interface available in modern browsers that reports *all* network requests initiated by webpages. uBO Scope strategically attaches listeners to this API to observe every network event as it unfolds, regardless of whether other content blockers are installed or what their settings might be.
+
+- **All network attempts:** Including HTTP, HTTPS, WebSocket, and secure variants.
+- **Request outcomes:** Successes, redirects, errors, and outright blocking by any content blocker or DNS-level filtering.
+- **Third-party visibility:** Distinguishing connections to first-party versus third-party domains.
+
+This comprehensive approach means uBO Scope offers a **complete and unbiased picture** of network connections, beyond what typical content blockers or browser tooling expose.
+
+
+## What Happens Behind the Scenes: Event Flow
+
+uBO Scope's listeners react to three main webRequest events:
+
+1. **`onBeforeRedirect`**: Captures when a request is being redirected to another URL, helping track stealthy connection chains.
+2. **`onErrorOccurred`**: Records failed network attempts, whether due to blocking, network errors, or cancellations.
+3. **`onResponseStarted`**: Marks successful network responses, confirming that data has begun to load.
+
+Each event triggers queuing of request details into an internal journal. To optimize performance, these are processed in batches with a short delay — ensuring that multiple rapid events do not overwhelm the extension.
+
+This design guarantees that the extension:
+
+- Efficiently gathers real-time data.
+- Smoothly handles bursts of network requests.
+- Preserves chronological and tab-specific context.
+
+
+## Categorizing Requests into Outcomes
+
+Every observed network request is classified into one of three outcomes based on its event status:
+
+- **Allowed:** Connection successfully completed, and resources fetched.
+- **Stealth-blocked:** Requests redirected or blocked in ways that are not transparent to the webpage (e.g., silently blocked or redirected by filters).
+- **Blocked:** Requests that resulted in errors or cancellations that indicate explicit blocking.
+
+These categories allow users to distinguish not only what is blocked but also the instances where blocking or filtering occurs quietly, a crucial insight that no other extension provides.
+
+
+## Tab-Specific Aggregation and Domain Analysis
+
+uBO Scope maintains a detailed *map* of tab IDs to their observed connection details. For each tab (i.e., browser window or page):
+
+- The main domain and hostname of the page are stored.
+- Mappings track domains and hostnames under each outcome (allowed, stealth-blocked, blocked).
+- Counts of how many times a domain or hostname appeared within an outcome are recorded.
+
+Additionally, the extension uses the **Public Suffix List** to accurately extract the "registrable" domain from a hostname, which avoids misattributing third-party connections (e.g., separating `cdn.example.com` from `example.com`).
+
+This allows for:
+
+- Precise third-party connection counts.
+- Effective measurement of distinct remote servers accessed.
+- Eliminating false positives due to subdomain variations.
+
+
+## Making Sense of the Data: Badge and Popup Panel
+
+The recorded data drives the extension's user interface:
+
+- **Toolbar Icon Badge:** Shows the count of distinct allowed third-party domains connected to in the active tab. A lower badge count indicates fewer third-party connections, aligned with privacy goals.
+
+- **Popup Panel:** Provides a categorized view of domains per outcome. It details:
+  - Which domains were allowed.
+  - Which were stealth-blocked.
+  - Which were explicitly blocked.
+
+By blending real-time observation with precise domain parsing, uBO Scope surfaces meaningful, actionable insights without interfering with your browsing.
+
+
+## Limitations and Transparency
+
+- uBO Scope depends entirely on the `webRequest` API and the browser's reporting.
+- Network requests outside the scope of this API (such as DNS queries or some low-level socket connections) cannot be monitored.
+- The extension does not perform any blocking or modify behavior; it solely reports observed connections.
+
+
+## Example: Typical Request Handling Flow
+
+```javascript
+// Pseudocode illustrating the flow of network request events
+browser.webRequest.onBeforeRedirect.addListener(details => {
+    queueNetworkRequest(details, 'redirect'); // Mark request as redirect
+});
+
+browser.webRequest.onErrorOccurred.addListener(details => {
+    queueNetworkRequest(details, 'error'); // Mark request as blocked or failed
+});
+
+browser.webRequest.onResponseStarted.addListener(details => {
+    queueNetworkRequest(details, 'success'); // Mark request as successful
+});
+
+// Eventually, batch process queued requests
+processNetworkRequestJournal() {
+    for each request in queue:
+        classify request as allowed, stealth-blocked, or blocked
+        update tab-specific domain counts accordingly
+    update badge count for tabs
+    persist session data for continuity
+}
+```
+
+
+## Practical Tips for Users
+
+- Consider the **badge count** a more reliable indicator of tracker and third-party exposure than typical blocker badge counts.
+- The **stealth-blocked** section reveals hidden blocking activity that traditional tools miss.
+- Use the domain lists in the popup to identify unexpected connections and adjust your content blocker or network filters if needed.
+- Remember that **not all third-party connections are harmful**; some are essential services like CDNs.
+
+
+## Troubleshooting Common Scenarios
+
+<AccordionGroup title="Troubleshooting Network Visibility">
+<Accordion title="Why does the badge count seem lower than expected?">
+The badge counts distinct allowed third-party domains, not individual requests. If multiple requests go to the same domain, the badge count increases by one only.
+</Accordion>
+<Accordion title="Some requests don’t appear in the popup list. Why?">
+Requests that fail before reaching the webRequest API (e.g., DNS blocks or requests from other browser components) aren’t reported.
+</Accordion>
+<Accordion title="Does uBO Scope block any content?">
+No. uBO Scope is purely observational; it doesn't block or alter network traffic.
+</Accordion>
+</AccordionGroup>
+
+
+## Summary
+
+uBO Scope leverages the browser's webRequest API to deliver a **comprehensive, tab-aware, outcome-classified snapshot of all network connections** initiated by webpages. It offers an unparalleled level of transparency for privacy-focused users and filter list maintainers by revealing not just what is blocked, but what really happens in the network layer.
+
+For a deeper understanding of its purpose and benefits, consult the [What is uBO Scope?](../product-intro/what-is-ubo-scope) page and explore the [Quick Tour: The Popup UI](../feature-overview/popup-ui-quicklook) for how this data is presented to you.
+
+
+---
+
+# Glossary
+
+- **webRequest API:** Browser API that allows observing and intercepting network requests.
+- **Tab:** A single browser window or page instance.
+- **Hostnames/Domains:** Hostnames are the full domain names like "tracker.example.com"; domains are the registrable parts like "example.com".
+- **Stealth-blocked:** Requests silently blocked or redirected in a way not obvious to webpages.
+
+---
