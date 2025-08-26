@@ -1,0 +1,222 @@
+---
+title: "Using uBO Scope for Filter List Maintenance and Evaluation"
+description: "For filter list maintainers: learn how to use uBO Scope to spot CDN domains, whittle down necessary third-party requests, and validate that filter lists block unwanted connections without breaking sites. Includes common scenarios and practical troubleshooting techniques."
+---
+
+# Using uBO Scope for Filter List Maintenance and Evaluation
+
+## Overview
+
+This guide empowers filter list maintainers to harness uBO Scope effectively for managing and validating filter lists. You will learn to spot CDN domains, identify and reduce unnecessary third-party requests, and confirm that your filter lists block unwanted connections without breaking legitimate websites.
+
+---
+
+## 1. Understanding the Purpose of uBO Scope for Filter List Maintenance
+
+As a filter list maintainer, your goal is to craft precise, effective lists that strike a balance between privacy, security, and usability. uBO Scope helps you achieve this by:
+
+- Exposing all remote server connections, including allowed, blocked, and stealth-blocked requests.
+- Providing granular insights into third-party domains contacted by webpages.
+- Detecting common CDN domains which often serve legitimate content.
+- Validating filter behavior against real site interactions.
+
+Using uBO Scope shifts your workflow from guesswork to empirical evidence, improving filter quality and reducing false positives.
+
+---
+
+## 2. Prerequisites
+
+Before you begin, ensure you have:
+
+- Installed uBO Scope on a supported browser (Chromium 122+, Firefox 128+, or Safari 18.5+).
+- Configured any necessary permissions as described in the Installation and Setup guides.
+- Basic understanding of what constitutes first-party vs. third-party domains and CDNs.
+- Access to filter list files and the ability to test them within the browser.
+
+Refer to [Installing and Launching uBO Scope](/guides/getting-started-essentials/install-launch) and [Prerequisites & System Requirements](/getting-started/installation-and-setup/system-requirements) for detailed setup.
+
+---
+
+## 3. Workflow: Using uBO Scope to Maintain and Evaluate Filter Lists
+
+Follow these steps to systematically evaluate and refine your filter lists.
+
+### Step 1: Launch uBO Scope on Test Websites
+
+1. Open a browser tab with a real website you want to evaluate.
+2. Click the uBO Scope extension icon to open the popup panel.
+3. Observe the badge count showing the number of distinct third-party domains contacted.
+4. In the popup, review the categorized lists:
+   - **Not blocked:** Domains from which connections were allowed.
+   - **Stealth-blocked:** Connections tactically blocked to avoid site breakage.
+   - **Blocked:** Connections outright blocked by the filter.
+
+---
+
+### Step 2: Spot CDN Domains
+
+CDNs tend to have well-known domains (e.g., `akamai.net`, `cloudfront.net`, `cdn.cloudflare.net`). Identifying these CDNs is crucial because:
+
+- They commonly serve essential resources like scripts, images, or fonts.
+- Such domains should generally not be over-blocked:
+
+**Action:**
+
+- Note CDN domains appearing in **Not blocked** or **Stealth-blocked** sections.
+- Verify if any CDN domains are blocked and reassess rules if legitimate content is affected.
+
+This prevents false positives that may degrade user experience.
+
+---
+
+### Step 3: Whittle Down Unnecessary Third-Party Requests
+
+Overly broad or outdated filter rules can allow excessive third-party connections.
+
+**Action:**
+
+- Use uBO Scope to identify third-party domains that frequently appear unchecked.
+- Investigate the role of these domains in site functionality.
+- Update your filter lists to block truly unwanted domains without harming site usability.
+
+This iterative process keeps filter lists lean and effective.
+
+---
+
+### Step 4: Validate That Blocking Does Not Break the Site
+
+A core value is maintaining site functionality while improving privacy.
+
+**Action:**
+
+- Observe stealth-blocked connections — these represent requests blocked carefully to avoid page breakage.
+- For any blocked domains, manually test the site behavior to confirm no critical features are lost.
+- Use the detailed lists in the popup for focused troubleshooting.
+
+If you find breakage:
+
+- Adjust blocking strategies using more specific rules.
+- Consider marking some connections as stealth-blocked if less intrusive blocking suffices.
+
+---
+
+## 4. Practical Scenarios
+
+### Scenario 1: Detecting Unexpected CDN Usage
+
+You notice high counts of domains like `xyz.akamai.net` under "Not blocked".
+
+**Steps:**
+
+- Confirm if these domains are legitimate CDN endpoints.
+- If yes, ensure your filter list does not block these to avoid breaking site resources.
+
+### Scenario 2: Identifying Tracker Domains Leaking Through
+
+A domain such as `tracker.example.com` repeatedly appears under "Not blocked".
+
+**Steps:**
+
+- Cross-reference with known tracker lists.
+- Add or update blocking rules in your filter list.
+- Re-test with uBO Scope to confirm blocking.
+
+### Scenario 3: Troubleshooting Site Breakage After Updated Rules
+
+After adding new rules, the site no longer loads images or scripts.
+
+**Steps:**
+
+- Look for important CDN or first-party domains mistakenly blocked.
+- Use uBO Scope's "Blocked" and "Stealth-blocked" domain sections to identify culprits.
+- Modify filters to whitelist or allow stealth-blocking.
+
+---
+
+## 5. Tips and Best Practices
+
+- Always test filter lists across multiple sites to observe diverse network behaviors.
+- Prioritize identifying public suffix and proper registrable domain matches using uBO Scope’s domain aggregation.
+- Use the Public Suffix List to discern base domains from subdomains, avoiding over-blocking.
+- Regularly review stealth-blocked entries to refine blocking precision.
+- Avoid relying solely on block counts; focus on distinct third-party domains allowed.
+
+---
+
+## 6. Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Common Scenarios">
+<Accordion title="Badge Count Does Not Update">
+Make sure uBO Scope is allowed permissions, and the background service worker is active. Reload the page and open the popup again.
+</Accordion>
+<Accordion title="No Domains Listed in Popup">
+- Check if the tab is active and loading real content.
+- Confirm network requests are not bypassing the webRequest API.
+</Accordion>
+<Accordion title="Unexpected Domains Always Appear Allowed">
+- Confirm if these domains are truly first-party or essential CDN domains.
+- If not, update your filter list to target these more specifically.
+</Accordion>
+<Accordion title="Blocked Domains Causing Site Breakage">
+- Use the stealth-block feature to block less intrusively.
+- Whitelist necessary domains temporarily while refining your filters.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Additional Resources and Next Steps
+
+- Explore [Understanding the Popup: Interpreting Connection Summaries](/guides/getting-started-essentials/reading-popup) to master popup UI insights.
+- Refer to [Analyzing Webpage Activity: Practical Use Cases](/guides/getting-started-essentials/browsing-analysis) for network behavior understanding.
+- Deep dive into Public Suffix List details for domain parsing accuracy.
+- Keep your filter lists updated and test regularly with uBO Scope to maintain optimal blocking.
+
+---
+
+## Appendix: Example Filter Maintenance Workflow
+
+<Steps>
+<Step title="Open uBO Scope on Target Website">
+Click the extension icon to open the popup and view the current domain connection summary.
+</Step>
+<Step title="Review Domain Lists">
+Scan through Allowed, Stealth-blocked, and Blocked domains to understand current blocking behavior.
+</Step>
+<Step title="Identify CDNs and Legitimate Third-Parties">
+Note recognized CDN domains such as 'cloudfront.net' or 'akamai.net' to avoid blocking essential resources.
+</Step>
+<Step title="Spot Unwanted Domains and Trackers">
+Identify third-party domains that should be blocked and are currently allowed.
+</Step>
+<Step title="Adjust Filter List Rules Accordingly">
+Add, remove, or tweak rules to block or allow specific domains.
+</Step>
+<Step title="Re-test with uBO Scope">
+Reload the page and verify the updated connection lists.
+</Step>
+<Step title="Validate Site Functionality">
+Ensure critical features are not broken after changes.
+</Step>
+</Steps>
+
+---
+
+## Related Links
+
+- [What is uBO Scope?](/overview/getting-started/product-introduction)
+- [Why Use uBO Scope?](/overview/getting-started/value-proposition)
+- [Installing and Launching uBO Scope](/guides/getting-started-essentials/install-launch)
+- [Understanding the Popup: Interpreting Connection Summaries](/guides/getting-started-essentials/reading-popup)
+- [Analyzing Webpage Activity: Practical Use Cases](/guides/getting-started-essentials/browsing-analysis)
+- [Troubleshooting Common Issues](/getting-started/first-use-and-troubleshooting/troubleshooting)
+
+---
+
+<Tip>
+Use uBO Scope regularly during filter list revisions to maintain precise blocking that protects privacy without compromising website usability.
+</Tip>
+
+<Note>
+uBO Scope provides insights beyond simple block counts, focusing on distinct third-party connections which reflect true privacy enforcement.
+</Note>

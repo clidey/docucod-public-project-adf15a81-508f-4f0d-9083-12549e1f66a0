@@ -1,0 +1,160 @@
+---
+title: "Integration and Extension Compatibility"
+description: "Learn how uBO Scope works alongside other content blockers and system-level DNS filtering, and where its capabilities begin and end. Understand integration boundaries and supported platforms for optimal use."
+---
+
+# Integration and Extension Compatibility
+
+## Understanding uBO Scope's Role in the Browser Ecosystem
+
+As you integrate uBO Scope into your browsing environment, it's essential to understand how it fits alongside other content blockers and system-level DNS filtering. This page explains the boundaries of uBO Scope’s capabilities, its interaction with other blockers, and the supported platforms for seamless operation.
+
+---
+
+## Why Integration Matters
+
+Users often run multiple layers of privacy and content-blocking solutions simultaneously—such as uBlock Origin, other extensions, or even system-level DNS filters—to maximize control over web content and connections. uBO Scope is designed to **work alongside these tools without conflict**, reporting on network requests independently by leveraging the browser’s `webRequest` API.
+
+This setup enables you to:
+
+- Gain transparent, **unbiased visibility** into all remote server connections regardless of active blockers.
+- Verify the **actual outcome** of network requests beyond what a specific blocker claims.
+- Debunk common misconceptions based on block counts or synthetic ad-blocker tests.
+
+
+## How uBO Scope Works With Other Content Blockers
+
+uBO Scope itself is a monitoring and reporting companion tool and **does not block or interfere** with network requests. Instead, it:
+
+- Listens to browser network events using the `webRequest` API.
+- Records outcomes of requests as **allowed**, **blocked**, or **stealth-blocked**.
+- Aggregates and surfaces data in the popup interface for your review.
+
+This independence means:
+
+- If you run uBlock Origin or another blocker alongside uBO Scope, both coexist peacefully without overlap in function.
+- uBO Scope reports the **final state of network requests**, reflecting any blocking or filtering already in place.
+- Data from uBO Scope remains reliable even when DNS filtering or system-level network controls prevent some requests.
+
+
+## Interaction with System-Level DNS Filtering
+
+System-wide DNS filters, such as those configured in your operating system or router, can block network requests before they reach the browser. uBO Scope captures network request outcomes reported **only by the browser**, so:
+
+- Requests blocked by DNS filtering **may not appear** in uBO Scope's reports if the browser never attempts the connection.
+- However, if the browser reports an error or failed request due to DNS-level blocking through the `webRequest` API, uBO Scope will note it as **blocked**.
+- uBO Scope's insight complements system-level filtering but focuses on what actually **passes through or is intercepted by the browser**.
+
+
+## Supported Platforms and Browser Compatibility
+
+uBO Scope is fully supported on the following platforms, reflecting its reliance on browser APIs and manifest configurations:
+
+| Browser Platform | Notes |
+|------------------|-------|
+| Chromium (Chrome, Edge, Brave, etc.) | Supports both HTTP and WebSocket protocols; uses service workers in manifest v3.
+| Firefox and Firefox Android | Supports HTTP and WebSocket; requires Firefox 128.0 or newer.
+| Safari | Limited to HTTP protocols due to platform constraints; requires Safari 18.5 or newer.
+
+
+### Platform-Specific Permissions and Limitations
+
+| Platform | Host Permissions | WebSocket Support | Manifest Details |
+|----------|------------------|------------------|------------------|
+| Chromium | http://*/*, https://*/*, ws://*/*, wss://*/* | Full support | Manifest v3 with service_worker background script.
+| Firefox | http://*/*, https://*/*, ws://*/*, wss://*/* | Full support | Manifest v3 with background scripts.
+| Safari | http://*/*, https://*/* | No WebSocket support | Manifest v3 with background scripts.
+
+
+## Integration Boundaries: What uBO Scope Does NOT Do
+
+To set clear expectations, uBO Scope:
+
+- **Does not block or modify network requests**. It only measures and reports them.
+- **Cannot report on network activity outside the browser scope**, such as network traffic by other applications or browser internals bypassing the `webRequest` API.
+- **Does not replace full content-blocking extensions**; it is best used as a diagnostic and validation companion to blockers like uBlock Origin.
+
+
+## Practical Tips for Optimizing Your Setup
+
+- Run uBO Scope **alongside your primary content blocker** to validate which third-party connections are genuinely blocked vs. allowed.
+- Use uBO Scope to detect the **effectiveness of system-level DNS filters**, understanding which requests are truly blocked before reaching the browser.
+- Regularly check the popup interface for insights into the number of distinct third-party remote servers contacted per page.
+- Understand that a **lower badge count in uBO Scope means fewer third-party connections**, which is desirable for privacy and bandwidth savings.
+
+
+## Troubleshooting Common Integration Scenarios
+
+<AccordionGroup title="Common Questions About Integration">
+<Accordion title="Why don't I see some network requests in uBO Scope?">
+Requests blocked by system-level DNS filtering or those that never reach the browser's networking stack will not be visible to uBO Scope. This limitation is due to the extension's reliance on the browser `webRequest` API. If the network request is never initiated in the browser, it won't appear in reports.
+</Accordion>
+<Accordion title="Can uBO Scope cause conflicts with other extensions?">
+uBO Scope is designed solely for observation and reporting, not blocking, so it does not conflict with content blockers or other extensions manipulating network traffic.
+</Accordion>
+<Accordion title="Are WebSocket requests always tracked?">
+WebSocket requests are tracked on Chromium and Firefox platforms, but Safari currently does not support the necessary APIs for monitoring WebSocket connections.
+</Accordion>
+</AccordionGroup>
+
+
+## Visualizing How uBO Scope Fits in Your Network Monitoring Workflow
+
+```mermaid
+flowchart TD
+  Browser["Browser"] -->|Network requests| WebRequestAPI["webRequest API"]
+  WebRequestAPI -->|Reports events| uBOScope["uBO Scope (Observer)"]
+  ContentBlocker["Content Blocker (e.g., uBlock Origin)"] -.->|May block requests| Network
+  SystemDNSFilter["System-Level DNS Filtering"] -.->|May block requests before browser| Network
+  Network["Remote Servers"]
+
+  uBOScope -->|Reports summary| PopupUI["Popup Interface"]
+
+  note right of uBOScope
+    - Observes network events independently
+    - Reports allowed, blocked, stealth-blocked
+    - No interference
+  end
+
+  note left of ContentBlocker
+    - Blocks or allows requests
+    - May be stealthy or selective
+  end
+
+  note bottom of SystemDNSFilter
+    - Blocks domains at DNS level
+    - May prevent browser connection
+  end
+
+  style uBOScope fill:#aef,stroke:#333,stroke-width:2px
+  style ContentBlocker fill:#faa,stroke:#333,stroke-width:2px
+  style SystemDNSFilter fill:#fea,stroke:#333,stroke-width:2px
+```
+
+
+## Summary
+
+uBO Scope provides clear visibility into network request outcomes as reported by the browser, irrespective of other content blockers or system-level filtering. It acts as a transparent observer that complements your existing privacy and security layers, without blocking or interfering with traffic.
+
+This understanding ensures you can better interpret the connection summaries in uBO Scope, optimize your protection strategies, and effectively diagnose the behavior of multiple filtering layers in your browsing environment.
+
+---
+
+For more details on how uBO Scope works, see the [Product Introduction](https://github.com/gorhill/uBO-Scope/blob/main/overview/getting-started/product-introduction.mdx), and explore the [Feature Summary](https://github.com/gorhill/uBO-Scope/blob/main/overview/core-concepts/feature-summary.mdx) for capabilities across supported platforms.
+
+
+---
+
+<Check>
+Ensure your browser supports the required permissions and manifest version to fully leverage uBO Scope's features.
+</Check>
+
+<Check>
+Remember: uBO Scope reports what happens in the browser. Network activity outside the browser’s reach will not be visible.
+</Check>
+
+<Info>
+Running uBO Scope alongside content blockers and system DNS filters gives you a holistic and trustworthy view of your network exposure.
+</Info>
+
+---
