@@ -1,0 +1,189 @@
+---
+title: "Troubleshooting: No Data or Empty Popup"
+description: "If uBO Scope seems installed but is showing no data, this page helps diagnose potential causes such as browser API limitations, site-specific issues, or blocked permissions, and offers actionable steps to restore functionality."
+---
+
+# Troubleshooting: No Data or Empty Popup
+
+If you have uBO Scope installed but the extension’s popup shows no data or indicates 'NO DATA', this guide walks you through actionable steps to diagnose and resolve common issues. These problems often stem from browser API limitations, site-specific behaviors, or blocked permissions. Follow this guide to restore full visibility of your browser’s remote server connections.
+
+---
+
+## 1. Verify Extension Installation and Permissions
+
+uBO Scope depends on specific browser permissions and APIs to monitor network requests. Confirm that the extension is properly installed and has the required access.
+
+### Steps
+
+1. **Check the Extension Icon:**
+   - Look for the uBO Scope icon beside the browser address bar.
+   - If missing, reinstall uBO Scope via the [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp) or [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/).
+
+2. **Confirm Browser Permissions:**
+   - Open the browser’s extensions/settings page.
+   - Verify the extension has permissions for `webRequest`, `activeTab`, and `storage`.
+   - On browsers like Chrome and Firefox, these are listed in “Permissions” or “Site Access” for the extension.
+
+3. **Ensure Host Permissions Are Granted:**
+   - The manifest requires broad host permissions (`http://*/*` and `https://*/*`) to observe network activity.
+   - Confirm the extension isn't restricted to specific sites only.
+
+<Check>
+If the extension icon is missing or permissions are limited, the popup cannot collect network data, causing the empty popup.
+</Check>
+
+## 2. Confirm Browser Support and Compatibility
+
+uBO Scope supports Chromium-based browsers (Chrome, Edge), Firefox 128+, and Safari 18.5+. Incompatible or outdated browsers can block necessary APIs.
+
+### Steps
+
+1. **Check Browser Version:**
+   - For Chrome/Chromium browsers, version 122 or higher is required.
+   - For Firefox, version 128 or higher is needed.
+   - Safari requires macOS with Safari 18.5 or newer.
+
+2. **Update Browser:**
+   - If your browser is outdated, update it to the latest stable release.
+
+3. **Verify Extension Compatibility:**
+   - Ensure you installed the correct version of uBO Scope for your browser.
+   - Some platforms require different manifest versions (e.g., Gecko for Firefox).
+
+<Note>
+Using unsupported browser versions or platforms restricts access to the `webRequest` API and blocks data reporting.
+</Note>
+
+## 3. Understand Browser API Limitations
+
+uBO Scope relies on browser-provided `webRequest` APIs to track network connections. Certain APIs may be restricted or partially blocked under specific conditions.
+
+### Common Limitations
+
+- **Private/Incognito Windows:**
+  Extensions might not have access unless explicitly allowed.
+  Enable extension usage in private mode via the browser’s extension settings.
+
+- **Sites with Complex Redirects or Frame Structures:**
+  Some network requests may not be reported due to cross-origin or frame restrictions.
+
+- **Browser Privacy Modes or Security Settings:**
+  High privacy settings or additional security plugins might block `webRequest` events.
+
+<Warning>
+If you browse in private mode or use high-security settings, toggle extension permissions or try normal browsing to confirm if data flows.
+</Warning>
+
+## 4. Troubleshoot Site-Specific Issues
+
+Some websites behave in ways that limit network request visibility.
+
+### Steps
+
+1. **Test on Multiple Sites:**
+   - Visit popular, well-known websites (e.g., https://example.com) and open the uBO Scope popup.
+   - If data appears on other sites but not on certain ones, this indicates site-specific issues.
+
+2. **Reload Tab and Extension Popup:**
+   - Reload the problematic tab to force data collection.
+   - Open the popup again.
+
+3. **Check for Blocked Connections:**
+   - Content blockers or extensions could be interfering with network monitoring.
+   - Temporarily disable other extensions, especially ad blockers.
+
+4. **Clear Session Data:**
+   - Sometimes stale cached data in the extension might cause the popup to fail.
+   - Disable and re-enable the extension or clear the browser’s extension data.
+
+<Tip>
+Testing on multiple sites helps isolate if the problem is with the extension or the specific website.
+</Tip>
+
+## 5. Confirm that the Service Worker or Background Script is Running
+
+The background service worker manages network event listening and data storage.
+
+### Steps
+
+1. **Chrome/Chromium:**
+   - Go to `chrome://extensions/`.
+   - Find uBO Scope and click 'background page' or look for the service worker status.
+
+2. **Firefox:**
+   - Similar inspection available in `about:debugging#/runtime/this-firefox`.
+
+3. **Look for Errors:**
+   - If the background script is not active or crashed, the extension won’t report data.
+
+4. **Reload the Extension:**
+   - In the extensions page, toggle off and on or click 'Reload' for the extension.
+
+<Check>
+If the background script isn’t running, data collection will fail completely, resulting in an empty popup.
+</Check>
+
+## 6. Interpreting the "NO DATA" Popup State
+
+When the popup states 'NO DATA' instead of listing domains and count, it typically means no network requests have been recorded for the active tab.
+
+Common reasons:
+
+- You opened the popup immediately after navigating before any network requests occurred.
+- The tab has no network activity (e.g., a blank new tab).
+- The extension failed to hook into `webRequest` events for that tab.
+
+### Resolution
+
+- Reload the tab and open the popup after a few seconds.
+- Navigate to popular sites with known third-party requests to test activity.
+
+## 7. Additional Diagnostic Steps
+
+- **Check Badge Count:**
+  The browser action icon displays the number of distinct third-party remote servers connected.
+  - If the badge shows a number, the extension is collecting data.
+  - If the badge is empty, no connections were recorded.
+
+- **Review Extension Logs:**
+  In developer mode, inspect the background script console for errors or warnings.
+
+- **Clear Browser Cache and Restart:**
+  Sometimes browser cache or extension stale state affects monitoring.
+
+## 8. Contacting Support and Reporting Issues
+
+If all steps fail, consider:
+
+- Reporting the issue on the [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) with details about browser, version, and observed behavior.
+- Checking open issues for similar reports and suggested fixes.
+
+---
+
+## Quick Checklist
+
+| Symptom                  | Probable Cause                             | Action                                   |
+|--------------------------|-------------------------------------------|-----------------------------------------|
+| Extension missing icon   | Not installed or disabled                   | Reinstall and enable extension          |
+| Popup shows "NO DATA"   | No network activity captured               | Reload site, check site permissions     |
+| No badge count           | Permissions or API blocked                  | Verify host and API permissions         |
+| Background script error  | Script crashes or not running               | Reload extension, check console logs    |
+| Only some sites no data  | Site-specific browser security or redirects| Test on multiple sites, disable blockers|
+
+---
+
+For detailed descriptions of connection outcomes and badge interpretation, see [Understanding Badge Counts and Connection Outcomes](/guides/core-workflows/understanding-badge-and-outcomes).
+
+Explore [Launching & Understanding the Extension](/getting-started/first-steps-usage/launch-and-popup-overview) for an introduction to the popup UI and initial usage.
+
+For installation and setup troubleshooting, refer to [Common Installation & Startup Issues](/getting-started/troubleshooting/common-setup-issues).
+
+## External Resources
+
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+- [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+
+---
+
+For deeper understanding and advanced troubleshooting, review the [Core Concepts & Terminology](/overview/core-concepts-architecture/core-terminology) page explaining connection types, and the architecture overview at [How It Works: Architectural Overview](/overview/core-concepts-architecture/how-it-works-architecture).

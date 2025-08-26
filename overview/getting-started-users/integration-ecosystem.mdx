@@ -1,0 +1,129 @@
+---
+title: "Integration & Ecosystem Compatibility"
+description: "Explains the extension’s cross-browser compatibility (Chromium, Firefox, Safari), relationship with content blockers/DNS services (manages reporting regardless of which are in use), and how it fits as a companion tool within general privacy/security workflows."
+---
+
+# Integration & Ecosystem Compatibility
+
+## Seamless Cross-Browser Support
+
+uBO Scope is meticulously designed to work reliably across all major browsers that support the `webRequest` API for monitoring network activity. This includes:
+
+- **Chromium-based browsers:** Google Chrome, Microsoft Edge, Brave, and others leveraging Chromium.
+- **Mozilla Firefox:** Fully supported, respecting Firefox’s API extensions.
+- **Safari:** Supported starting from Safari version 18.5 with native web extension capabilities.
+
+This wide compatibility ensures that regardless of your preferred browser, you can harness uBO Scope’s power to understand the third-party network connections your browser makes.
+
+### Why This Matters
+
+By offering consistent behavior across different browser engines, uBO Scope fits naturally into your workflows no matter the environment. Whether you’re conducting privacy audits on Safari or doing development in Firefox, uBO Scope provides uniform insights without quirks or exceptions.
+
+## Harmony With Content Blockers and DNS Services
+
+A cornerstone of uBO Scope’s design is its independence from any particular content blocking technology. Here’s how it integrates smoothly into existing privacy and security setups:
+
+- **Content Blocker Agnostic:** uBO Scope reports network request outcomes independently of which content blocker is active in your browser. Whether you use uBlock Origin, AdGuard, or the browser’s built-in tracker blocker, uBO Scope accurately reflects the actual remote server connection states.
+
+- **DNS-level Blocking Compatibility:** Even when DNS services block domains (such as via NextDNS, Pi-hole, or similar), uBO Scope’s use of the browser’s `webRequest` API ensures it captures success, failure, or redirection outcomes from the network requests.
+
+- **Companion Tool Role:** uBO Scope complements rather than replaces other privacy tools. It focuses solely on reporting third-party connections attempted or established by web pages, serving as a transparent lens rather than an enforcement mechanism.
+
+### Practical Benefit
+
+You gain a truthful, unfiltered report of network connections, helping you:
+
+- Validate and benchmark content blocker effectiveness.
+- Troubleshoot unexpected connections bypassing content blockers.
+- Understand interactions among multiple layers of privacy defense, including DNS-based blockers and browser extensions.
+
+## How uBO Scope Fits Into Privacy and Security Workflows
+
+Think of uBO Scope as your microscope into the browser’s network behavior:
+
+- **Transparency Layer:** It reveals third-party connections that might otherwise be hidden or obscured by blocking filters or DNS-level interventions.
+
+- **Diagnostic Companion:** When combined with content blockers or firewall tools, uBO Scope helps diagnose "why" certain network requests succeed or fail.
+
+- **Filter List Maintenance Aid:** For filter list maintainers and privacy researchers, uBO Scope provides reliable data on which third-party domains are actively encountered, even in environments with layered blocking.
+
+- **Security Auditing Tool:** By exposing all external connections made during browsing sessions, it aids in auditing web page behavior for potential privacy risks or policy compliance.
+
+<Callout title="Tip">
+For the most accurate results, ensure your browser is updated to a version that fully supports the `webRequest` API with the necessary permissions outlined in the extension's manifest.
+</Callout>
+
+## What uBO Scope Does Not Do
+
+Understanding uBO Scope’s role helps set clear expectations:
+
+- It does not block or modify network traffic itself.
+- It cannot report connections made outside the browser’s scope or those invisible to `webRequest` APIs.
+- It does not compete with content blockers but serves as a complementary analysis tool.
+
+## Getting Started with Integration
+
+To integrate uBO Scope into your existing toolkit:
+
+1. **Install the extension** from your browser’s official store (Chrome Web Store, Firefox Add-ons, or Safari Extensions Gallery).
+2. **Run alongside your current content blockers** without interference.
+3. **Use the toolbar badge and popup interface** to monitor third-party connection counts and details per tab.
+4. **Leverage reports to fine-tune privacy settings** or investigate anomalies.
+
+See [Supported Browsers & System Requirements](/getting-started/installation-basics/supported-platforms-requirements) for details on installation.
+
+## In-Depth Technical Notes
+
+- uBO Scope listens to all network requests that the browser reports, using `webRequest` listeners, capturing events like redirects, errors, and success responses.
+- The extension collates these into categories: allowed, stealth-blocked, and blocked domains.
+- It relies on the Public Suffix List (PSL) to accurately group hostnames into domains for precise reporting.
+- This mechanism ensures consistent reporting regardless of blocking method (extension or DNS-based).
+
+For a detailed view of the underlying architecture, review [How It Works: Architectural Overview](/overview/core-concepts-architecture/how-it-works-architecture).
+
+## Example Scenario: Diagnosing Privacy Leaks
+
+Imagine you use a privacy-focused content blocker but still notice suspicious connections in your browsing data. With uBO Scope, you can:
+
+- See a comprehensive list of third-party domains your browser connects to.
+- Identify which connections were allowed by your blocker, which were stealth-blocked, or blocked outright.
+- Determine if DNS-level blocking is effective or if some connections slip through.
+
+This clarity empowers you to make informed decisions, adjust filters, or change DNS services to better protect your privacy.
+
+---
+
+## Summary
+
+uBO Scope spans platforms and privacy tools, acting as a trusted sidekick that provides transparency across different browsers and blocking setups. It captures comprehensive connection reports in tandem with your existing content blockers or DNS-based privacy services, helping you diagnose and understand your browser's network activity with confidence.
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](/overview/introduction-values/what-is-ubo-scope)
+- [Supported Browsers & System Requirements](/getting-started/installation-basics/supported-platforms-requirements)
+- [How It Works: Architectural Overview](/overview/core-concepts-architecture/how-it-works-architecture)
+- [Using uBO Scope Alongside Content Blockers](/guides/advanced-usage/integration-with-content-blockers)
+
+
+---
+
+*For source code and manifest details by platform, see the extension manifest and script files within the GitHub repository.*
+
+```json
+{
+  "manifest_versions": 3,
+  "permissions": ["webRequest", "storage", "activeTab"],
+  "host_permissions": ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"],
+  "background": {
+    "scripts": ["/js/background.js"],
+    "type": "module"
+  },
+  "default_popup": "popup.html"
+}
+```
+
+This configuration underpins its ability to monitor network connections consistently across browsers.
+
+---
