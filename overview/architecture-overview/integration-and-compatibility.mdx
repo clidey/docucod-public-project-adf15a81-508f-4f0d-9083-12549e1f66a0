@@ -1,0 +1,167 @@
+---
+title: "Integration and Compatibility"
+description: "Details how uBO Scope plugs into existing browser ecosystems and works in parallel with any content blocker. Explains compatibility mechanisms, platform coverage, and any system-level considerations for smooth operation."
+---
+
+# Integration and Compatibility
+
+uBO Scope is designed to integrate seamlessly into your existing browser environment and operate smoothly alongside any content blocker you already use. This page explains how uBO Scope plugs into browser ecosystems, ensures compatibility with a variety of content blockers, and highlights platform support and system considerations for optimal performance.
+
+---
+
+## Why Integration and Compatibility Matter
+
+Imagine needing clear, unobstructed insight into all the third-party servers your browser connects to — whether these connections are allowed, stealth-blocked, or fully blocked by your content blocker. uBO Scope fulfills this need without disrupting or being disrupted by the blocking rules already in place.
+
+This means you get an independent, trustworthy overview of network connections, regardless of which content blocker or DNS-level blocking you use. Whether you're a privacy advocate, filter list maintainer, or power user, this guarantees your workflow isn’t interrupted and your analysis remains accurate.
+
+---
+
+## How uBO Scope Integrates with Browsers
+
+### WebRequest API Listeners
+
+At its core, uBO Scope leverages the browser's `webRequest` API listeners. These listeners capture network events in real time, including redirects, errors, and successful responses for HTTP, HTTPS, and WebSocket connections.
+
+- The extension subscribes to all network activity allowed by the browser through permissions.
+- It records details such as request URLs, statuses, and tab associations.
+- Operates in the background service worker (or background scripts in some platforms) to manage continuous session tracking.
+
+Because of this approach, uBO Scope does not alter or interfere with network traffic or content blocking decisions. Instead, it observes and reports, keeping your browsing experience unchanged.
+
+### Compatibility with Content Blockers
+
+uBO Scope is engineered to work in parallel with any content blocker — from uBlock Origin itself to other extension-based blockers or DNS-level blocking.
+
+- It captures the *outcome* of network requests as presented by the browser after any blocking rules have been applied.
+- This means that stealth-blocking or DNS filtering upstream of the browser's webRequest API might affect what is visible to uBO Scope.
+- However, any blocking reported by the browser's webRequest system is accurately reflected.
+
+This ensures that the data uBO Scope presents represents the actual behavior of your browser's network activity post-blocking.
+
+---
+
+## Platform Coverage and Differences
+
+uBO Scope is distributed with manifests tailored for multiple major browsers:
+
+- **Chromium-based browsers**: Supports Manifest V3, runs background service workers written as ES modules.
+- **Firefox**: Uses Firefox-specific settings for Add-on ID and minimum version, with background scripts as ES modules.
+- **Safari**: Constrained by Safari's Web Extension API implementation with specific strict version requirements.
+
+Despite slight differences required by each browser platform, the core functionality, including request monitoring and reporting, is consistent.
+
+<Tip>
+Check your browser version meets the minimum requirements listed in the manifests:
+- Chromium: version 122 or higher
+- Firefox: version 128 or higher
+- Safari: version 18.5 or higher
+
+Older browsers or versions may lack adequate `webRequest` API support for full functionality.
+</Tip>
+
+---
+
+## Permissions and Security Considerations
+
+uBO Scope requests the following key permissions:
+
+- `webRequest`: To listen to network requests
+- `storage`: For saving session data and public suffix lists
+- `activeTab`: To gather details on the current tab
+
+Host permissions cover all typical web traffic URLs (`http://*/*`, `https://*/*`, plus WebSocket variants), allowing full visibility into all network connections that the browser handles.
+
+By operating exclusively in a reporting role without blocking or modifying requests, uBO Scope maintains a secure posture that minimizes any risk to browsing integrity.
+
+---
+
+## System-Level Considerations for Smooth Operation
+
+### Session Persistence
+
+The extension maintains a detailed session map correlating tab IDs with domain connection data. This data is serialized and saved in session storage to survive service worker restarts and browser closure events, ensuring continuity of insight.
+
+### Public Suffix List Usage
+
+To accurately differentiate top-level domains when grouping hosts, uBO Scope loads and uses the public suffix list (PSL). The PSL is cached locally for performance and reliability.
+
+### Badge Count Updates
+
+The count displayed on the toolbar icon reflects the number of distinct allowed third-party domains per tab. This real-time feedback is updated asynchronously based on processed network events.
+
+<Tip>
+If the badge count ever fails to update promptly, closing and reopening the tab or browser usually resolves transient issues.
+</Tip>
+
+---
+
+## Example Manifest Permissions (Chromium Version)
+
+```json
+{
+  "permissions": [
+    "activeTab",
+    "storage",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+  ]
+}
+```
+
+This grants uBO Scope broad network visibility without altering traffic.
+
+---
+
+## Working in Tandem with uBlock Origin and Other Blockers
+
+Since uBO Scope was created as a companion extension to uBlock Origin, it is guaranteed to complement it without conflict. However, it also integrates harmoniously with any other content blocker.
+
+- All network requests are observed *after* blockers apply their rules.
+- The categorization into 'allowed', 'stealth', and 'blocked' reflects the real outcome, not the intention or configuration of blockers.
+- This separation lets you trust uBO Scope as an impartial auditor of network activity.
+
+---
+
+## Troubleshooting Integration Issues
+
+<AccordionGroup title="Common Integration and Compatibility Questions">
+<Accordion title="Why don’t I see all connections in uBO Scope?">
+If some network requests don't appear, it might be because:
+- They use protocols not supported by the webRequest API.
+- Requests are blocked at the DNS level or by system-level firewalls before reaching the browser.
+- Browser version lacks full support for `webRequest` events.
+
+Ensure your browser is up-to-date and that no network filtering occurs outside of the browser extension environment.
+</Accordion>
+<Accordion title="Can uBO Scope interfere with other extensions?">
+No. uBO Scope only listens and reports network activity. It does not modify requests or apply blocking rules.
+This design ensures it does not conflict or interfere with other content blockers or extensions.
+</Accordion>
+<Accordion title="What if the badge count is incorrect or missing?">
+- Badge updates rely on asynchronous event processing. Occasional delays may occur.
+- Reload the browser or the tab if the badge doesn’t update as expected.
+- Verify that uBO Scope has the necessary permissions and the browser supports badge APIs.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+By embedding into browser ecosystems via native APIs, requesting appropriate permissions, and operating in an observation-only role, uBO Scope achieves broad compatibility with existing content blockers while delivering transparent, real-time network connection insights.
+
+This integration empowers users to confidently analyze their browser’s network footprint without impacting their browsing experience, regardless of platform or blocking tools.
+
+---
+
+For an in-depth look at the architecture and feature set of uBO Scope, visit the [System Architecture](../architecture-overview/system-architecture) and [Feature Overview](../architecture-overview/feature-overview) pages.
+
+---
+
+<Source url="https://github.com/gorhill/uBO-Scope" paths={[{"path": "platform/chromium/manifest.json", "range": "1-41"},{"path": "platform/firefox/manifest.json", "range": "1-43"},{"path": "platform/safari/manifest.json", "range": "1-44"},{"path": "js/background.js", "range": "1-203"}]} />
