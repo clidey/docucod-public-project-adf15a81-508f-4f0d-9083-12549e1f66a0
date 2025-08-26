@@ -1,0 +1,160 @@
+---
+title: "Understanding Stealth-Blocking & Advanced Request Outcomes"
+description: "Delves into how uBO Scope detects stealth-blocked requests, the meaning of each outcome, and how this helps build more robust filters and debunk false positives."
+---
+
+# Understanding Stealth-Blocking & Advanced Request Outcomes
+
+## Workflow Overview
+
+### Task Description
+This guide explains how uBO Scope detects and categorizes stealth-blocked network requests and interprets various request outcomes reported by the browser. You will learn how these outcomes are classified as allowed, stealth-blocked, or blocked, and how to leverage this understanding to analyze real-world network activity and build more robust content filters while avoiding false positives.
+
+### Prerequisites
+- uBO Scope extension installed and active in your browser.
+- Basic familiarity with network requests browsing behavior.
+- Understanding of third-party network connections and their impact on privacy.
+
+### Expected Outcome
+After completing this guide, you will be able to:
+- Distinguish stealth-blocked requests from allowed or outright blocked requests.
+- Explain what each type of outcome means in the context of network monitoring.
+- Utilize this knowledge to make informed judgments about content blocking effectiveness.
+- Debunk common misconceptions around blocker test pages and network request outcomes.
+
+### Time Estimate
+10-15 minutes to read and digest the concepts alongside your real-world observations.
+
+### Difficulty Level
+Intermediate: Requires conceptual understanding of network requests and browser extension behavior.
+
+---
+
+## Understanding Stealth-Blocking & Network Request Outcomes
+
+uBO Scope categorizes network requests in three key outcomes, each reflecting how the request was treated during page load:
+
+### 1. Allowed Requests
+- **Definition**: Network requests that successfully complete without being blocked.
+- **Significance**: Indicate third-party resources your browser actually connects to.
+- **Example**: Loading resources from a CDN or analytics provider not blocked by content filters.
+
+### 2. Blocked Requests
+- **Definition**: Requests that fail entirely due to content blocking, reflected as 'error' events.
+- **Significance**: Confirm content blockers or network rules prevented the request.
+- **Example**: A request to a known ad server rejected by an extension or DNS filter.
+
+### 3. Stealth-Blocked Requests
+- **Definition**: Requests that are redirected or modified in ways to evade detection by web pages, often appearing as 'redirect' events.
+- **Significance**: These requests are blocked silently or altered to not alert the requesting webpage, a sophisticated approach many blockers use to avoid breakage or detection.
+- **Example**: A request that is rerouted internally by the content blocker before reaching its destination, avoiding common detection methods.
+
+
+## How uBO Scope Detects and Records These Outcomes
+
+1. The browser `webRequest` API provides event listeners for network requests, capturing `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`.
+2. uBO Scope queues these events, processing them in batches to categorize each request as allowed, stealth-blocked, or blocked.
+3. Hostnames and domains from these requests are tracked distinctly to determine the number of unique third-party connections.
+4. Results are aggregated per tab and presented in the popup UI with grouped counts.
+
+<Tip>
+Stealth-blocking is an advanced method where requests are intercepted and modified or redirected to prevent the originating page from detecting the block, preserving page functionality without exposing network blocking.
+</Tip>
+
+---
+
+## Step-by-Step Guide to Interpret Stealth-Blocking Data
+
+<Steps>
+<Step title="Open uBO Scope Popup on an Active Tab">
+Click the uBO Scope toolbar icon to view the current tab's network connections summary.
+</Step>
+
+<Step title="Identify 'Stealth-Blocked' Section">
+Locate the "stealth-blocked" heading in the popup. This section lists third-party domains whose requests were stealth-blocked.
+</Step>
+
+<Step title="Compare with 'Allowed' and 'Blocked' Sections">
+Notice the domains under "not blocked" (allowed requests) and "blocked" (requests prevented outright).
+</Step>
+
+<Step title="Understand the Implications">
+Recognize that stealth-blocked domains represent connections your browser prevented quietly, potentially without breakage or web page awareness.
+</Step>
+
+<Step title="Use This Data to Evaluate Content Blocking">
+Leverage this data to verify if filters are working effectively: a stealth-blocked domain indicates high-quality blocking, while allowed domains represent requests passing through.
+</Step>
+</Steps>
+
+---
+
+## Real-World Examples
+
+Suppose you visit a news website, and your uBO Scope popup shows:
+
+- Allowed: cdn.example.com, fonts.example.com
+- Stealth-blocked: tracking.ads.com
+- Blocked: banners.ads.com
+
+This means:
+- Your browser requested and received resources successfully from allowed domains.
+- Requests to `tracking.ads.com` were intercepted stealthily and blocked silently.
+- `banners.ads.com` requests were explicitly blocked and failed.
+
+This mix shows how stealth-blocking helps hide blocks from pages while enforced blocking prevents certain third-party connections entirely.
+
+---
+
+## Best Practices and Tips
+
+- **Regularly Check Stealth-Blocked Domains**: Tracking stealth blocking trends helps understand how your filters perform silently.
+- **Avoid Relying on Block Counts Alone**: Focus on allowed and stealth-blocked distinctions instead of raw block numbers.
+- **Correlate with Real Browsing Behavior**: Use uBO Scope during normal browsing rather than artificial test pages, which often produce misleading results.
+- **Use uBO Scope as a Truth Source**: It reports connection outcomes regardless of the blocking technique, surfacing what connections really occur.
+
+---
+
+## Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Troubleshooting Stealth-Blocking Interpretations">
+<Accordion title="Why Don’t Some Blockers Show Stealth-Blocked Requests?">
+Some blockers do not stealth-block or do not modify requests silently, so stealth-blocked counts may be zero or absent depending on your content blocker behavior.
+</Accordion>
+
+<Accordion title="Can Stealth Blocking Cause Website Breakage?">
+Stealth blocking is designed to avoid breakage by not alerting the webpage to blocked requests; however, unexpected issues may still occur if the blocking rules are too strict or incomplete.
+</Accordion>
+
+<Accordion title="Why Are Some Requests Listed as Redirects?">
+Redirect events typically indicate stealth-blocking, where requests are rerouted internally to block or hide network calls.
+</Accordion>
+
+<Accordion title="The Popup Shows No Data or Incomplete Data for a Tab">
+Ensure uBO Scope is running properly; check the Quick Validation guide to confirm installation and permissions are correct.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## How This Fits into the Larger uBO Scope Experience
+
+Interpreting stealth-blocked and other request outcomes is vital to fully understand your browser’s third-party network activity. This page complements guides on:
+
+- [Reading the Popup: Connection Summaries](/guides/getting-started/reading-popup)
+- [Interpreting Badge Counts & Making Decisions](/guides/getting-started/interpret-badge-counts)
+- [Analyzing Websites: What Happens Behind the Scenes](/guides/real-world-usage/analyzing-websites)
+- [Debunking 'Ad Blocker Test' Pages](/guides/real-world-usage/debunking-test-pages)
+
+These resources collectively deepen your mastery of uBO Scope and enable smarter privacy and content filtering decisions.
+
+---
+
+## Next Steps & Additional Resources
+
+- Verify your installation with the [Quick Validation Guide](/getting-started/essentials/quick-validation).
+- Explore the [Core Concepts & Terminology](/overview/concepts-architecture/core-concepts-terminology) page to ensure full understanding of key definitions.
+- Dive into [uBO Scope for Filter List Maintainers](/guides/advanced-insights/for-filter-list-maintainers) to leverage stealth-blocking insights in filter development.
+- Consult [Troubleshooting Common Issues](/getting-started/essentials/troubleshooting) if you encounter unexpected behavior with stealth-blocking reporting.
+
+---
