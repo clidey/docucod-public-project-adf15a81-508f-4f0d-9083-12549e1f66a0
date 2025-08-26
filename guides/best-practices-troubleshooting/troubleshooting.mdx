@@ -1,0 +1,197 @@
+---
+title: "Troubleshooting Common Issues"
+description: "Solutions to frequent challenges: what to do if numbers don’t match expectations, if some connections aren’t reported, or if the extension seems inactive. Includes explanations for technical limits (such as webRequest coverage) and tips for resolving platform-specific quirks."
+---
+
+# Troubleshooting Common Issues with uBO Scope
+
+uBO Scope is designed to transparently report all third-party network connections made by your browser, helping you monitor allowed, blocked, and stealth-blocked requests. Occasionally, you might experience situations where the numbers shown don't match your expectations, some connections seem missing, or the extension appears inactive. This guide provides concrete solutions and explanations for these common challenges, ensuring you get the most accurate and reliable insights from uBO Scope.
+
+---
+
+## 1. Understanding Why Numbers Might Not Match Expectations
+
+### Why the Badge Count Could Differ from What You Expect
+
+- **Badge Count Meaning:** The badge on the toolbar shows the number of distinct third-party registered domains for which your browser made a network connection — not just the number of blocked items or requests. A low number indicates fewer third-party server connections, which is often desirable.
+- **Allowed vs. Blocked:** uBO Scope distinguishes between allowed, blocked, and stealth-blocked network requests. The badge represents allowed third-party domains.
+- **Multiple Connections to One Domain:** The count increments once per distinct domain, regardless of the number of requests.
+
+### Common Misconceptions
+
+- _"A higher block count means better blocking"_ — Not necessarily. Sometimes a higher block count can occur alongside more allowed connections, meaning the overall privacy might be worse.
+- _"Extension block lists and DNS block lists are equivalent"_ — Since uBO Scope relies on the browser's `webRequest` API, some DNS-blocked connections might be invisible if the browser never reports them.
+
+---
+
+## 2. Why Some Connections Aren't Reported
+
+### Platform and API Limitations
+
+- **webRequest API Coverage:** uBO Scope depends on the browser’s `webRequest` API to observe network requests. Some browsers or versions may have incomplete `webRequest` coverage or limitations, especially for certain request types or protocols.
+- **WebSocket Monitoring:** WebSocket connections (`ws://` or `wss://`) are only fully monitored on browsers like Firefox. Chromium-based browsers currently lack this capability for WebSockets.
+- **Network Requests Outside API Reach:** Requests initiated by browser internals or extensions may not be visible to uBO Scope.
+
+### Private or Incognito Mode
+
+- If uBO Scope is not enabled in private or incognito mode, connections in those windows or tabs will not be reported.
+
+### Filtering by Host Permissions
+
+- The extension’s manifest grants it host permissions for URLs starting with `http://` and `https://` and WebSocket protocols in some browsers. If a URL does not match these permissions, it won’t be tracked.
+
+---
+
+## 3. Extension Appears Inactive or Data Doesn’t Update
+
+### Common Reasons and Fixes
+
+- **Permissions Not Fully Granted:** Ensure all required permissions (host permissions, `webRequest`, `storage`, and `activeTab`) are granted during installation and setup.
+- **Extension Disabled or Not Pinned:** Confirm the extension is enabled and pinned to the toolbar.
+- **Service Worker Eviction:** In Chromium browsers, the background service worker can be unloaded when idle. uBO Scope handles this, but message sending may fail transiently. Reloading the extension or browser can help.
+- **Browser Version Compatibility:** Verify your browser supports manifest version 3 and the `webRequest` API features uBO Scope uses.
+
+---
+
+## 4. Step-by-Step Troubleshooting Workflow
+
+<Steps>
+<Step title="Verify Installation and Permissions">
+1. Confirm uBO Scope is installed from the official store for your browser ([Chrome Web Store](https://chrome.google.com/webstore/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp), [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)).
+2. Check that uBO Scope is enabled and pinned in your browser toolbar.
+3. During first run, accept all requested permissions.
+4. In Firefox, also allow uBO Scope to run in private browsing if you want to monitor incognito data.
+
+> **Expected Result:** Extension icon is visible and active.
+</Step>
+
+<Step title="Test on a Well-Known Website">
+1. Navigate to a commonly used website with known network connections.
+2. Click the uBO Scope icon.
+3. Observe the connection counts and categorized domains shown.
+
+> **Expected Result:** You see lists of allowed, stealth-blocked, and blocked domains with counts.
+</Step>
+
+<Step title="Confirm Browser Compatibility">
+1. Make sure your browser version is recent enough:
+   - Chromium browsers: Chrome 122+ and derivatives
+   - Firefox: 128+
+   - Safari: 18.5+
+2. Older browsers may lack important `webRequest` capabilities leading to fewer detected connections.
+
+> **Expected Result:** Extension fully functions and reflects network activity.
+</Step>
+
+<Step title="Reload Extension and Browser if Data Missing">
+1. Reload the browser extension via your browser's extensions page.
+2. If unresolved, restart the browser.
+
+> **Expected Result:** Extension starts tracking new network events and data updates in the popup.
+</Step>
+
+<Step title="Check for Conflicting Extensions">
+1. Disable other network or privacy-related extensions temporarily.
+2. Retest uBO Scope connection reporting.
+
+> **Expected Result:** No interference with uBO Scope’s ability to track requests.
+</Step>
+
+<Step title="Inspect Connection Types and API Limits">
+1. Understand which connections are monitored.
+2. Recognize that:
+   - WebSocket connections cannot be monitored on Chromium browsers.
+   - Some background or extension-initiated connections may not be visible.
+
+> **Expected Result:** Awareness of technical limits to set your expectations accordingly.
+</Step>
+</Steps>
+
+---
+
+## 5. Platform-Specific Notes & Tips
+
+| Platform | Notes & Tips |
+| --- | --- |
+| **Chrome / Chromium** | Minimum Chrome version 122 is required. WebSocket monitoring is not supported. Background service worker may unload when inactive, but messages automatically retry. |
+| **Firefox** | Full support for HTTP(S) and WebSocket monitoring. Enable extension for private browsing if needed. |
+| **Safari** | Requires Safari 18.5 or higher. Permissions and APIs are more limited; verify extension is allowed to run in all contexts. |
+
+---
+
+## 6. Best Practices for Reliable Monitoring
+
+- **Pin Extension Icon:** Keep uBO Scope visible on the toolbar for instant access and easy permission management.
+- **Enable in Private Browsing:** For comprehensive monitoring, especially if using private windows.
+- **Update Browser Regularly:** Use the latest stable browser to leverage the newest APIs that uBO Scope depends on.
+- **Understand Badge Count:** Focus on the count of distinct third-party domains contacted, not raw request totals.
+- **Combine With Other Tools:** Use uBO Scope alongside content blockers to analyze actual network connection outcomes transparently.
+
+---
+
+## 7. Troubleshooting Tips for Specific Scenarios
+
+<AccordionGroup title="Common Troubleshooting Scenarios">
+<Accordion title="No Data Shown in Popup">
+- Verify the extension is enabled and pinned.
+- Reload the page and then the extension popup.
+- Restart the browser if needed.
+- Check permissions for the extension.
+- Disable conflicting extensions temporarily.
+</Accordion>
+
+<Accordion title="Badge Count Remains Empty or Zero">
+- Confirm that you are browsing an active tab with network requests.
+- Test on a site known to load third-party resources.
+- Ensure permissions include all requested hosts (http* and ws*).
+- Check browser version compliance.
+</Accordion>
+
+<Accordion title="Connections Not Showing as Blocked When Using Other Blockers">
+- Remember uBO Scope reports actual network connections observed by the browser.
+- DNS-based blocking may prevent requests before the browser reports them.
+- Stealth blocking may hide some connections from webpages but appears separately in uBO Scope.
+</Accordion>
+
+<Accordion title="Extension Seems Inactive After Browser Restart">
+- Some browsers unload the background service worker on restart.
+- The extension auto-initializes but can lag briefly.
+- Wait a few seconds before opening the popup.
+- Reload the extension manually if necessary.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. When to Seek Further Help
+
+If you have tried the steps above and experience persistent issues:
+
+- Visit the [Troubleshooting Common Installation Issues](../getting-started/installation-setup-validation/troubleshooting-issues) page for installation-related problems.
+- Review [Optimizing for Accuracy and Privacy](../guides/best-practices-troubleshooting/optimizing-privacy) for tips that maximize uBO Scope's reliability.
+- Consult the official [GitHub repository](https://github.com/gorhill/uBO-Scope) to report bugs or seek community assistance.
+
+---
+
+## 9. Summary
+
+By following this troubleshooting guide, you will be able to diagnose and address common challenges that affect uBO Scope’s ability to report network connections accurately. Understanding the technical boundaries imposed by browsers and APIs allows setting realistic expectations. Ensuring permissions and compatibility is key to leveraging uBO Scope’s power to monitor your browser's third-party connections reliably.
+
+---
+
+## Additional Resources
+
+- [Installation Instructions](../getting-started/installation-setup-validation/installation-instructions)
+- [Extension Configuration and Permissions](../getting-started/installation-setup-validation/extension-configuration)
+- [First Run Validation](../getting-started/installation-setup-validation/first-run-validation)
+- [Interpreting Network Activity](../guides/analyzing-connections/interpreting-activity)
+- [System Architecture Overview](../overview/architecture-core/architecture-overview)
+
+
+<Check>
+Having trouble? Follow each step carefully, verify your browser and permissions, and consult platform-specific notes for best results.
+</Check>
+
+---
+
+*This guide is part of the uBO Scope documentation suite and assumes you have completed the installation and initial setup process.*

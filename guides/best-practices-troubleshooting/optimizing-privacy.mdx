@@ -1,0 +1,196 @@
+---
+title: "Optimizing for Accuracy and Privacy"
+description: "Recommended practices for accurate measurement—including ensuring proper extension ordering and webRequest compatibility. Learn how to avoid false positives, keep your badge numbers meaningful, and strengthen privacy by interpreting the results as intended."
+---
+
+# Optimizing for Accuracy and Privacy
+
+## Overview
+
+This guide provides actionable best practices to ensure uBO Scope delivers accurate and privacy-conscious measurement of your browser’s remote server connections. You will learn how to configure your environment and interpret results to avoid false positives, keep badge counts meaningful, and protect your privacy by understanding how the extension interacts with webRequest permissions and extension ordering.
+
+---
+
+## 1. Why Accuracy and Privacy Matter
+
+uBO Scope surfaces the exact number of distinct third-party remote servers contacted by the current browser tab, including allowed, blocked, and stealth-blocked connections. To trust these results:
+
+- Ensure uBO Scope’s measurements are comprehensive and not distorted by other extensions or browser behavior.
+- Avoid misinterpretation of badge numbers, which can mislead assessments of content blockers.
+- Strengthen privacy by understanding how network requests are reported and what limitations exist.
+
+
+<Tip>
+Accuracy relies on correct ordering of extensions and proper permissions, especially the `webRequest` API, which powers uBO Scope’s ability to observe network activity in real time.
+</Tip>
+
+---
+
+## 2. Ensuring Proper Extension Ordering
+
+### Why Extension Order Matters
+
+In browsers like Chromium and Firefox, extensions can listen to the same network requests. The order in which they run can affect what uBO Scope observes:
+
+- If another blocker extension runs **after** uBO Scope, some requests might be modified or blocked without uBO Scope registering them accurately.
+- If uBO Scope runs **first**, it can capture all network events, ensuring badge counts reflect actual browser activity.
+
+### Steps to Confirm and Adjust Extension Order
+
+1. **Check Extension Management Page** in your browser.
+2. In Chromium-based browsers, drag extensions to reorder pinned extensions if the browser supports it.
+3. In Firefox, order may be inferred by install time and permissions. Disable and enable extensions to influence ordering.
+4. Prefer running uBO Scope **before** major content blockers like uBlock Origin for unfiltered network event capture.
+5. Test by visiting popular websites and comparing connection counts; unexpected discrepancies might indicate ordering issues.
+
+<Note>
+Browser support for explicit extension ordering varies. Consult your browser's documentation for managing extension order.
+</Note>
+
+---
+
+## 3. Verifying WebRequest Compatibility
+
+### Importance of `webRequest` API
+
+uBO Scope depends on the browser's `webRequest` API to log network request outcomes, including allows, blocks, and redirects.
+
+- Not all network requests are reported: some browsers or platform versions restrict certain APIs.
+- Requests made through mechanisms not covered by `webRequest` (e.g., certain caches, service workers) might not appear.
+
+### Best Practices
+
+- Ensure uBO Scope has **active `webRequest` permissions** granted (check during installation or in extensions manager).
+- Keep the extension updated to comply with browser API changes.
+- Avoid operating in private/incognito mode if this disables necessary permissions, or explicitly enable the extension there.
+
+<Tip>
+On browsers without full webRequest support (e.g., Safari's current limitations), expect some connections to be unreported — impacting accuracy.
+</Tip>
+
+---
+
+## 4. Interpreting Badge Numbers Correctly
+
+uBO Scope’s toolbar badge shows the count of distinct third-party domains that the browser successfully connected to in the current tab.
+
+- **Lower numbers indicate fewer third-party connections**, generally preferable for privacy.
+- **Higher block counts do not mean better blocking**; they might reflect many failed requests or redirects.
+- Look at the popup lists under **not blocked**, **stealth-blocked**, and **blocked** to understand connection outcomes by domain.
+
+### Avoid These Common Misconceptions
+
+- _"A higher block count on uBO Scope means better blocking."_ False; high blocks with more allowed domains could actually indicate more third-party connections.
+- _"Ad blocker test sites are reliable benchmarks."_ They simulate unrealistic traffic. Use real-world browsing and uBO Scope’s popup data instead.
+
+---
+
+## 5. Minimizing False Positives and Inaccuracies
+
+### Cause of False Positives
+
+- Rapid redirects or connection errors misattributed to blocked or stealth outcomes.
+- Cache or prefetch mechanisms hiding true network requests.
+- Conflicts with other extensions filtering or rewriting requests.
+
+### How to Minimize
+
+- Run uBO Scope without overlapping content blockers or ensure it runs first.
+- Clear browser cache for testing fresh load results.
+- Validate results on real-world sites, not synthetic test pages.
+- Regularly reload tabs to allow session data to update accurately.
+
+---
+
+## 6. Strengthening Privacy by Understanding Data Interpretation
+
+uBO Scope reports all network connections the browser attempts or completes, including:
+
+- Allowed resource fetches.
+- Blocked or failed requests by content blockers.
+- Redirects stealthily blocked to avoid webpage detection.
+
+### Interpreting Stealth Blocking
+
+Stealth blocking means the extension prevented the request without letting the page know it was blocked.
+
+- These do not count towards allowed domain tally, helping keep counts reflective of real exposure.
+- This is important privacy-wise to avoid fingerprinting or detection by malicious sites.
+
+### Handle Your Data Responsibly
+
+- The popup exposes domain counts per category; use this to audit your privacy exposure.
+- Badge numbers are approximations; always confirm detailed connections via popup.
+
+---
+
+## 7. Troubleshooting Accuracy and Privacy Issues
+
+<AccordionGroup title="Troubleshooting Guide">
+<Accordion title="No Data or Empty Popup">
+- Confirm the extension is enabled.
+- Verify permissions, especially `webRequest` and host access.
+- Reload current tab or open a new tab to trigger fresh data.
+- Check for console errors in browser developer tools.
+</Accordion>
+
+<Accordion title="Badge Numbers Seem Too High or Too Low">
+- Ensure uBO Scope runs before other blocking extensions.
+- Verify real browsing versus synthetic test pages.
+- Clear caching-related data and retest.
+</Accordion>
+
+<Accordion title="Stealth Blocking Counts Confusing">
+- Understand stealth blocks are hidden from requests when possible.
+- Consult the popup to see which domains are stealth blocked.
+- If stealth blocking appears excessive, confirm extension settings and browser compatibility.
+</Accordion>
+
+<Accordion title="Extension Permission Issues">
+- Check your browser’s extension permission settings.
+- Reinstall or update extensions.
+- Enable uBO Scope for private windows if needed.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Practical Tips & Best Practices
+
+- Keep uBO Scope updated to handle changes in browser APIs and extensions ecosystem.
+- Use uBO Scope alongside your preferred content blocker to compare and validate third-party connections.
+- Regularly review popup data to identify new or unexpected third-party domains.
+- Use the public suffix list embedded in the extension for accurate domain resolution to avoid false positives.
+
+---
+
+## 9. Example Scenario: Improving Measurement Accuracy
+
+Suppose you have uBlock Origin installed after uBO Scope. You notice the badge count in uBO Scope is unexpectedly low compared to your known network activity.
+
+- You reorder your extensions to run uBO Scope first.
+- After restarting the browser, the badge numbers better reflect your actual connections.
+- Opening the popup shows the allowed domains list and reveals all third-party connections accurately.
+
+This demonstrates how extension order directly affects measurement fidelity.
+
+---
+
+## 10. Next Steps
+
+- Review the [Installation Instructions](/getting-started/installation-setup-validation/installation-instructions) to ensure your setup follows best practices.
+- Learn [How to Interpret Network Activity](/guides/analyzing-connections/interpreting-activity) to decode connection reports.
+- Explore [Troubleshooting Common Issues](/guides/best-practices-troubleshooting/troubleshooting) for solving unexpected behaviors.
+
+
+---
+
+## References and Resources
+
+- uBO Scope GitHub Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List Used by uBO Scope: [publicsuffix.org](https://publicsuffix.org/list/)
+- Browser Extension Management: Visit your browser's extensions page
+
+---
+
+*By following the recommendations in this guide, you will maximize the reliability and privacy strength of uBO Scope’s connection measurements, gaining clear and meaningful visibility into your browser’s third-party network connections.*
