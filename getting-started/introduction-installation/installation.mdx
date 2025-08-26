@@ -1,0 +1,205 @@
+---
+title: "Installing uBO Scope"
+description: "Step-by-step instructions for installing uBO Scope directly from official stores (Chrome Web Store, Firefox Add-ons) or via alternative package methods for supported browsers. Includes screenshots and links to facilitate streamlined onboarding."
+---
+
+# Installing uBO Scope
+
+This guide provides detailed, step-by-step instructions for installing the uBO Scope browser extension. Whether you prefer installing directly from the official browser extension stores or using packages for supported browsers, this documentation will help you onboard smoothly and start using uBO Scope with confidence.
+
+---
+
+## 1. Supported Browsers and Installation Sources
+
+uBO Scope is compatible with the following browsers and versions:
+
+- **Chromium-based browsers**: Version 122 and above
+- **Mozilla Firefox**: Version 128 and above
+- **Safari**: Version 18.5 and above
+
+### Official Installation Links
+
+| Browser                | Installation Link                                                                                      |
+|------------------------|-----------------------------------------------------------------------------------------------------|
+| Chromium browsers      | [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp) |
+| Firefox                | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)                              |
+
+> ![Get uBO Lite for Chromium](https://github.com/user-attachments/assets/d5033882-0c94-424f-9e8b-e00ed832acf7)
+>
+> ![Get uBlock Origin Lite for Firefox](https://github.com/user-attachments/assets/8a33b8ba-57ee-4a54-a83c-7d21f9b2dafb)
+
+
+## 2. Installing from Official Stores
+
+Installing uBO Scope via official stores is the fastest and most straightforward approach.
+
+### Chromium browsers (e.g., Google Chrome, Microsoft Edge)
+
+1. Open the [uBO Scope page on the Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp).
+2. Click the **Add to Chrome** button.
+3. Confirm the installation by clicking **Add extension** in the prompt.
+4. The extension installs and appears as an icon in the browser’s toolbar.
+
+### Mozilla Firefox
+
+1. Open the [uBO Scope page on Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/).
+2. Click **Add to Firefox**.
+3. Review permissions, then click **Add**.
+4. The extension installs and an icon appears in the toolbar.
+
+### Safari
+
+uBO Scope for Safari is available for Safari 18.5 and up. Installation typically involves Apple’s Safari Extensions Gallery or the Mac App Store:
+
+1. Visit the Safari Extensions page or appropriate Apple platform.
+2. Search for "uBO Scope".
+3. Click **Install** or **Get**.
+4. Follow on-screen prompts to enable the extension.
+
+> <Note>
+> Ensure your browser version meets the minimum required version before attempting installation to avoid compatibility issues.
+> </Note>
+
+## 3. Alternative Installation via Packaged Extension
+
+Advanced users or those requiring offline or customized installation can use the packaged extension method. This requires a basic command-line setup:
+
+### Prerequisites
+
+- A Linux environment or any system with bash support
+- Installed tools: `jq` (for JSON processing), basic shell utilities
+
+### Step-by-step Installation
+
+1. Open a terminal.
+2. Clone or download the uBO Scope repository.
+3. Run the packaging script with your platform argument:
+
+```bash
+./tools/make-package.sh chromium
+```
+
+Replace `chromium` with your target platform: `chromium`, `firefox`, or `safari`.
+
+4. (Optional) Specify a version number as the second argument to set the extension version:
+
+```bash
+./tools/make-package.sh firefox 1.0.1
+```
+
+5. The script creates the packaged extension in `build/uBO-Scope.<platform>`.
+
+### Verifying Packaging
+
+- Check the `build/uBO-Scope.<platform>` directory for:
+  - Extension files including manifest, scripts, HTML, and assets
+  - Correct `manifest.json` relevant to the selected platform
+
+## 4. Enabling and Verifying Installation
+
+After installing uBO Scope via either method:
+
+1. Locate the extension icon in your browser toolbar. The icon displays a badge with a count.
+2. Visit a few websites and observe the badge updating in real-time, representing distinct third-party remote servers connected.
+3. Click the extension icon to open the popup panel showing categorized domains:
+   - **Not blocked**: Allowed connections
+   - **Stealth-blocked**: Redirected or stealth-blocked connections
+   - **Blocked**: Blocked connections
+
+> <Tip>
+> If the badge count remains empty or "NO DATA" appears on the popup, try refreshing the current tab or opening a new tab with a website.
+> </Tip>
+
+## 5. Common Pitfalls and Troubleshooting
+
+- **Extension not appearing after installation**: Restart the browser.
+- **No badge updates or data shown**: Confirm that `webRequest` permission was granted during installation.
+- **Using unsupported browser versions** can cause failure or unexpected behavior.
+- **Privacy or security settings** might restrict extension permissions; verify these are enabled.
+
+Refer to the [Troubleshooting Installation & First Use](https://github.com/gorhill/uBO-Scope/tree/main/getting-started/troubleshooting/troubleshooting-installation) guide for detailed help.
+
+## 6. Next Steps
+
+Once installed, learn how to make the most of uBO Scope by visiting:
+
+- [Launching uBO Scope After Installation](https://github.com/gorhill/uBO-Scope/tree/main/getting-started/first-steps-usage/launching-extension)
+- [Basic Setup & Quick Validation](https://github.com/gorhill/uBO-Scope/tree/main/getting-started/first-steps-usage/core-setup-verification)
+- [Interpreting the Toolbar Badge and Popup Panel](https://github.com/gorhill/uBO-Scope/tree/main/guides/core-workflows/interpreting-badge-and-popup)
+
+These provide practical usage workflows and best practices to gain transparency over network connections efficiently.
+
+---
+
+## Appendix: Packaging Script Details (Linux Environment)
+
+For users interested in the underlying packaging process, the `make-package.sh` script automates copying relevant files and preparing the extension package.
+
+```bash
+#!/usr/bin/env bash
+# This script assumes a linux environment
+
+if [ -z "$1" ]; then
+    echo "*** Error: need platform name"
+    exit 1
+fi
+
+PLATFORM="$1"
+DES=build/uBO-Scope."$PLATFORM"
+
+echo "*** uBO-Scope: creating extension in $DES"
+
+rm -rf "$DES"
+mkdir -p "$DES"
+
+echo "*** uBO-Scope: copying files"
+
+cp -R assets                       "$DES"/
+cp -R css                          "$DES"/
+cp -R img                          "$DES"/
+cp -R js                           "$DES"/
+cp ./*.html                        "$DES"/
+cp platform/"$PLATFORM"/manifest.json "$DES"/
+cp LICENSE.txt                     "$DES"/
+cp README.md                       "$DES"/
+
+mkdir -p "$DES"/js/lib
+cp node_modules/punycode/punycode.es6.js "$DES"/js/lib/
+
+# Version provided as argument
+if [ -n "$2" ]; then
+    echo "*** uBO-Scope: setting version to $2 in manifest.json"
+    tmp=$(mktemp)
+    jq --arg a "$2" '.version = $a' "$DES/manifest.json" > "$tmp" && \
+        mv "$tmp" "$DES/manifest.json"
+fi
+```
+
+Use this script to generate and distribute offline copies of the extension tailored to your browser.
+
+---
+
+For further help and updates, visit the repository homepage: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+
+
+---
+
+## Visual Aid: Installation Flow
+
+```mermaid
+flowchart TD
+    A[Start Installation] --> B{Choose Browser}
+    B -->|Chromium| C[Go to Chrome Web Store]
+    B -->|Firefox| D[Go to Firefox Add-ons]
+    B -->|Safari| E[Go to Safari Extensions Page]
+    B -->|Package| F[Run make-package.sh]
+    C --> G[Click "Add to Chrome"]
+    D --> H[Click "Add to Firefox"]
+    E --> I[Click "Install"]
+    F --> J[Package Extension Built]
+    G & H & I & J --> K[Confirm Extension Enabled in Browser]
+    K --> L[Check Toolbar Badge & Popup]
+    L --> M[Installation Complete & Ready to Use]
+```
+
+---
