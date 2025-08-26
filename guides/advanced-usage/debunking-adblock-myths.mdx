@@ -1,0 +1,169 @@
+---
+title: "Debunking Ad Blocker Test Myths"
+description: "Understand why common ad blocker test websites are unreliable, and see how uBO Scope helps you discover what's actually happening behind the scenes—providing more trustworthy insights on network traffic than typical benchmarks."
+---
+
+# Debunking Ad Blocker Test Myths with uBO Scope
+
+## Overview
+
+This guide helps you understand why common ad blocker test websites often deliver misleading or unreliable results. Leveraging uBO Scope, you'll gain clear, factual insights into network connections and content blocking behaviors that typical benchmark pages cannot reveal. By the end of this guide, you'll confidently interpret real-world network activity and dismiss popular myths promoted by deceptive tests.
+
+---
+
+## 1. Why Ad Blocker Test Websites Are Misleading
+
+Many "ad blocker test" webpages claim to evaluate the effectiveness of blockers by showing which ads or trackers they block. However, these pages employ **unrealistic, fabricated network requests** that do not reflect genuine browsing behavior. They often use contrived scenarios or traceroutes to artificial servers, making their results untrustworthy.
+
+### Common Issues with Ad Blocker Test Pages
+
+- **Artificial Network Requests:** They generate requests to domains or servers not typically encountered in real browsing, invalidating their benchmark relevance.
+- **Limited Extension Visibility:** Extension-based blockers stealthily handle requests to avoid page breakage and detection. These tricks escape detection by test pages running inside a browser tab.
+- **Simplistic Metrics:** Such sites focus on block counts or visible filters rather than the actual number of distinct third-party domains contacted, which matters most for privacy.
+
+### Why This Matters
+
+Relying on these tests can lead to incorrect conclusions about blocker reliability — such as assuming a higher block count means better protection, when it may encourage more third-party connections behind the scenes.
+
+
+## 2. How uBO Scope Provides Real Insight
+
+uBO Scope directly monitors all network requests made by your browser, regardless of the content blocker or DNS filters in use. It focuses on **counting distinct remote servers contacted per browser tab**, providing a **transparent and factual overview** of third-party connections.
+
+### What uBO Scope Measures
+
+- **Allowed Connections:** Third-party domains your browser successfully reached despite content blocking.
+- **Stealth-Blocked:** Indirect or redirecting requests that were blocked stealthily.
+- **Blocked Connections:** Requests blocked outright by your content blocker.
+
+### Why Counting Distinct Domains Is Critical
+
+- A high block count or many filtered URLs does not guarantee fewer distinct third-party domains contacted.
+- Privacy depends more on limiting exposure to unique third-party servers than on the number of blocked requests.
+
+
+## 3. User Workflow: Using uBO Scope to Debunk Myths
+
+Follow this step-by-step process to inspect network activity effectively and dispel ad blocker myths.
+
+### Prerequisites
+
+- Install uBO Scope extension on your supported browser (Chrome, Firefox, Safari).
+- Activate the extension and ensure the toolbar badge is visible.
+- Browse websites using your regular content blocker enabled.
+
+### Step 1: Open the uBO Scope Popup
+
+- Click the uBO Scope icon in your browser toolbar.
+- The popup will display the current active tab's domain along with connection summaries.
+
+### Step 2: Interpret Domain Categories
+
+- Review the "not blocked" list: domains your browser contacted successfully.
+- Check the "stealth-blocked" list for requests blocked in a hidden or redirect manner.
+- Observe the "blocked" list: domains your blocker prevented.
+
+### Step 3: Analyze Domain Counts
+
+- Look at the numeric badge indicating distinct connected domains.
+- Recognize that fewer distinct third-party domains mean better privacy protection.
+
+### Step 4: Compare with Ad Blocker Test Sites
+
+- Open an ad blocker test site in another tab.
+- Observe uBO Scope's popup to verify the *actual* third-party domains contacted.
+- Notice discrepancies: despite the test site's claims, uBO Scope shows real network behavior.
+
+### Step 5: Draw Conclusions
+
+- Discard block count metrics promoted by test pages.
+- Trust uBO Scope’s domain exposure measurement as a factual privacy indicator.
+
+
+## 4. Practical Tips and Best Practices
+
+- **Avoid Relying on Test Pages:** Never judge a content blocker solely on ad blocker test results.
+- **Use uBO Scope Concurrently:** Keep uBO Scope active during browsing for real-time network insights.
+- **Check Badge Regularly:** A lower badge number is your true goal, indicating fewer distinct third parties.
+- **Understand Categories:** "Stealth-blocked" may indicate smart blocking that avoids page breakage.
+
+
+## 5. Common Pitfalls & Troubleshooting
+
+### Issue: uBO Scope Shows More Domains Than Expected
+
+- This may indicate your content blocker allows some third-party connections to avoid breakage.
+- Review the domain list; it's normal for sites to use legitimate CDNs.
+
+### Issue: No Badge or Data Appears
+
+- Ensure uBO Scope is installed and enabled.
+- Confirm you have allowed necessary permissions for network and activeTab access.
+- Pin the extension icon to your toolbar for full activation.
+
+### Issue: Misinterpretation of Block Counts
+
+- Block count badges on other extensions or test sites do not equate to effective blocking.
+- Focus on distinct third-party domain exposure via uBO Scope.
+
+## 6. Advanced Considerations for Filter List Maintainers
+
+- uBO Scope's data enables maintainers to verify filter effectiveness based on actual third-party exposure.
+- Use uBO Scope on constrained platforms (mobile or locked-down browsers) where other dev tools are unavailable.
+- Upcoming uBO Scope features will provide deeper network request details for fine-tuning filters.
+
+
+## 7. Summary
+
+uBO Scope empowers you to see *actual* network activity behind content blockers and debunk misleading ad blocker test website claims. By emphasizing the count of distinct third-party domains contacted, uBO Scope offers a trustworthy metric for privacy and content blocking effectiveness.
+
+---
+
+## Additional Resources
+
+- [Product Overview & Core Concepts](https://github.com/gorhill/uBO-Scope/blob/main/overview/introduction-core-concepts/product-overview.md)
+- [Interpreting the Popup Panel](https://github.com/gorhill/uBO-Scope/blob/main/guides/getting-started/understanding-popup.md)
+- [Comparing Content Blockers Factually](https://github.com/gorhill/uBO-Scope/blob/main/guides/advanced-usage/analyzing-content-blockers.md)
+- [Installing uBO Scope](https://github.com/gorhill/uBO-Scope/blob/main/guides/getting-started/installing-extension.md)
+- [Troubleshooting Common Issues](https://github.com/gorhill/uBO-Scope/blob/main/getting-started/first-use-and-validation/troubleshooting-common-issues.md)
+
+
+## Code & Examples
+
+The measurement of network requests and domain aggregation is handled automatically by the extension. Here is how uBO Scope classifies requests to provide insights:
+
+```javascript
+// Pseudocode for classifying network request outcomes
+function classifyRequest(request) {
+  const hostname = extractHostname(request.url);
+  switch (request.event) {
+    case 'success':
+      addToAllowed(hostname);
+      break;
+    case 'error':
+      addToBlocked(hostname);
+      break;
+    case 'redirect':
+      addToStealthBlocked(hostname);
+      break;
+    default:
+      // ignore other events
+      break;
+  }
+}
+```
+
+This classification forms the basis of the popup panel’s detailed lists.
+
+
+<Tip>
+Always interpret ad blocker effectiveness by the **diversity and count of third-party domains contacted** rather than simple block numbers or forced test sites.
+</Tip>
+
+<Warning>
+Do not trust ad blocker test webpages as definitive benchmarks — they often create artificial scenarios that do not reflect your real browsing experiences.
+</Warning>
+
+<Check>
+Use uBO Scope alongside your blocker to continuously audit third-party connections for transparency and privacy assurance.
+</Check>
