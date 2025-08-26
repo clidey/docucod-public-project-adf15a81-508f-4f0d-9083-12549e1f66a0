@@ -1,153 +1,130 @@
 ---
-title: "Troubleshooting Common Issues"
-description: "Find solutions to frequent setup and first-use problems, such as missing badge counts or unresponsive popups. This page helps users get unstuck quickly with targeted guidance mapped to the most common real-world stumbling blocks."
+title: "Solving First-Run Problems"
+description: "Address potential issues during the first use, such as no data appearing in the popup or badge icon not updating. This page compiles quick fixes and diagnostics based on extension behavior—bridging the gap between user expectation and practical reality."
 ---
 
-# Troubleshooting Common Issues
+# Solving First-Run Problems
 
-Ensure your experience with uBO Scope is smooth by addressing frequent setup and first-use challenges. This guide focuses on resolving issues like missing toolbar badge counts or an unresponsive popup, helping you quickly get back on track.
+When you use uBO Scope for the first time, you may encounter scenarios where the popup shows no data or the toolbar badge icon doesn't update as expected. This page helps you diagnose and quickly fix these common first-run issues, ensuring that uBO Scope provides accurate insights right away.
 
 ---
 
-## 1. Badge Count Does Not Appear or Stays at Zero
+## 1. Why No Data Appears in the Popup
 
-When the badge on the toolbar icon does not display or remains at zero, it usually indicates that the extension is not receiving or processing network data correctly.
+The popup interface relies on live network data collected from the active browser tab. If it shows "NO DATA," it means no connection data has been recorded for the current tab yet.
 
-### Steps to Diagnose and Fix
+### Common Causes and Fixes
 
-1. **Verify Installation and Permissions**
-   - Confirm that uBO Scope is installed from the correct store for your browser: Chrome Web Store, Firefox Add-ons, or Safari Extensions.
-   - Check that permissions for `webRequest`, `storage`, and `activeTab` are granted.
-     - In Chrome, visit `chrome://extensions/` and click Details on uBO Scope. Under Permissions, ensure `Access to URLs` and `webRequest` are enabled.
-     - In Firefox, check `about:addons` > Extensions > uBO Scope > More options for permissions.
-   - Without these permissions, the extension cannot monitor network connections.
+- **No Network Requests Detected Yet**: The tab might not have performed any network requests since uBO Scope was installed.
+  - _Fix:_ Reload the web page or switch to a different tab known to generate network requests.
 
-2. **Reload the Browser Tab and Extension**
-   - Sometimes the extension might not have initialized for the current tab. Reload the page you want to monitor.
-   - Restart your browser or disable and re-enable uBO Scope.
+- **Extension Initialization Delay**: The extension's background service worker and the Public Suffix List take a moment to load when you first install or restart your browser.
+  - _Fix:_ Wait a few seconds after installing before opening the popup.
 
-3. **Check for Conflicting Extensions or Settings**
-   - Other content blockers or privacy extensions might interfere with uBO Scope's ability to monitor network requests.
-   - Temporarily disable other extensions to see if the badge updates.
+- **Permissions Missing or Disabled**: uBO Scope requires permissions such as `webRequest` and storage access to monitor network requests.
+  - _Fix:_ Verify permissions under your browser extension settings. Refer to [Troubleshooting Installation & Permissions](./install-troubleshooting).
 
-4. **Inspect Network Request Monitoring**
-   - uBO Scope relies on the browser's `webRequest` API. If your browser or profile restricts this API (e.g., privacy-focused browsers with limited APIs), uBO Scope may not work fully.
-   - Note: DNS-level blocking or network requests outside browser control are not visible to uBO Scope.
+### Verification Steps
 
-### Example Verification
+1. Click the uBO Scope toolbar icon to open the popup.
+2. Observe the hostname displayed at the top. If it says "NO DATA," proceed to reload the page.
+3. Reload the page and wait a few seconds.
+4. Check the popup again; you should see domain data and connection counts.
 
-- Open a website with known third-party connections (e.g., a news site).
-- Observe if the badge count changes from empty to a number representing distinct third-party domains.
-- If no change occurs, review above diagnostic points.
+<Tip>
+If no data appears even after reloading, try opening a different website that generates network requests, such as a news site or social media platform.
+</Tip>
+
+---
+
+## 2. Toolbar Badge Does Not Update or Shows No Count
+
+The badge icon displays the number of distinct third-party domains connected to in the active tab. If it remains empty or does not update, it can cause confusion about extension activity.
+
+### Common Causes and Quick Fixes
+
+- **No Third-Party Connections in Tab**: The current webpage might not have made any third-party network requests.
+  - _Fix:_ Navigate to a different website with external resources.
+
+- **Background Service Worker Inactive**: Browser service workers managing the extension can occasionally be evicted or delayed.
+  - _Fix:_ Refresh the page, close and reopen the tab, or restart the browser.
+
+- **Browser Incompatibility or Version**: The extension requires certain minimum browser versions (Chrome 122+, Firefox 128+, Safari 18.5+).
+  - _Fix:_ Ensure your browser version is up to date. See [Prerequisites & Supported Platforms](./prerequisites).
+
+- **Extension Conflicts**: Other extensions interfering with `webRequest` listeners may block uBO Scope from capturing requests.
+  - _Fix:_ Temporarily disable other extensions and check if the badge updates.
+
+### Verification Steps
+
+1. Visit a site with many external resources (e.g., `https://www.wikipedia.org`).
+2. Open the uBO Scope popup and check for domain counts.
+3. Confirm the badge displays a number matching the popup's domain count.
 
 <Warning>
-If the badge count is constantly zero despite network activity, it usually means the extension isn't actively monitoring. Follow the permission and reload steps carefully.
+If your site uses HTTPS but your browser or network environment proxies or interferes with HTTPS connections, `webRequest` data might be incomplete.
 </Warning>
 
 ---
 
-## 2. Popup Panel Shows 'NO DATA' or Is Blank
+## 3. General Troubleshooting Workflow
 
-Seeing 'NO DATA' in the popup or an empty connection list suggests that no network data has been collected or the popup failed to load the data.
+Use this step-by-step flow to identify and resolve first-run problems quickly.
 
-### Troubleshooting Steps
-
-1. **Ensure the Extension is Enabled and Running**
-   - Confirm uBO Scope is enabled in your browser extensions list.
-   - Make sure background processes of the extension are running (may need to restart browser).
-
-2. **Reload the Tab and Open Popup Again**
-   - The popup retrieves data related to the currently active tab. Switch to a tab where network requests were made and reload it.
-   - Open the popup shortly after to allow data retrieval.
-
-3. **Review Console Errors (Developer Tools)**
-   - Open Developer Tools for the popup:
-     - In Chrome/Firefox, right-click the extension icon > Inspect popup.
-     - Look for errors that indicate messaging failures or data loading issues.
-
-4. **Confirm Step-Wise Extension Behavior**
-   - Sometimes, delayed storage reads or browser internal delays can cause fleeting 'NO DATA' messages.
-   - Wait a few seconds then reopen popup.
-
-### Practical Tip
-
-- Avoid opening the popup immediately after redirect or navigation; the extension needs a short moment to process network requests.
+<Steps>
+<Step title="Step 1: Reload the Active Tab">
+Simply refresh the page to trigger network requests and data capture.
+</Step>
+<Step title="Step 2: Verify Extension Permissions">
+Open your browser's extensions page and confirm uBO Scope has permissions for webRequest, activeTab, and storage.
+</Step>
+<Step title="Step 3: Restart the Browser">
+Close and reopen your browser to reset background service workers.
+</Step>
+<Step title="Step 4: Test Another Site">
+Open a popular site with numerous third-party connections (e.g., Wikipedia, news outlets).
+</Step>
+<Step title="Step 5: Check for Extension Conflicts">
+Disable other privacy or network monitoring extensions temporarily.
+</Step>
+<Step title="Step 6: Confirm Browser Version">
+Ensure your browser is the minimum required version. Update if necessary.
+</Step>
+</Steps>
 
 ---
 
-## 3. Toolbar Badge Does Not Update on Tab Change
+## 4. Understanding How uBO Scope Collects Data
 
-If switching between tabs doesn’t update the badge count appropriately:
+Behind the scenes, uBO Scope leverages the browser's `webRequest` API to monitor network requests made by the current tab. Its background script categorizes connections into allowed, stealth-blocked, and blocked outcomes, and keeps track of distinct domains.
 
-1. **Verify Browser Support and Version**
-   - Some browsers require minimum versions for correct API support (Chrome 122+, Firefox 128+, Safari 18.5+).
+- The extension resets data on main frame navigation to keep the report relevant.
+- The badge text updates asynchronously shortly after network requests complete.
 
-2. **Check for Tab Metadata Loss**
-   - uBO Scope tracks network requests per tab; closing and quickly reopening tabs may reset data.
-   - Ensure tabs remain open to retain session data.
+### Why Some Requests Might Not Appear
 
-3. **Try Reloading Background Script**
-   - In Chromium-based browsers, go to `chrome://extensions/`, enable Developer mode, and click 'Service Worker' link to check background.
-   - Reload the background script if possible.
+- Browser privacy features or other extensions may suppress request data.
+- Some network activity outside the browser's `webRequest` scope cannot be tracked.
 
 ---
 
-## 4. Extension Does Not Seem to Monitor WebSocket Connections
+## 5. Quick Fixes and Tips
 
-uBO Scope tracks HTTP, HTTPS, and WebSocket protocols when browser exposes these through `webRequest` API.
-
-- If you notice expected WebSocket connections missing:
-  - Confirm browser supports and the extension has permissions to monitor ws:// and wss://.
-  - Check that your browser’s privacy settings or other extensions do not block WebSocket monitoring.
-
----
-
-## 5. General Recommendations for Reliable Operation
-
-- **Keep your browser updated**: New browser versions fix bugs in APIs that uBO Scope depends on.
-- **Reload pages and extension after installation**: Initial page loads before installation won’t be tracked.
-- **Avoid multiple conflicting content blockers simultaneously**: They might interfere with each other’s network reporting.
-- **Consult extension settings or permissions promptly if issues arise**.
+- **Reload the site after installing uBO Scope** to start fresh network data collection.
+- **Interact with the webpage** (navigate, click links) to generate requests.
+- **Avoid opening the popup immediately after installation**; allow some time for initialization.
+- If data remains missing, **check browser developer console for extension errors**.
+- When sharing issues, include browser version and list of other active extensions.
 
 ---
 
-## 6. Getting More Help
+## 6. Additional Resources
 
-- Visit the [GitHub Repository](https://github.com/gorhill/uBO-Scope) for bug reports and issues.
-- Review the [System Requirements](https://example.com/getting-started/requirements-installation/system-requirements) and [Installation Instructions](https://example.com/getting-started/requirements-installation/installation-instructions) pages.
-- Check out the [Configuration & Permissions](https://example.com/getting-started/first-run-usage/configuration-overview) guide for detailed permission validation.
-- If problems persist, consider filing an issue with browser logs and extension console output.
-
----
-
-## Appendix: Quick Checks
-
-| Issue                                | Quick Fix                                              |
-|------------------------------------|--------------------------------------------------------|
-| Badge count zero                   | Reload tab, check permissions, restart browser         |
-| Popup shows 'NO DATA'              | Reload page, wait a few seconds, open popup again      |
-| Badge does not update on tab change| Check browser version, reload extension background     |
-| Missing WebSocket tracking         | Verify ws:// and wss:// permissions                     |
-| Unresponsive extension             | Disable other conflicting extensions, restart browser  |
+- [Troubleshooting Installation & Permissions](./install-troubleshooting) — For deeper installation problems.
+- [Launching the Extension](./launch-extension) — To understand normal extension behavior.
+- [Understanding Badge Counts & Domain Data](./interpreting-badge) — To grasp what data the badge and popup show.
+- [Quick Validation & First Insights](./quick-validation) — For verifying extension operation on live sites.
 
 ---
 
-This troubleshooting page complements the overall onboarding experience, putting you on a fast track to seeing real-time network connections with uBO Scope.
-
-
----
-
-## Related Documentation
-
-- [Installation Instructions](https://example.com/getting-started/requirements-installation/installation-instructions)
-- [System Requirements](https://example.com/getting-started/requirements-installation/system-requirements)
-- [Configuration & Permissions](https://example.com/getting-started/first-run-usage/configuration-overview)
-- [Your First Open: Using the Popup](https://example.com/getting-started/first-run-usage/first-open)
-- [Quick Validation Test](https://example.com/getting-started/first-run-usage/quick-validation)
-
-
----
-
-<Check>
-Ensure you have granted the necessary permissions for uBO Scope and that your browser version meets minimum requirements for seamless operation before troubleshooting further.
-</Check>
+By following these steps and tips, you will bridge the gap between your expectations and what the extension realistically captures and reports on first use, ensuring a smooth and insightful start with uBO Scope.
