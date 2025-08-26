@@ -1,173 +1,141 @@
 ---
-title: "Core Concepts & Terminology"
-description: "Defines and clarifies important terms such as 'allowed', 'blocked', 'stealth', 'third-party remote server', and 'webRequest API'. Provides context for interpreting metrics and results seen in the extension badge and popup, promoting confident and accurate product use."
+title: "Core Concepts and Terminology"
+description: "Defines essential terms such as 'third-party remote server', 'allowed', 'blocked', and 'stealth' connections. Clarifies what the badge count represents and how domain classification is performed using public suffix lists."
 ---
 
-# Core Concepts & Terminology
+# Core Concepts and Terminology
 
-Understanding the core concepts and terminology of uBO Scope is essential for interpreting what you see in the extension's badge and popup interface. This page clarifies key terms such as 'allowed', 'blocked', 'stealth', 'third-party remote server', and the 'webRequest API'. With precise definitions and context, you can confidently analyze the network connection metrics reported by uBO Scope and make informed decisions based on them.
+Understanding the key concepts behind uBO Scope is crucial to unlocking its full potential in monitoring your browser's network activity. This page defines essential terminology such as "third-party remote server," "allowed," "blocked," and "stealth" connections, explains how domain classification is performed, and clarifies the significance of the toolbar badge count.
 
 ---
 
-## Understanding the Key Outcomes: Allowed, Blocked, and Stealth
+## What Is a Third-Party Remote Server?
 
-uBO Scope categorizes the network requests it observes into three primary states. These outcomes provide insight into what resources a webpage is loading, which connections were successfully made, which were blocked, and how stealthy blocking influences network behavior.
+When you visit a website, your browser may establish connections not only with the site's own servers but also with external servers owned by other organizations. These external servers are called **third-party remote servers**. They typically support services such as advertising, analytics, content delivery networks (CDNs), or social media widgets.
 
-- **Allowed (Not Blocked)**: These are network connections that your browser made successfully without interference. In uBO Scope, "allowed" means the resource was fetched or the connection was established to the remote server. This indicates third-party servers actively supplying content or services.
+uBO Scope specifically tracks these third-party servers your browser tries to communicate with. Identifying them provides transparency about the external connections that could impact your privacy.
 
-- **Blocked**: These are network requests that were prevented from completing, typically by content blocking measures such as uBlock Origin or other browser-integrated content blockers. Blocked connections indicate resources or requests that did not reach the remote server or were rejected.
+### Key Points:
+- A **third-party remote server** is any server your browser connects to **that is different from the website's main domain** you are visiting.
+- Understanding these servers helps reveal hidden or background requests your browser makes.
 
-- **Stealth (Stealth-Blocked)**: This is a special category where the content blocker has silently blocked a request in a way that minimizes detection by websites. Instead of overtly cancelling the connection, stealth blocking allows the page to behave as if the connection succeeded but effectively suppresses the loading of unwanted content. This approach prevents sites from detecting that blocking is in place and reduces issues like webpage breakage.
+---
+
+## Classification of Network Requests
+
+uBO Scope categorizes network requests based on their outcome into three groups:
+
+### 1. Allowed (Not Blocked)
+These are third-party connections that your browser successfully established. Resources from these servers were fetched without interference.
+
+**Benefit:** Knowing allowed connections helps you understand which external servers are actively involved in loading the webpage.
+
+### 2. Blocked
+Blocked connections are third-party requests that were prevented from completing. These may be blocked by your content-blocker extension, by DNS filtering, or errors preventing the connection.
+
+**Benefit:** Seeing blocked servers confirms that your privacy protections are actively preventing connections where needed.
+
+### 3. Stealth (Stealth Blocked)
+Stealth connections represent requests that get redirected (e.g., via HTTP redirects) or cloaked in such a way that they don't appear as normal allowed or blocked connections. This category highlights more subtle or indirect network activity.
+
+**Benefit:** Helps uncover hidden behaviors such as stealthy redirects or evasive tracking attempts.
+
+---
+
+## Understanding the Toolbar Badge Count
+
+The number displayed on the uBO Scope toolbar badge indicates the **number of distinct third-party remote servers with allowed (successful) connections on the current webpage/tab**.
+
+### Important to Know:
+- This count does **not** represent the number of blocked requests or ad-blocker activations.
+- A **lower count is better**, meaning fewer third-party servers fetched resources.
+- The badge provides a precise, real-time insight into your exposure surface related to third-party connections.
+
+### Common Misconceptions:
+- The badge count is **not** a block count.
+- High block counts don't necessarily mean better privacy.
+- This metric focuses on **successful third-party connections**, which reflect real external dependencies.
+
+---
+
+## Domain Classification with Public Suffix List
+
+To accurately group requests by domain, uBO Scope uses the **Public Suffix List (PSL)**, a widely accepted and maintained list of domain suffix rules maintained at [publicsuffix.org](https://publicsuffix.org/).
+
+### Why is this important?
+- It helps determine the "registrable domain" for any hostname — the domain at which users can register a domain name.
+- For example, `ads.example.co.uk` and `analytics.example.co.uk` both group under `example.co.uk` as their registrable domain.
+
+### How uBO Scope applies this:
+- When recording network requests, hostnames are parsed to extract their effective top-level domain plus one level (eTLD+1), representing the actual domain considered for classification.
+- This prevents skewing of counts due to subdomains and ensures consistent grouping.
+
+---
+
+## Practical Example
+
+Imagine you visit `example.com`. Your browser starts resource requests, and uBO Scope tracks the following:
+
+| Connection Outcome | Example Hostname                 | Domain           | Status       |
+|--------------------|--------------------------------|------------------|--------------|
+| Allowed            | `cdn.example.com`               | `example.com`    | Visible      |
+| Allowed            | `ads.adnetwork.com`             | `adnetwork.com`  | Third-party  |
+| Blocked            | `trackers.badtracker.net`       | `badtracker.net` | Blocked      |
+| Stealth            | Redirected from `redir.tracker.com` to `trackers.badtracker.net` | `badtracker.net` | Stealth Blocked |
+
+The popup UI will show these hosts grouped accordingly, and the badge will increase to reflect the distinct allowed third-party domains encountered.
+
+---
+
+## Tips & Best Practices
+
+- **Focus on the badge count to gauge privacy exposure**, not on block counts or test-page behaviors.
+- Check the **'allowed' section** in the popup to identify which third-party domains your browser is actively connecting to.
+- Review the **'blocked' and 'stealth' sections** for insight into defenses triggered.
+- Remember that some third parties, such as CDNs and essential services, are often legitimate and low risk.
+
+---
+
+## Troubleshooting Common Questions
+
+<AccordionGroup title="Troubleshooting and FAQs">
+<Accordion title="Why doesn’t the badge show blocked domains?">
+The toolbar badge specifically counts **allowed distinct third-party domains**. Blocked or stealth domains do not increase this count but are shown in the popup UI for transparency.
+</Accordion>
+<Accordion title="How does uBO Scope determine the main domain vs third party?">
+uBO Scope uses the Public Suffix List to extract the effective domain name (eTLD+1) from each hostname. If a connection's domain differs from the main page's domain, it is considered third party.
+</Accordion>
+<Accordion title="Why do some requests appear under 'stealth'?">
+Stealth connections are typically requests that were redirected or involved indirect behaviors, which can bypass simple allowed/blocked classification. These are flagged to reveal such subtleties.
+</Accordion>
+<Accordion title="What if my browser doesn’t support the extension fully?">
+uBO Scope depends on the browser's `webRequest` API for network monitoring. Browsers or versions that limit this functionality may not show complete results.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+- Explore the [Popup Overview](../quickstart-feature-tour/popup-overview) to learn how to navigate and interpret the data presented in the popup UI.
+- Understand how to interpret the badge count in detail on the [Badge Count Interpretation](../quickstart-feature-tour/interpreting-badge-count) page.
+- For conceptual understanding of uBO Scope's operation, see the [System Architecture Overview](../architecture-concepts/system-architecture).
+
+---
 
 <Info>
-The notion of "stealth blocking" is crucial to debunking common misconceptions about block counts on other blockers or test pages. uBO Scope distinctly reports stealth-blocked connections to help you understand when requests were quietly suppressed.
+For a solid perspective on uBO Scope's overall value and target users, consider reading 'What Is uBO Scope?' and 'Who Is It For? Key Use Cases.' These contextualize the core concepts laid out here.
 </Info>
 
 ---
 
-## What Is a "Third-Party Remote Server"?
-
-A third-party remote server, in the context of uBO Scope, is any server contacted by a webpage that is not the same as the site's main domain you are visiting. These servers host content, ads, trackers, CDNs, or other resources essential or irrelevant to the webpage's functioning.
-
-- The **main domain** is the domain of the website you are visiting directly (the top-level site in your address bar).
-- A **third-party server** is any other domain contacted as part of that page loading process.
-
-<u>For example:</u> When browsing `example.com`, requests to `cdn.example.com` are generally same-party (subdomain of the same domain), whereas requests to `analytics.tracker.com` are third-party.
-
-### Domain and Hostname Resolution
-
-To accurately group requests, uBO Scope uses a public suffix list to determine the "effective site domain" of a hostname. It uses this to identify if a request is first-party or third-party.
-
-This disambiguation allows the extension to count distinct third-party domains rather than just hostnames, providing a clearer picture of connections.
+## Reference
+- Public Suffix List: https://publicsuffix.org/
+- uBO Scope Repository: [uBO-Scope GitHub](https://github.com/gorhill/uBO-Scope)
 
 ---
 
-## The Role of the `webRequest` API
+© Raymond Hill, uBO Scope
 
-uBO Scope relies on the browser's `webRequest` API to observe and report network requests:
-
-- The `webRequest` API allows uBO Scope to listen to network request events—including redirects, errors, and successful responses.
-- It captures all HTTP, HTTPS, WebSocket, and WSS requests originating from tabs you browse.
-- By leveraging this API, the extension records outcomes of network requests independent of content blockers or DNS filters, giving an accurate overview of network activity.
-
-<Note>
-These capabilities depend on browser support for the `webRequest` API and permissions granted when installing uBO Scope. Some network requests outside this API's scope may not be reported.
-</Note>
 
 ---
-
-## Interpreting Metrics in the Extension Badge and Popup
-
-uBO Scope displays data in two main user interfaces: the toolbar badge and the popup window, each emphasizing distinct but complementary information.
-
-- **Toolbar Badge**: Shows the count of distinct third-party remote servers contacted (allowed outcomes). A lower count indicates fewer third-party connections, often translating to greater privacy or less tracking.
-
-- **Popup Window**: Provides a detailed breakdown of connections by category:
-  - **Not Blocked (Allowed)**: Lists third-party domains that the browser successfully connected to.
-  - **Stealth-Blocked**: Shows domains where stealth blocking silently prevented requests.
-  - **Blocked**: Displays domains where requests were overtly blocked.
-
-This comprehensive categorization helps you:
-
-- Quickly identify which third parties are active on the current page.
-- Recognize stealth-blocking in effect, explaining why some requests might seem to succeed but are suppressed.
-- Compare blocking states for an informed understanding of traffic and content blocker effectiveness.
-
----
-
-## Practical Example: How uBO Scope Tracks a Tab’s Network Requests
-
-When you open a webpage, uBO Scope’s background script monitors all network requests made by that tab using the `webRequest` API. The requests are sorted into the outcomes described above. The extension maintains an internal data structure per tab that holds:
-
-- The primary domain and hostname of the tab.
-- Maps of allowed, stealth, and blocked outcomes, each further subdivided into domains and hostnames.
-
-This data flows to the popup UI upon user interaction, which then renders the categorized domain counts for your review.
-
----
-
-## Tips for Users
-
-- Pay attention to stealth-blocked domains—they represent silent interference which helps maintain webpage usability while blocking unwanted content.
-- The badge count is your quick privacy health indicator: fewer third-party domains generally mean less tracking.
-- Check the domains listed under “Not Blocked” to audit which sites your browser communicates with.
-- Use this knowledge alongside content blockers to refine your blocking preferences when desired.
-
----
-
-## Common Pitfalls to Avoid
-
-- Do not infer the quality of a content blocker solely from block counts on other tools or test pages. Stealth blocking can mask blocking activity.
-- Avoid reliance on "ad blocker test" sites. Real-world browsing scenarios offer more accurate network insights.
-- Remember that some third-party connections are legitimate and necessary, such as CDN domains.
-
----
-
-## Where to Go Next
-
-After mastering this terminology and core concepts, visit the following pages to see these terms in action:
-
-- [What is uBO Scope?](../introduction-fundamentals/what-is-ubo-scope) — Gain an introduction to the product’s purpose.
-- [Core Features & Benefits](../introduction-fundamentals/core-features-benefits) — Learn how these concepts translate into features.
-- [System Architecture Overview](../architecture-concepts/system-architecture) — Understand the background processing and data management.
-
-These will deepen your understanding and help you leverage uBO Scope effectively.
-
----
-
-## Related Resources
-
-- **Public Suffix List**: uBO Scope uses the [Public Suffix List](https://publicsuffix.org/) to determine domain boundaries, an industry-standard resource that defines effective second-level domains.
-- **Browser `webRequest` API**: This extension depends on the browser’s network event listener API. For more information, see your browser’s documentation.
-
----
-
-_This page is part of the uBO Scope documentation._
-
----
-
-## For Developers: Internal Data Structures (Overview)
-
-While this page is user-focused, here is a brief peek at the internal tab data shape uBO Scope keeps for tracking outcomes, useful to understand underlying terms:
-
-```javascript
-const TABDETAILS_ENTITY = {
-    domain: '',                // Effective primary domain of the tab
-    hostname: '',              // Hostname of main frame
-    allowed: {
-        domains: new Map(),   // Map of allowed domains with counts
-        hostnames: new Map()  // Map of allowed hostnames with counts
-    },
-    stealth: {
-        domains: new Map(),   // Map of stealth-blocked domains
-        hostnames: new Map()  // Map of stealth-blocked hostnames
-    },
-    blocked: {
-        domains: new Map(),   // Map of blocked domains
-        hostnames: new Map()  // Map of blocked hostnames
-    },
-};
-```
-
-This structure is populated dynamically as network events occur, with requests classified based on their network event outcome.
-
----
-
-## Troubleshooting Terminology Confusion
-
-If the terms here do not seem to align with what you see:
-
-- Verify your browser supports the `webRequest` API.
-- Confirm uBO Scope's permissions are correctly enabled.
-- Remember the extension only reports network requests visible to the API.
-- Some connections might be network errors or redirects; these have specific outcomes.
-
-Understanding these concepts ensures accurate interpretation of your browsing session’s connections.
-
----
-
-###### Source code and documentation repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
-
----
-
-*This documentation page helps you confidently read and understand the key terminology required to make sense of uBO Scope's metrics and reports.*
