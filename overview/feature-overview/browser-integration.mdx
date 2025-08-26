@@ -1,0 +1,131 @@
+---
+title: "Browser Support & Compatibility"
+description: "Lists supported browsers (Chromium, Firefox, Safari) and explains the integration model: cross-browser manifests, leveraging webRequest API, and any notable limitations or differences in measurement due to browser API boundaries."
+---
+
+# Browser Support & Compatibility
+
+uBO Scope is designed to provide comprehensive network connection visibility across the three major browser platforms: Chromium-based browsers, Firefox, and Safari. This section explains how uBO Scope maintains consistent functionality across these browsers via cross-browser manifest configurations, details its integration model that leverages the `webRequest` API, and highlights notable differences and limitations due to browser-specific API constraints.
+
+---
+
+## Supported Browsers
+
+uBO Scope supports the following browser families:
+
+- **Chromium-based Browsers** (such as Google Chrome, Microsoft Edge, Brave)
+- **Mozilla Firefox**
+- **Apple Safari**
+
+These browsers are chosen to maximize coverage and utility for privacy-conscious users and filter list maintainers across popular platforms.
+
+### Browser-Specific Integration
+
+Each supported browser requires a platform-specific manifest configuration adapting to its extension system while sharing the common core logic implemented primarily in the background script (`js/background.js`).
+
+| Browser       | Unique Manifest File          | Key Permissions                                 | Notes                         |
+|---------------|-----------------------------|------------------------------------------------|-------------------------------|
+| Chromium      | `platform/chromium/manifest.json` | `webRequest`, `storage`, `activeTab` + `host_permissions` including HTTP, HTTPS, WS, WSS schemes | Utilizes a service worker background script (`background.service_worker`). Requires Chrome 122+ supporting Manifest V3. |
+| Firefox       | `platform/firefox/manifest.json`   | Same as Chromium, with added WS and WSS host permissions | Uses a module-type background script; supports gecko-specific ID and versioning. |
+| Safari        | `platform/safari/manifest.json`    | `webRequest`, `storage`, `activeTab`, HTTP and HTTPS host permissions | Limited by Safari's API; no WS/WSS permissions due to Safari API restrictions. |
+
+The manifest files define the minimal requirements and enable the extension's operation according to browser API capabilities.
+
+---
+
+## Integration Model
+
+### Leveraging the `webRequest` API
+
+uBO Scope relies extensively on the browser `webRequest` API to observe network requests triggered by webpages. This API provides details about the lifecycle of requests, including redirects, errors, and successful responses, which uBO Scope uses to classify and aggregate connection outcomes.
+
+- **Captured Events:**
+  - `onBeforeRedirect`
+  - `onErrorOccurred`
+  - `onResponseStarted`
+
+- **Permissions:**
+  - `webRequest` and matching `host_permissions` for all HTTP, HTTPS URLs.
+  - Additionally, Firefox and Chromium include websocket schemes (`ws://` and `wss://`) to capture WebSocket connections.
+
+### Session and Public Suffix List Storage
+
+The background script uses browser session storage to maintain state per tab, including resolved hostnames and domains categorized by connection status (`allowed`, `stealth`, and `blocked`). It also loads and serializes the Public Suffix List (PSL) to accurately group hostnames under their registered domains, providing meaningful aggregation of connections.
+
+### Cross-Browser Background Script
+
+uBO Scope uses shared JavaScript source, including:
+
+- `js/background.js` as the core background/service worker script handling request monitoring and state management.
+- Auxiliary libraries like `publicsuffixlist.js` and `punycode.es6.js` for domain parsing and Unicode hostname handling.
+
+This approach ensures consistent logic across browsers while allowing for platform-specific manifest and runtime differences.
+
+---
+
+## Notable Limitations and Differences
+
+### WebSocket Request Monitoring
+
+- Chromium and Firefox include websocket schemes (`ws://` and `wss://`) in their manifest host permissions. This allows them to measure WebSocket connections alongside HTTP(s) requests.
+- Safari currently does not include WebSocket host permissions due to API limitations, so WebSocket connections may not be fully reported.
+
+### Background Script Implementation
+
+- **Chromium** uses a manifest V3 service worker as the background script. This can lead to service worker lifecycle-related limitations such as eviction and restart, which uBO Scope handles with retry mechanisms in messaging.
+- **Firefox** supports module-type background scripts with added extension ID and version controls for better management.
+- **Safari** uses a module-type background script as defined but has stricter API boundaries.
+
+### Host Permissions Scope
+
+- Chromium and Firefox include websocket host permissions in addition to HTTP/HTTPS.
+- Safari limits host permissions to only `https://*/*` and `http://*/*`, which restricts visibility compared to others.
+
+### Network Requests Outside API Reach
+
+uBO Scope depends on the browser providing access to network requests through its `webRequest` API. Requests made outside this API's reach (e.g., certain browser internal requests, external apps, or some native integrations) cannot be captured or measured.
+
+---
+
+## Practical Implications for Users
+
+- Users on **Chromium** and **Firefox** gain the most comprehensive network connection visibility, including WebSocket connections.
+- **Safari** users obtain HTTP/HTTPS connection data but may see fewer reported events related to WebSocket network activity.
+- Regardless of browser, uBO Scope consistently reports the number of **distinct third-party remote servers** contacted per tab, which is the primary metric for its badge count and popup data.
+
+Understanding these differences helps in setting expectations and effectively using uBO Scope on any supported platform.
+
+---
+
+## Example Manifest Snippet (Chromium)
+
+```json
+"host_permissions": [
+  "https://*/*",
+  "http://*/*",
+  "wss://*/*",
+  "ws://*/*"
+],
+"permissions": [
+  "activeTab",
+  "storage",
+  "webRequest"
+]
+```
+
+This shows how Chromium enables monitoring of HTTP(s) and WebSocket connections.
+
+---
+
+## Summary
+
+uBO Scope’s cross-browser design ensures its ability to reveal remote server connections reliably across Chromium, Firefox, and Safari. By harnessing the power of the browser `webRequest` API and carefully managing platform differences, it provides users with actionable insights into their network requests and privacy exposure.
+
+For detailed usage and interpreting results, please refer to the [Popup UI Quick Tour](../feature-overview/popup-ui-quicklook) and [Interpreting the Badge Count and Popup Panel](../../guides/core-workflows/interpreting-badge-popup) guides.
+
+---
+
+For any issues related to browser-specific limitations or permissions setup, consult your browser's extension documentation and uBO Scope’s [Setup & Installation](../../getting-started/setup-overview/installing) instructions.
+
+
+<Source url="https://github.com/gorhill/uBO-Scope" paths={[{"path": "platform/chromium/manifest.json"},{"path": "platform/firefox/manifest.json"},{"path": "platform/safari/manifest.json"},{"path": "js/background.js"}]} />
