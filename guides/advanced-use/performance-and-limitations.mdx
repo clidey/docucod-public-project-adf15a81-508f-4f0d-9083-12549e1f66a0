@@ -1,0 +1,130 @@
+---
+title: "Performance Tips and Known Limitations"
+description: "Outlines key performance considerations, such as the scope of what uBO Scope can and cannot monitor, data freshness, and known browser limitations (for example, caveats on the `webRequest` API and DNS-level blocking). Includes tips to ensure reliable usage."
+---
+
+# Performance Tips and Known Limitations
+
+## Overview
+This page outlines important performance considerations for using uBO Scope effectively. It clarifies what uBO Scope can and cannot monitor, the freshness of the data you see, as well as known limitations imposed by browser APIs and platform restrictions. Following these guidelines will ensure you get the most reliable and useful insights from the extension.
+
+---
+
+## 1. What uBO Scope Monitors
+
+- **Network Requests via `webRequest` API:** uBO Scope observes outgoing network requests made by webpages using the browser's `webRequest` API. This includes HTTP(S) and WebSocket protocols.
+- **Request Outcomes:** The extension tracks whether requests are allowed, blocked, or stealth-blocked (redirected silently).
+- **Third-Party Connections:** It aggregates counts of unique third-party domains connected per tab to provide a privacy-related badge count.
+
+<Tip>
+Understanding that uBO Scope depends on the `webRequest` API is crucial: all reporting is contingent on this API being able to observe network traffic.
+</Tip>
+
+---
+
+## 2. What uBO Scope Does Not Monitor
+
+- **Requests Outside `webRequest`:** Any network requests not routed through or visible via the `webRequest` API cannot be tracked. Examples include:
+  - Requests made by browser internals that don’t expose data
+  - Native DNS cache hits that bypass network
+  - Some browser-level or extension-level DNS filtering that prevents observable requests
+- **DNS-level Blocking:** If a DNS filter prevents domain resolution before a request is made, uBO Scope will not register this as a network request.
+
+<Warning>
+Do not assume the badge count reflects all possible network activity. uBO Scope only reports what the browser reports through its API.
+</Warning>
+
+---
+
+## 3. Data Freshness and Update Frequency
+
+- **Near Real-Time Reporting:** uBO Scope processes batches of observed network requests approximately every second, updating the popup UI and badge with aggregated counts.
+- **Session Persistence:** Data is maintained per browser tab during the session and saved in session storage to preserve information across service worker restarts.
+
+<Note>
+Updates may experience up to a one-second delay due to batching but generally stay current enough for effective privacy monitoring.
+</Note>
+
+---
+
+## 4. Browser API and Platform Limitations
+
+- **Manifest V3 Compatibility:** uBO Scope requires browsers that support Manifest V3 with `webRequest` API capabilities (e.g., Chromium-based browsers version 122+ and compatible Firefox versions).
+- **Safari Specifics:** Safari support requires version 18.5 or later, with subtle differences in API behavior that may affect monitoring.
+- **Permission Scope:** Full host permissions (`http://*/*`, `https://*/*`) are needed to access network request data comprehensively.
+
+<Tip>
+Check your browser and extension permissions to ensure uBO Scope can observe all relevant network requests.
+</Tip>
+
+---
+
+## 5. Known Challenges and Common Issues
+
+### 5.1 Invisible or Missing Requests
+- Network activity may appear lower if another content blocker or DNS server filters requests before they reach the browser.
+- Some filtered DNS requests may not show as blocked or stealth-blocked but simply absent.
+
+### 5.2 WebSocket Monitoring
+- WebSocket connections (`ws://` and `wss://`) are only visible in Chromium-based implementations with the appropriate permissions.
+- In other browsers, WebSocket requests might not show, leading to partial visibility.
+
+### 5.3 Badge Count Interpretation
+- The badge represents the count of unique third-party domains **allowed** (connected). A lower number indicates fewer external connections and better privacy.
+- This count does not measure block counts or stealth-block outcomes directly but focuses on allowed domains.
+
+<Warning>
+Do not compare badge counts across different blockers or between devices without considering environmental differences and blocking mechanisms.
+</Warning>
+
+---
+
+## 6. Performance Optimization Tips
+
+- **Limit Open Tabs:** Each browser tab adds monitored data which increases memory usage. Closing unused tabs can keep performance optimal.
+- **Keep uBO Scope Updated:** Use the latest extension version to benefit from performance improvements and bug fixes.
+- **Avoid Overlapping Blockers:** Running multiple blockers or DNS filters simultaneously may distort observed metrics and introduce reporting inconsistencies.
+
+<Info>
+The extension is designed to have minimal overhead, but overall browser resource usage depends on the number of network requests and tabs open.
+</Info>
+
+---
+
+## 7. Tips to Ensure Reliable Usage
+
+1. Verify the extension's permissions in your browser settings.
+2. Ensure that your browser version supports Manifest V3 and the necessary APIs (especially `webRequest`).
+3. Refresh the webpage or switch tabs if data appears stale or missing.
+4. Check for other content blockers or DNS filters that might interfere with accurate reporting.
+
+<Check>
+After installation or changes, use the [Validating Successful Setup](https://docs.u.bo/scope/getting-started-first-run-setup/quick-validation) guide to confirm uBO Scope is working correctly.
+</Check>
+
+---
+
+## 8. Summary
+
+| Aspect | Description |
+|--------|-------------|
+| What is Monitored | Network requests visible through `webRequest` API (HTTP, WebSocket) |
+| What is Missing | Requests bypassing `webRequest`, DNS-level blocked requests |
+| Data Freshness | Updates every ~1 second, session-persistent data |
+| Browser Support | Manifest V3 browsers, Chrome (122+), Firefox, Safari (18.5+) |
+| Known Limitations | Missing WebSocket visibility (some browsers), DNS filtering invisibility |
+| Performance Tips | Close unused tabs, minimize additional blockers, keep extension updated |
+
+---
+
+## 9. Additional Resources
+
+- [System Requirements](https://docs.u.bo/scope/getting-started-install-and-requirements/system-requirements) - Verify your browser’s compatibility.
+- [Browser Installation Guide](https://docs.u.bo/scope/getting-started-install-and-requirements/browser-installation) - Correct setup ensures full functionality.
+- [Troubleshooting Common Setup Issues](https://docs.u.bo/scope/getting-started-troubleshooting/common-issues) - Resolve frequent problems.
+- [Analyzing Allowed, Stealth, and Blocked Domains](https://docs.u.bo/scope/guides/core-workflows/analyzing-allowed-stealth-blocked) - Understand data reports and their implications.
+- [Interpreting Badge Counts and Extension Feedback](https://docs.u.bo/scope/guides/core-workflows/interpreting-badge-counts) - How to read the badge and popup info accurately.
+
+---
+
+Visit the extension GitHub repository for source code and issue tracking: [uBO-Scope GitHub](https://github.com/gorhill/uBO-Scope)
