@@ -1,0 +1,157 @@
+---
+title: "Validating Functionality"
+description: "Helps users ensure that uBO Scope is running: explains what to look for on the badge, how to open the popup, and how to interpret the connection summaries when visiting a site. Reassures users about expected behavior and typical outcomes on first use."
+---
+
+# Validating Functionality
+
+Ensure that uBO Scope is running correctly and capturing network connection data in your browser. This guide walks you through the key indicators to look for, how to open the extension’s popup panel, and how to understand the connection summaries for websites you visit. You'll gain confidence that uBO Scope is active, tracking, and presenting connection information accurately.
+
+---
+
+## 1. Confirm uBO Scope is Active via Toolbar Badge
+
+After installation and activation, the uBO Scope icon appears in your browser's toolbar. It provides a real-time count of third-party remote domains your current tab connects to.
+
+### What the Badge Shows
+- The badge number indicates the **count of distinct third-party domains** your current webpage has connected to.
+- A **lower count is better**, signifying fewer third-party remote connections.
+- No number or an empty badge means no detected connections yet.
+
+### How to Verify
+1. Navigate to any well-known website.
+2. Look at the uBO Scope icon badge in the toolbar.
+3. You should see a number appear reflecting the tab's network activity.
+
+<Tip>
+If no badge appears or it remains empty, this may indicate the extension isn't monitoring properly. Please ensure the extension is enabled and your browser version supports required permissions.
+</Tip>
+
+## 2. Opening and Understanding the Popup Panel
+
+The popup panel provides details on the domains connected by the active tab, grouped by the outcome of their network requests.
+
+### Steps to Open the Popup
+1. Click the uBO Scope extension icon in your browser toolbar.
+2. The popup displays with three sections showing connection outcomes:
+   - **Not Blocked (Allowed)**: Domains where connections succeeded.
+   - **Stealth-Blocked**: Domains where requests were silently redirected.
+   - **Blocked**: Domains where requests were actively blocked or failed.
+3. The header shows the current page's hostname and domain for context.
+
+### Interpreting the Data
+- **Domains Connected:** The total count of distinct third-party domains connected.
+- **Domain Lists:** Under each section, domains are listed with a count badge indicating the number of requests made to that domain.
+- Domains are shown in their Unicode form, making IDN (internationalized domain names) readable.
+
+### Typical Popup Example
+```plaintext
+Page: example.com
+Domains connected: 15
+
+Not Blocked:
+- cdn.example.net (8)
+- fonts.googleapis.com (2)
+
+Stealth-Blocked:
+- trackers.example.org (1)
+
+Blocked:
+- ads.badsite.com (4)
+```
+
+The above means 15 distinct domains total, some fully allowed, some stealth-blocked (redirected), and others blocked.
+
+<Note>
+Stealth-blocked domains represent requests that were redirected or otherwise handled in a non-obvious way — useful for deeper insights into content blocking behavior.
+</Note>
+
+## 3. Expected Behavior on First Use
+
+It's normal for the badge number and popup details to start at zero or empty immediately after installation or tab launch, as no network requests have been captured yet.
+
+- Open a new tab and navigate to a website.
+- Allow a few seconds for the extension to process network activity.
+- The badge and popup data should update dynamically as requests are made.
+
+<Warning>
+In some cases, network requests may not be captured if the page uses non-standard protocols or network activity is shielded from the browser's webRequest API. This limitation is inherent to browser extension capabilities.
+</Warning>
+
+## 4. Troubleshooting Common Validation Issues
+
+<AccordionGroup title="Troubleshooting uBO Scope Validation">
+<Accordion title="Badge Not Displaying Any Number">
+- Verify the extension is enabled and not disabled by the browser.
+- Confirm your browser meets the minimum version requirements.
+- Ensure your tab has loaded a website that makes remote connections.
+- Try refreshing the tab.
+</Accordion>
+<Accordion title="Popup Panel Shows 'NO DATA' or Is Blank">
+- This may occur when no network information has been processed yet.
+- Reload the current tab and wait a few seconds.
+- Check for conflicting extensions that block background communication.
+- Restart the browser if necessary.
+</Accordion>
+<Accordion title="Counts Seem Inconsistent or Too Low">
+- Only domains related to the active tab are counted.
+- Background browser processes and other tabs are excluded.
+- Some network activity may bypass browser APIs (e.g., direct socket connections).
+- Try visiting high-traffic websites to test data updating.
+</Accordion>
+<Accordion title="Connections Not Being Reported as Expected">
+- Verify content blockers or privacy settings that may interfere.
+- Disable other extensions temporarily to isolate conflicts.
+- Consult the Troubleshooting Common Issues guide for detailed diagnostics.
+</Accordion>
+</AccordionGroup>
+
+## 5. Summary
+
+Validating that uBO Scope is working involves watching the toolbar badge update with the count of third-party domains connected, opening the popup to inspect detailed connection outcomes, and understanding the presented data. The extension captures network request outcomes such as allowed, stealth-blocked (redirected), and blocked domains per active tab, enabling you to verify your browsing exposure in real time.
+
+---
+
+## Additional Resources
+- [What is uBO Scope?]( /overview/introduction-core-concepts/product-overview ) – Learn the purpose and main concepts.
+- [Interpreting the Popup Panel]( /guides/getting-started/understanding-popup ) – Deep dive into popup interface details.
+- [First Launch and Extension Activation]( /getting-started/setup-and-installation/first-launch-and-extension-activation ) – Guidance on enabling the extension.
+- [Troubleshooting Common Issues]( /getting-started/first-use-and-validation/troubleshooting-common-issues ) – Fix problems you may encounter.
+
+---
+
+For full source and implementation details, visit the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+
+---
+
+### Code Snippet: Triggering the Popup Render (Technical Insight)
+
+Although most users interact only via the UI, technically the popup loads and calls a function that renders data for the active tab:
+
+```javascript
+(async () => {
+    const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (!tab) return;
+
+    sendMessage({ what: 'getTabData', tabId: tab.id })
+        .then(response => {
+            const data = deserialize(response);
+            renderPanel(data); // Updates popup with domain info
+        });
+})();
+```
+
+This ensures the popup always reflects the latest connection data for your active tab.
+
+---
+
+## Practical Tips
+- Reload websites after installation to trigger initial data capture.
+- Pin the extension icon to your toolbar for quick access.
+- Use the popup every time to see the most recent network connection summary.
+
+
+---
+
+By following this guide, you will confidently validate uBO Scope is tracking network connections effectively, providing you with valuable insight into third-party domains contacted during your browsing sessions.
