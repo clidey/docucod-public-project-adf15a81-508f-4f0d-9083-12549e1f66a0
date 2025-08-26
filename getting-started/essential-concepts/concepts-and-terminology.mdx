@@ -1,0 +1,191 @@
+---
+title: "Key Concepts & What uBO Scope Shows You"
+description: "Learn the foundational ideas behind uBO Scope, including third-party remote servers, network request outcomes, and the meaning of badge counts. Understand how this differs from content blockers and why these metrics matter for privacy and site performance."
+---
+
+# Key Concepts & What uBO Scope Shows You
+
+Understanding what uBO Scope reveals is essential to leveraging its full potential. This guide explains the foundational ideas that power uBO Scope’s transparency into your browser’s network activity, focusing on third-party remote servers, network request outcomes, and the significance of the badge count.
+
+---
+
+## 1. What uBO Scope Measures
+
+uBO Scope is a lightweight browser extension designed to expose **all outgoing connections your browser makes from an active tab, including their success or failure**, independently from any content blockers.
+
+### 1.1 Third-Party Remote Servers
+
+- **Definition:** Third-party remote servers are domains other than the main website you’re visiting, contacted by your browser during page loading or interaction.
+- uBO Scope categorizes domains by their role in network requests, enabling you to see which third parties your browser connects to.
+
+> Unlike most content blockers that focus on blocking resources, uBO Scope focuses on measuring the *actual* network connections performed by your browser.
+
+### 1.2 Why this Matters
+
+Understanding third-party connections helps you:
+
+- Assess your privacy exposure by seeing which external sites receive your data.
+- Identify unnecessary or hidden connections that impact performance.
+- Verify the real effectiveness of content blockers by contrasting actual allowed connections versus blocked ones.
+
+
+## 2. Network Request Outcomes Explained
+
+uBO Scope reports the fate of network requests your browser makes, broken down into three outcome categories:
+
+| Outcome          | Meaning                                                                                   | How uBO Scope Reports It             |
+|------------------|-------------------------------------------------------------------------------------------|------------------------------------|
+| **Not Blocked**  | The request succeeded and the connection was allowed by your browser and content blockers. | Listed under **"not blocked"**     |
+| **Stealth-Blocked** | The request was silently redirected or stealthily blocked, often invisible to the webpage. | Listed under **"stealth-blocked"** |
+| **Blocked**      | The request was explicitly blocked or resulted in an error, and no connection was made.   | Listed under **"blocked"**         |
+
+Each category lists domains and the count of requests, granting insight into what happens behind the scenes.
+
+### 2.1 Outcome Impact on Badge Count
+
+- The browser toolbar **badge count** reflects the number of distinct **allowed third-party domains** connected from the current tab.
+- Lower badge counts generally indicate fewer external connections, enhancing privacy and performance.
+
+
+## 3. Domain Identification and Classification
+
+### 3.1 Hostname vs. Domain
+
+- Each network request's URL is analyzed to extract its **hostname** (e.g., `cdn.example.com`) and **domain** (effective second-level domain, e.g., `example.com`).
+
+- uBO Scope uses the [Public Suffix List](https://publicsuffix.org/) to accurately identify domains respecting complex cases like multi-level TLDs.
+
+#### Example:
+
+| URL                           | Hostname           | Domain      |
+|-------------------------------|--------------------|-------------|
+| `https://cdn.shop.example.co.uk/assets` | `cdn.shop.example.co.uk` | `example.co.uk` |
+
+### 3.2 Categorization Within uBO Scope
+
+- Domains are recorded in three internal categories per tab:  **allowed**, **stealth**, and **blocked**.
+- The popup UI clearly displays domains in these grouped lists with their respective request counts.
+
+
+## 4. What the Toolbar Badge Represents
+
+The badge on the browser toolbar icon shows a **real-time count of unique allowed third-party domains connected by the current active tab**. This number is crucial as it provides an immediate summary of external connections.
+
+```plaintext
+Badge Count = Number of distinct allowed third-party domains
+```
+
+- This count updates dynamically as you browse and network requests complete.
+- It helps you spot unusual or high volumes of third-party connections right away.
+
+
+## 5. How uBO Scope Differs from Content Blockers
+
+| Feature               | uBO Scope                          | Typical Content Blocker           |
+|-----------------------|----------------------------------|----------------------------------|
+| Primary Function      | Observe network connections       | Block unwanted network requests  |
+| Transparency Focus    | Shows actual connection outcomes  | Prevents certain connections from happening
+| Badge Count Meaning   | Counts allowed distinct third parties | Counts number of blocked requests (less reliable indicator)
+| Impact Measurement   | Reveals connections regardless of blocker | Enforces blocking rules
+
+
+## 6. Real-World Value of uBO Scope
+
+- Empowers you with **full transparency** about all network connections from your active tab, regardless of blocker or stealth techniques.
+- Enables better privacy decisions by clearly separating allowed from blocked and stealth-blocked domains.
+- Acts as a tool for filter list maintainers by illuminating actual network behavior.
+
+> Keep in mind: a **higher block count is not always better**. The critical measurement is the number of allowed third-party distinct domains.
+
+
+## 7. Viewing uBO Scope Data
+
+- Click the uBO Scope toolbar icon to open its popup.
+- The popup shows:
+  - The domain of the active tab
+  - The number of connected third-party domains (badge count)
+  - Lists of domains by their request outcome: **not blocked**, **stealth-blocked**, and **blocked**
+
+### Example Popup Layout
+
+```plaintext
+---------------------------------------------------
+|                            uBO Scope              |
+| [Active Tab Domain]                               |
+|                                                   |
+| domains connected: [###]                          |
+|                                                   |
+| not blocked:                                      |
+|   - examplecdn.com (12)                           |
+|   - fonts.gstatic.com (5)                         |
+| stealth-blocked:                                  |
+|   - tracker.example.com (3)                       |
+| blocked:                                          |
+|   - ads.example.net (8)                           |
+---------------------------------------------------
+```
+
+
+## 8. Best Practices & Tips
+
+- Use uBO Scope alongside your preferred content blocker to **verify what connections are actually allowed**.
+- Regularly check the badge count to monitor shifts in external connections, especially on sensitive sites.
+- Understand that **stealth blocking** may hide some requests from the webpage but uBO Scope will reveal them.
+
+
+## 9. Common Pitfalls
+
+- Don’t rely solely on block counts from your content blocker; use uBO Scope's allowed domain count for a more accurate privacy picture.
+- Some network requests may occur outside the browser's `webRequest` API and hence will not be visible to uBO Scope.
+- Badge count resets when you switch tabs or reload; it reflects the current active tab’s real-time state.
+
+
+## 10. Additional Resources
+
+- For detailed explanations of terms, see [Core Concepts & Key Terms](/overview/concepts-architecture/core-concepts-terminology).
+- To understand the system behind uBO Scope’s monitoring, refer to [System Architecture](/overview/concepts-architecture/system-architecture).
+- To install and get started quickly, follow [Installation & First Run](/getting-started/installation-basics/extension-installation) and [First Run Guide](/getting-started/installation-basics/first-run).
+
+
+---
+
+## Appendix: Code Insight on Key Concepts
+
+The following pseudocode excerpt highlights how uBO Scope categorizes network requests internally:
+
+```js
+// Simplified overview of request outcome tracking per tab
+
+const tabDetails = {
+  domain: '',
+  hostname: '',
+  allowed: { domains: new Map(), hostnames: new Map() },
+  stealth: { domains: new Map(), hostnames: new Map() },
+  blocked: { domains: new Map(), hostnames: new Map() }
+};
+
+function recordOutcome(tabId, request) {
+  const hostname = extractHostname(request.url);
+  const domain = extractDomain(hostname); // Uses Public Suffix List
+
+  switch(request.event) {
+    case 'success':
+      addToMap(tabDetails.allowed.domains, domain);
+      break;
+    case 'redirect':
+      addToMap(tabDetails.stealth.domains, domain);
+      break;
+    case 'error':
+      addToMap(tabDetails.blocked.domains, domain);
+      break;
+  }
+
+  updateBadgeForTab(tabId, tabDetails.allowed.domains.size);
+}
+```
+
+This shows the core concept of how each network request’s domain is classified and how the badge count is based on allowed domains.
+
+---
+
+<u>By understanding these foundational concepts, you are equipped to interpret uBO Scope’s data accurately and make confident privacy and performance decisions while browsing.</u>
