@@ -1,0 +1,146 @@
+---
+title: "Understanding Allowed, Blocked, and Stealth Connections"
+description: "Defines the meanings of allowed, blocked, and stealth-blocked connections as reported by uBO Scope, and explains why these distinctions are critical for interpreting results and challenging common misconceptions about content blockers."
+---
+
+# Understanding Allowed, Blocked, and Stealth Connections
+
+Unlocking the true picture of your web traffic requires more than just knowing which requests succeed or fail. This page defines the critical distinctions between "allowed," "blocked," and "stealth-blocked" connections as reported by uBO Scope. Understanding these categories is essential for interpreting your network activity correctly and dispelling common misconceptions about what content blockers do behind the scenes.
+
+---
+
+## Why Distinguishing Connection Outcomes Matters
+
+Every webpage you visit initiates multiple network requests to load resources—from first-party content to third-party services. Content blockers aim to control which of these requests complete successfully, improving privacy, security, and performance. However, simply counting blocked requests or allowed requests can mislead. uBO Scope introduces a third important category: **stealth-blocked** connections.
+
+These nuanced distinctions help you interpret results accurately, showing not only what was blocked outright but also what was silently prevented or modified, providing transparency into content blocker behavior that traditional tools often hide.
+
+---
+
+## Defining the Connection Categories
+
+### Allowed Connections
+
+- **Description:** These are network requests that successfully reached their destination servers and received a valid response.
+- **What uBO Scope Shows:** A list of domains and hostnames contacted without interference.
+- **User Value:** Reveals the actual third-party services your browser fetched resources from, highlighting what’s currently loading on the page.
+
+### Blocked Connections
+
+- **Description:** Requests actively prevented by content blocking rules or policies, resulting in an error or failure event.
+- **What uBO Scope Shows:** Domains where connections were explicitly denied, typically due to filter list rules or browser blocking.
+- **User Value:** Helps identify which domains are being stopped from loading, directly reflecting your content blocker’s effectiveness.
+
+### Stealth-Blocked Connections
+
+- **Description:** Requests that are intentionally hidden or suppressed by content blockers using stealth techniques to avoid detection by websites.
+- **What uBO Scope Shows:** Domains where connections were prevented without raising visible errors or alerts to the webpage.
+- **User Value:** Exposes the subtle operations of modern content blockers that suppress connections invisibly to avoid breaking web functionality or revealing blocking status.
+
+---
+
+## How uBO Scope Captures These States
+
+uBO Scope harnesses the browser's `webRequest` API to classify each network request outcome:
+
+- When a request completes successfully, it is recorded as **allowed**.
+- If a request triggers an error or is rejected by any means, it is recorded as **blocked**.
+- For requests that involve redirection or stealth preventive actions where no error is thrown but blocking occurs silently, these are flagged as **stealth-blocked**.
+
+This approach ensures users see a comprehensive view of all connection outcomes regardless of the content blocking mechanism or stealth tactics employed.
+
+---
+
+## Why Understanding Stealth Blocking Debunks Myths
+
+Many users and testers assume that if a request isn’t visibly blocked (fails with error), it must be allowed. However, stealth blocking means requests may be suppressed invisibly, hiding activity from webpages and avoiding breakage.
+
+This nuance explains why some ad blocker tests or webpages show different behavior from the true underlying blocking pattern:
+
+- **Ad blocker tests** often assume blocked means an error or connection failure, overlooking stealth blocking.
+- **Toolbar count badges** from other blockers may show different block numbers because stealth blocking may or may not increment such counts.
+- **Not all third-party connections are malicious or unwanted**, so lower allowed counts typically indicate better blocking accuracy, not necessarily the number of blocks.
+
+uBO Scope’s clear separation helps users understand these facts and avoid common misinterpretations.
+
+---
+
+## Practical Examples
+
+Consider browsing a news website that loads:
+
+- Main content from its own domain (allowed)
+- Ads and trackers on third-party domains (usually blocked or stealth-blocked)
+- Content delivery networks (allowed)
+
+uBO Scope will categorize each connection appropriately, letting you see:
+
+- Which third-party hosts are actually contacted (allowed)
+- Which ones are blocked explicitly by your filters
+- Which requests are silently suppressed to maintain page functionality (stealth-blocked)
+
+This comprehensive breakdown allows precise auditing of what your content blocker is doing.
+
+---
+
+## Common Pitfalls When Interpreting Content Blocking Results
+
+- **Mistaking high block counts for better privacy:** A high block count alone does not guarantee fewer connections or better blocking; more connections allowed to diverse domains could indicate weaker blocking.
+- **Ignoring stealth blocking:** Failing to account for stealth-blocked connections can lead to underestimating your content blocker’s impact.
+- **Relying on misleading ad-blocker test pages:** These tests often create artificial scenarios not representative of real browsing.
+
+uBO Scope addresses these issues by separating connection outcomes and emphasizing distinct third-party servers contacted rather than raw counts.
+
+---
+
+## How to Use This Understanding with uBO Scope
+
+1. **Open uBO Scope** for the current browser tab to view connection results.
+2. **Review the three sections:** Allowed, Blocked, and Stealth-blocked domains.
+3. **Focus on the Allowed list** to identify which third-party servers your browser truly contacted.
+4. **Examine Blocked and Stealth-blocked lists** to understand what your content blocker is preventing and how.
+
+By appreciating these categories, you gain transparent, actionable insight into your browsing’s network activity, supporting better privacy decisions and filter tuning.
+
+---
+
+## Troubleshooting Tips
+
+- If you see no Stealth-blocked domains listed, it may be due to your blocker’s configuration or the site not triggering stealth blocking.
+- Unexpectedly large Allowed lists could suggest gaps in your filter lists or content blocker settings.
+- Inconsistent or missing data might arise from browser version differences affecting the `webRequest` API.
+
+Refer to the [Getting Started guides](/getting-started/setup-installation/prerequisites-system-requirements) and [Troubleshooting Common Setup Issues](/getting-started/getting-to-first-results/troubleshooting-common-setup-issues) for further help.
+
+---
+
+## Summary
+
+Distinguishing Allowed, Blocked, and Stealth-blocked connections is the key to understanding your browsing data with uBO Scope. This knowledge exposes the true behavior of content blockers and empowers you to make informed privacy choices and debunk misleading assumptions prevalent in ad-blocking discussions.
+
+
+<AccordionGroup title="Key Concepts Summary">
+<Accordion title="Allowed Connections">
+Requests that successfully complete, indicating which services your browser fetched resources from.
+</Accordion>
+<Accordion title="Blocked Connections">
+Requests actively denied or failed due to content blocking rules, showing explicit blocks.
+</Accordion>
+<Accordion title="Stealth-Blocked Connections">
+Requests silently suppressed by stealth techniques, hidden from webpages to avoid detection or breakage.
+</Accordion>
+</AccordionGroup>
+
+
+## Additional Resources
+
+- [What is uBO Scope?](/overview/introduction-and-value/what-is-ubo-scope) — Overview of the extension’s purpose and capabilities.
+- [uBO Scope Architecture (with Diagram)](/overview/system-architecture-and-data-flow/architecture-overview) — How connection data is collected and processed.
+- [How uBO Scope Monitors and Displays Network Activity](/overview/system-architecture-and-data-flow/data-collection-and-display-flow) — Technical insight into event monitoring and UI updates.
+- [Interpreting the Badge Count and Results](/guides/usage-patterns/interpreting-badge-counts) — Guide on understanding what badge counts mean.
+
+For developers and filter list maintainers, this understanding is foundational to using uBO Scope as a precise auditing and debugging tool.
+
+---
+
+*For full source code and contribution details, visit the [GitHub repository](https://github.com/gorhill/uBO-Scope).*
