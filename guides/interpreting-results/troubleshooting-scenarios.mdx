@@ -1,0 +1,153 @@
+---
+title: "Troubleshooting and Special Scenarios"
+description: "Solutions for scenarios where expected results differ—such as missing data, extension conflicts, or test websites that report 'incorrectly.' Covers the limitations of the webRequest API and how stealth blocking can affect perceived outcomes."
+---
+
+# Troubleshooting and Special Scenarios
+
+This guide helps you resolve situations where uBO Scope's results differ from expectations or appear inconsistent. It covers common issues such as missing or incomplete data in the popup panel, apparent conflicts with other extensions, and understanding why certain test websites may report misleading results. Additionally, it explains the inherent limitations of browser APIs that impact what uBO Scope can observe, including how stealth blocking techniques affect measurements.
+
+---
+
+## 1. Understanding the Basis of uBO Scope's Data
+
+uBO Scope relies on the browser's `webRequest` API to observe network requests initiated by web pages. This API allows the extension to:
+
+- Detect *attempted* connections to remote servers.
+- Determine the outcome of each request — whether allowed, blocked, or redirected stealthily.
+
+Because uBO Scope listens at this API level, it can see connection attempts regardless of what content blockers or DNS-based blocking tools may be active. However, its visibility is limited to requests the browser reports through the `webRequest` API.
+
+> This design lets uBO Scope measure *privacy exposure* by counting distinct third-party domains connected to — not simply blocked requests.
+
+---
+
+## 2. Common Troubleshooting Scenarios
+
+### Scenario 1: Popup Panel Shows "NO DATA" or Empty Lists
+
+**Cause:**
+- The extension has not recorded connection data for the current tab.
+- The current tab does not have any remote connections yet (e.g., a new blank tab).
+- The extension failed to initialize or could not receive tab data.
+
+**Solution:**
+1. Confirm you are viewing a fully loaded webpage known to have third-party connections.
+2. Reload the tab and open the popup again to allow fresh data gathering.
+3. Ensure uBO Scope is enabled and has necessary permissions (see installation guides).
+4. Check the browser toolbar for the uBO Scope icon; absence indicates installation or activation issues.
+
+<Check>
+Always start troubleshooting by verifying that uBO Scope is active and the tab is fully loaded.
+</Check>
+
+### Scenario 2: Toolbar Badge Is Zero but You Expect Connections
+
+**Cause:**
+- The page may have third-party network requests that do not complete successfully or are stealth-blocked.
+- The `webRequest` API may not fire events for certain resource types or connection types.
+
+**Solution:**
+- Visit a different, well-known site with many third-party resources for comparison.
+- Confirm content blockers are not stealth-blocking requests before uBO Scope sees them (some blocking may prevent `webRequest` events).
+- Consult the [Badge Logic Best Practices](../../guides/interpreting-results/badge-logic-best-practices) guide to correctly interpret the badge count.
+
+### Scenario 3: Conflicts with Other Extensions Appearing to Block or Interfere
+
+**Cause:**
+- Some blocking extensions employ stealth techniques that hide blocking actions.
+- uBO Scope can see the network request outcomes but may show domains as "allowed" if the blocking method is undetectable via `webRequest`.
+
+**Solution:**
+- Understand that uBO Scope reports *observed* connection results, not what other extensions attempt or claim to block invisibly.
+- Disable suspected conflicting extensions to test how results change.
+- Use uBO Scope alongside traditional blockers for complementary insight.
+
+### Scenario 4: "Ad Blocker Test" Websites Reporting Incorrect or Confusing Results
+
+**Cause:**
+- Such test sites generate synthetic network requests that may not realistically represent real browsing behavior.
+- Extensions may stealth-block or defer blocking, causing discrepancies visible to uBO Scope.
+
+**Solution:**
+- Avoid relying on these sites as benchmarks; they often fail to reflect real-world blocking effectiveness.
+- Focus instead on data gathered during normal browsing sessions.
+- Refer to the [Real-World Value](../../overview/getting-started-core-value/realworld-value) guide for context on interpreting connection counts meaningfully.
+
+---
+
+## 3. Limitations Due to Browser API and Stealth Blocking
+
+- **Incomplete Network Visibility:** Some browsers or network protocols may not report every request via `webRequest`. WebSocket connections, HTTP/3, or some service worker fetches might escape observation.
+- **Stealth Blocking:** Extensions sometimes block resources in ways that prevent detection by `webRequest` listeners. uBO Scope categorizes these as "stealth-blocked" domains.
+- **Redirects and Timing:** Redirects may appear differently depending on timing and URL changes; uBO Scope tracks these but some subtle behaviors can affect counts.
+
+Understanding these constraints helps set realistic expectations about what data uBO Scope can provide.
+
+---
+
+## 4. Step-by-Step Troubleshooting Workflow
+
+<Steps>
+<Step title="Verify Installation and Permissions">
+Ensure uBO Scope is properly installed, enabled, and has all required permissions (`webRequest`, `activeTab`, `storage`). Review installation guides specific to your browser:
+
+- [Installing uBO-Scope in Your Browser](../../guides/getting-started/install-extension)
+- [System Requirements](../../getting-started/installation-setup/system-requirements)
+</Step>
+
+<Step title="Reload and Test on Known Websites">
+Open popular, content-rich websites (e.g., news sites, e-commerce) to generate third-party connections. Observe if the toolbar badge updates accordingly.
+
+- Use the [Quick Start Guide](../../getting-started/first-use-validation/quick-start-guide) for sample testing steps.
+</Step>
+
+<Step title="Open Popup Panel to Inspect Details">
+Click the toolbar icon to reveal the popup panel. Ensure domains appear grouped under "not blocked", "stealth-blocked", or "blocked".
+
+If empty or "NO DATA", reload the tab and retry.
+</Step>
+
+<Step title="Check for Conflicting Extensions">
+Temporarily disable other privacy or content blocking extensions. Reload and observe any changes in uBO Scope’s results.
+</Step>
+
+<Step title="Consult Logs and Settings">
+Check the browser’s extension logs or console for any error messages that might indicate communication or permission problems.
+
+If persistent issues arise, consider resetting browser profile or reinstalling the extension.
+</Step>
+</Steps>
+
+---
+
+## 5. Practical Tips and Best Practices
+
+- **Interpret the badge count as a measure of distinct allowed third-party connections, not a raw block count.** Lower numbers signify less privacy exposure.
+- **Use the popup panel to understand which domains are blocked, stealth-blocked, or not blocked for granular insights.**
+- **Ignore ad blocker test web pages as accurate indicators of extension effectiveness; rely on real browsing data.**
+- **Regularly update your browser and uBO Scope to benefit from latest API improvements and bug fixes.**
+
+---
+
+## 6. When to Seek Further Help
+
+If your troubleshooting does not resolve issues:
+
+- Review the [Troubleshooting Installation & First Use](../../getting-started/first-use-validation/troubleshooting-setup) guide for additional setup fixes.
+- Check for environment-specific incompatibilities noted in the [System Requirements](../../getting-started/installation-setup/system-requirements).
+- Report detailed information including browser version, other installed extensions, and steps to reproduce the issue in the uBO Scope GitHub issues.
+
+---
+
+## 7. Additional Resources
+
+- [Badge Logic Best Practices](../../guides/interpreting-results/badge-logic-best-practices)
+- [Understanding the Popup Panel](../../guides/interpreting-results/understanding-popup)
+- [Core Workflow of uBO Scope](../../guides/getting-started/core-workflow)
+- [Real-World Value of uBO Scope](../../overview/getting-started-core-value/realworld-value)
+
+
+---
+
+Maintaining clarity about uBO Scope's operational boundaries and its role as a transparency tool ensures you get the most accurate insights into your browser’s third-party connection activity and avoid common pitfalls caused by stealth technologies and unrealistic tests.
