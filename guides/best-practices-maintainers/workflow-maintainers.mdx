@@ -1,0 +1,169 @@
+---
+title: "Optimizing Workflow for Filter List Maintenance"
+description: "Detailed strategies for filter list maintainers to use uBO Scope in reviewing, updating, and verifying the impact of block lists. Covers identifying outlier domains, verifying stealth blocking, and using domain data to refine filtering strategies on constrained devices."
+---
+
+# Optimizing Workflow for Filter List Maintenance with uBO Scope
+
+## Workflow Overview
+
+This guide empowers filter list maintainers to leverage uBO Scope effectively in reviewing, updating, and verifying the impact of block lists on network connections observed in real-world browsing. It focuses on practical strategies to identify unusual domains, verify stealth blocking behavior, and refine filtering rules using detailed domain data.
+
+### Prerequisites
+- uBO Scope installed and enabled in a supported browser (Chromium 122+, Firefox 128+, Safari 18.5+).
+- Basic familiarity with network requests and domain structures.
+- An active filter list or set of blocking rules to review.
+
+### Expected Outcome
+- Confident identification of outlier domains affecting the filter list.
+- Ability to detect and verify stealth-blocked domains.
+- Ability to use domain connection data to refine filter lists for optimal blocking on constrained devices.
+
+### Time Estimate
+- Initial familiarization: 15 minutes.
+- Review session per filter list update: 30–60 minutes depending on complexity.
+
+### Difficulty Level
+Intermediate (requires some networking and domain knowledge, but no coding required).
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Launch uBO Scope and Begin Monitoring
+
+1. Open your browser with uBO Scope installed.
+2. Navigate to the target webpage or web application where the filter list is applied.
+3. Click the uBO Scope toolbar icon to open the popup interface.
+4. Observe the badge count: this indicates the number of distinct third-party domains successfully connected to.
+
+**Expected Result:**
+- The popup shows three categorized sections: _not blocked_, _stealth-blocked_, and _blocked_. Each lists domains with counts of connection attempts.
+
+
+### 2. Identify Outlier Domains
+
+Filter list maintainers need to quickly spot domains that are uncommon or unexpected, which may indicate gaps or issues in the current filters.
+
+1. In the _not blocked_ section, scan the list of domains.
+2. Look for domains that do not belong to known major services or CDNs or that appear rarely.
+3. Cross-reference suspicious domains with authoritative sources or your filter list rules.
+4. Flag domains for further investigation or rule creation.
+
+**Tip:**
+- Use the domain counts next to each domain to identify heavily connected domains versus sporadic ones.
+
+
+### 3. Verify Stealth Blocking Behavior
+
+uBO Scope categorizes some requests as _stealth-blocked_, where the content blocker blocks requests in a way that is less detectable but effective.
+
+1. Review the _stealth-blocked_ section in the popup.
+2. Confirm these are intentional blocks corresponding to your filter configuration.
+3. To validate, load test pages with and without your filter list and compare stealth blocks.
+
+**Common Pitfall:**
+- Misinterpreting stealth-blocked domains as allowed or unblocked. These actually represent requests prevented silently.
+
+
+### 4. Use Domain Data to Refine Filtering Strategies
+
+1. Observe domains grouped by outcomes (allowed, stealth-blocked, blocked).
+2. Export or note domains that frequently appear allowed but should be blocked.
+3. Consider domain scope—use the Public Suffix List awareness (built-in to uBO Scope) to focus on effective domain matching.
+4. Adjust your filter lists targeting domain-level or hostname-level rules where appropriate.
+
+**Example:**
+- If `tracking.example.com` appears under _not blocked_ frequently, consider adding rules targeting `example.com` or specific subdomains.
+
+
+### 5. Iterate and Validate
+
+1. After updating filter lists, reload the target webpage.
+2. Use uBO Scope to verify changes by tracking changes in allowed and blocked domains.
+3. Confirm that stealth-blocking tactics remain effective and that no unintended domains leak through.
+
+**Verification:** Badge count should ideally decrease or remain stable if the filter list is optimized.
+
+
+### 6. Manage Constrained Devices
+
+For devices with limited browser tooling:
+
+1. Use uBO Scope’s minimal interface to review domain connection patterns easily.
+2. Prioritize rules based on domain connection frequency and stealth blocking results.
+3. Avoid overly granular blocking which may increase network requests indirectly.
+
+
+## Examples & Real Scenarios
+
+### Scenario 1: Detecting a New Tracking Domain
+You notice a domain `ads.newtracking.net` appearing repeatedly under _not blocked_. By flagging this, you update your filter list to block `newtracking.net`, testing subsequently shows this domain shifts to _blocked_ or _stealth-blocked_, reducing network requests.
+
+### Scenario 2: Confirming Stealth Blocking
+A stealth-blocked domain `analytics.example.org` indicates your filter uses stealth techniques effectively. You test by disabling your filter and observe the domain moves to _not blocked_, validating stealth behavior.
+
+### Scenario 3: Optimizing for Low-Power Devices
+On a tablet with limited resources, you identify many low-frequency allowed domains. You group these and create broader high-level rules focused on domains with higher connection counts, improving blocking performance and reducing overhead.
+
+
+## Troubleshooting & Tips
+
+### Common Issues
+- **No data shown in popup:** Ensure uBO Scope has permissions for active tabs and webRequest. Reload the page and retry.
+- **Badge counts don’t update:** Close and reopen the popup, or reload the browser tab.
+- **Unexpected allowed domains:** Check whether the domains are whitelisted intentionally or require updated blocking rules.
+
+### Best Practices
+- Regularly update your filter lists based on connection data from real user environments.
+- Use the Public Suffix List awareness to create site-effective domain rules.
+- Cross-check stealth blocking results with actual browsing experiences to avoid overblocking.
+
+### Performance Considerations
+- Avoid excessive granular rules on very low-volume domains to reduce processing overhead.
+- Monitor stealth blocking as it offers a good balance of effectiveness and stealthiness.
+
+### Alternative Approaches
+- Combine uBO Scope insights with browser developer tools for deeper analysis.
+- Use uBO Scope in parallel with other monitoring extensions to cross-validate data.
+
+
+## Next Steps & Related Content
+
+- Read the [Analyzing Network Connections on a Webpage](https://docs.example.com/guides/workflows-and-real-world-usage/analyzing-network-connections) guide to enhance understanding of network traffic.
+- Consult [Interpreting Blocked and Stealth Connections](https://docs.example.com/guides/workflows-and-real-world-usage/interpreting-blocked-stealth-connections) to deepen knowledge of connection outcomes.
+- Explore [Troubleshooting and Understanding Product Limitations](https://docs.example.com/guides/best-practices-maintainers/troubleshooting-and-limitations) for advanced problem-solving.
+
+---
+
+## Summary
+
+Optimizing your filter list maintenance workflow with uBO Scope focuses on leveraging detailed domain connectivity data to identify gaps and excesses in blocking, efficiently verify stealth-blocking performance, and sharpen rule sets especially on constrained devices. By using uBO Scope’s categorization and domain aggregation features, maintainers ensure their lists deliver maximal privacy protection without unnecessary overhead or leakage.
+
+
+---
+
+## Appendix: Domain Parsing and Public Suffix List
+
+uBO Scope utilizes the [Public Suffix List](https://publicsuffix.org/) to accurately parse domains out of hostnames. This allows filter list maintainers to apply or evaluate rules at the most effective domain level, avoiding common pitfalls of blocking too broad or too narrow targets.
+
+This underpins the filtering strategies to optimize blocking and maintain functionality.
+
+
+---
+
+## Additional Resources
+- Official uBO Scope Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List Reference: [https://publicsuffix.org/list/](https://publicsuffix.org/list/)
+- Related Documentation:
+  - Installation and First Steps
+  - Understanding the Badge and Popup Interface
+  - Analyzing Network Connections on a Webpage
+  - Interpreting Blocked and Stealth Connections
+
+
+---
+
+<Info>
+This guide complements the overall uBO Scope documentation by focusing specifically on filter list maintainer workflows, enhancing the value of the extension’s domain-level network connection insights.
+</Info>
