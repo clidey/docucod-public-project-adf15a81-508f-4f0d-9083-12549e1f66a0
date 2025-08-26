@@ -1,0 +1,163 @@
+---
+title: "Diagnosing Content Blocking in Real Web Environments"
+description: "Learn how to use uBO Scope to detect which network requests are being blocked or allowed in your browsing session, regardless of your installed content blockers or DNS filtering setups. Includes tips for separating extension-based and DNS-based blocks."
+---
+
+# Diagnosing Content Blocking in Real Web Environments
+
+Understanding how different network requests in your browser are handled—whether allowed, stealth-blocked, or fully blocked—is crucial to assessing privacy, security, and the effectiveness of your content blocking tools. uBO Scope empowers you to see exactly which third-party remote servers your browser connects to, independently of any installed content blocker or DNS filter.
+
+This guide walks you through using uBO Scope to diagnose content blocking behaviors during actual browsing sessions, revealing how to interpret the data so you can identify if and why certain requests are blocked or allowed.
+
+---
+
+## 1. Workflow Overview
+
+### What This Guide Helps You Accomplish
+- Use uBO Scope to detect and analyze network request outcomes during real-world browsing.
+- Distinguish between allowed, stealth-blocked, and DNS-blocked network connections.
+- Understand how to separate content blocking caused by extensions versus DNS-level filtering.
+
+### Prerequisites
+- uBO Scope installed and enabled in your Chromium, Firefox, or Safari browser (minimum versions: Chromium ≥122, Firefox ≥128, Safari ≥18.5).
+- Basic familiarity with opening browser extensions and accessing the uBO Scope popup.
+- Active browsing session on websites where you want to diagnose content blocking.
+
+### Expected Outcome
+- You will be able to interpret the uBO Scope popup data to see which third-party domains your browser connects to and which requests are blocked or stealth-blocked.
+- Gain actionable insight into the effectiveness of content blockers and DNS filtering.
+
+### Time Estimate
+10-20 minutes to perform basic diagnosis, longer for deeper investigation.
+
+### Difficulty Level
+Intermediate – requires understanding of third-party domains and some browser networking concepts.
+
+---
+
+## 2. Step-by-Step Instructions
+
+<Steps>
+<Step title="Open uBO Scope on the Target Website">
+Navigate to a website you want to analyze. Click the uBO Scope icon in your browser toolbar to open the popup interface. The popup automatically displays a categorized list of third-party domains.
+
+**Expected Result:** You see the hostname at the top and three categories: not blocked, stealth-blocked, and blocked domains with counts.
+</Step>
+
+<Step title="Review Allowed (‘Not Blocked’) Domains">
+Look under the 'not blocked' section to see third-party domains from which your browser successfully received resources.
+
+- These are connections your browser made without interruption.
+- Many legitimate CDNs and services will appear here.
+
+**Tip:** A lower count here generally indicates fewer distinct third-party connections, commonly better for privacy.
+</Step>
+
+<Step title="Identify Stealth-Blocked Domains">
+Check the 'stealth-blocked' section. These are network requests where the extension or system caused a redirect or another form of interception that's non-obvious to webpage scripts.
+
+- Stealth-blocked means the request was blocked quietly, typically by browser extension stealth techniques.
+- These requests never fetched data but may not appear as outright blocked to webpage scripts.
+
+**Insight:** Stealth blocking shows advanced blocking behavior that avoids easy detection by the webpage.
+</Step>
+
+<Step title="Examine Blocked Domains">
+Look at the 'blocked' section for domains whose requests failed due to blocking or network errors.
+
+- This category includes DNS-level blocks where requests never resolved.
+- Also includes extension blocking that prevents the request from completing.
+
+**Decision Point:** If you see domains here you're not expecting, it may indicate DNS blocking or other external blocking outside the extension.
+</Step>
+
+<Step title="Compare Against Your Content Blocker">
+Cross-reference the domains and counts with your installed content blockers.
+
+- If uBO Scope shows allowed connections where your blocker claims a block, investigate if DNS or stealth blocking is involved.
+- If unexpected domains appear in allowed, check additional extension logs or consider whitelist settings.
+</Step>
+
+<Step title="Separate Extension vs DNS Blocking">
+Remember, uBO Scope tracks all network requests visible through the browser's `webRequest` API.
+
+- Requests blocked by extensions typically appear under stealth-blocked or blocked categories.
+- DNS-based blocks manifest as blocked domains without matching extension stealth blocking.
+
+**Tip:** When troubleshooting, if a domain consistently appears under blocked but not stealth, DNS blocking is likely.
+</Step>
+
+<Step title="Validate Findings by Testing Different Scenarios">
+Open additional websites with known third-party content and observe the popup for changes.
+
+- Test with content blockers disabled/enabled.
+- Test with DNS filtering turned off/on (if configurable).
+
+**Verification:** Changes in the popup’s domain lists will reflect the impact of your filters and blockers.
+</Step>
+</Steps>
+
+---
+
+## 3. Practical Example
+
+Imagine you're visiting `example.com` and want to check what third-party connections happen and how they're treated.
+
+- Open uBO Scope popup while on `example.com`.
+- You see the badge count is 12 — meaning 12 distinct third-party domains allowed.
+- The popup shows 9 domains under 'not blocked', 2 under 'stealth-blocked' and 1 under 'blocked'.
+- The blocked domain matches a known tracker you block on DNS.
+
+This confirms your content blocker and DNS filter are collectively effective.
+
+---
+
+## 4. Troubleshooting & Tips
+
+### Common Issues
+- **Popup Shows ‘NO DATA’**: This means no network activity was recorded for the active tab.
+  - Reload the page.
+  - Verify extension permissions and browser support.
+  - See [First Troubleshooting Steps](https://your-docs/getting-started/first-use-and-validation/first-troubleshooting-steps) for detailed help.
+
+- **High Number of Allowed Domains Unexpectedly**
+  - Review if some third-party content is essential.
+  - Use uBO Scope to investigate stealth-blocked domains — perhaps blocking is less comprehensive than believed.
+
+- **Blocked Domains Are Unfamiliar**
+  - Check if they correspond to DNS-based blocks.
+  - Determine if they are problematic or benign using reputation tools.
+
+### Best Practices
+- Regularly check your most visited sites with uBO Scope to understand evolving network connections.
+- Use the combined insight from badge counts and popup domain lists to adjust your blocker or DNS filter settings.
+- Avoid trusting ad blocker test webpages; real browsing diagnostics are more reliable.
+
+### Performance Considerations
+- uBO Scope works efficiently by batching network events; a slight delay (about 1 second) before data appears is normal.
+- Extensive browsing with many third-party connections can increase badge numbers but does not slow down browsing.
+
+### Alternate Approaches
+- For advanced users, exporting logs or integrating with other privacy tools can supplement uBO Scope’s data.
+
+---
+
+## 5. Next Steps & Related Documentation
+
+- [Understanding the Popup Interface](https://your-docs/getting-started/first-use-and-validation/understanding-the-popup) — Detailed breakdown of the popup UI.
+- [Interpreting Badge and Popup Results](https://your-docs/guides/core-workflows/interpret-badge-and-popup) — How to read counts and categories for smarter decisions.
+- [Troubleshooting Unexpected Server Connections](https://your-docs/guides/core-workflows/troubleshoot-server-connections) — Step-by-step help for suspicious connection findings.
+- [Evaluating Ad Blockers with uBO Scope](https://your-docs/guides/advanced-use-cases/evaluate-ad-blockers) — Use uBO Scope for informed blocker comparisons.
+
+By following this guide, you will gain the clarity to see through complex filtering layers and make informed privacy decisions with confidence.
+
+
+---
+
+<Info>
+Visit the [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) for the latest updates and source code.
+</Info>
+
+<Check>
+Always verify your browser's compatibility and permissions if uBO Scope data seems inconsistent.
+</Check>

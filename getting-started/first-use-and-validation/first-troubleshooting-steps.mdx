@@ -1,0 +1,192 @@
+---
+title: "First Troubleshooting Steps"
+description: "Addresses immediate issues—such as seeing no data after installation—by walking through possible causes, permissions checks, and confirming browser compatibility."
+---
+
+# First Troubleshooting Steps
+
+When you install uBO-Scope and open its popup, sometimes you might see **NO DATA** or an empty connection report. This guide walks you through immediate steps to diagnose and resolve common issues that prevent uBO-Scope from displaying network connection data, ensuring you quickly get actionable insights from the extension.
+
+---
+
+## 1. Confirm Permissions and Extension Enablement
+
+uBO-Scope relies on specific browser permissions to track network requests properly.
+
+### Steps:
+
+1. Open your browser’s extensions page:
+   - **Chrome/Chromium:** `chrome://extensions/`
+   - **Firefox:** `about:addons`
+   - **Safari:** Safari > Preferences > Extensions
+
+2. Make sure uBO-Scope is **enabled**.
+
+3. Check that the extension has the required permissions listed:
+   - **ActiveTab**
+   - **Storage**
+   - **WebRequest**
+
+4. On browsers that support detailed permission management, verify that uBO-Scope has access to all websites (host permissions for http, https, ws, and wss).
+
+<Tip>
+Without full host permissions and the activeTab permission, uBO-Scope cannot monitor network requests, resulting in no data appearing in the popup.
+</Tip>
+
+---
+
+## 2. Check Browser Compatibility and Version
+
+uBO-Scope requires a recent browser version with up-to-date WebExtensions APIs.
+
+### Supported Versions:
+
+- Chromium-based browsers: version 122 or higher
+- Firefox: version 128 or higher
+- Safari: version 18.5 or higher
+
+### How to verify:
+
+- Check your browser version via the browser’s “About” page.
+- Update your browser if the version is older than listed above.
+
+<Warning>
+Older browsers may not support the required `webRequest` APIs correctly, causing uBO-Scope to fail silently.
+</Warning>
+
+---
+
+## 3. Verify uBO-Scope is Tracking Network Requests
+
+Once permissions and browser version are confirmed, ensure uBO-Scope actively tracks network connections for the current tab.
+
+### How to verify:
+
+1. Visit a website that loads multiple external resources (e.g., https://example.com).
+
+2. Click on the uBO-Scope toolbar icon to open the popup.
+
+3. The popup should show the page’s hostname at the top and lists of domains segmented into:
+   - Not blocked (allowed)
+   - Stealth-blocked
+   - Blocked
+
+4. The **domains connected** count should be a non-zero number reflecting distinct third-party servers contacted.
+
+<Tip>
+Sometimes the popup shows NO DATA immediately after installation. Wait a few seconds and reload the website to allow uBO-Scope to collect data.
+</Tip>
+
+---
+
+## 4. Understand Why You Might See NO DATA
+
+If the popup still shows NO DATA, consider the following common causes:
+
+- **No network activity on the current tab:** The website may not be loading resources that trigger network requests.
+- **Browser privacy features blocking webRequest API:** Some browsers or configurations may limit extensions’ access to network requests.
+- **Conflicts with other extensions or content blockers:** Other tools may interfere with network event reporting.
+
+### Actions:
+
+- Navigate to a different website known to load multiple external resources.
+- Temporarily disable other extensions that manipulate network requests to isolate conflicts.
+- Check browser privacy or security settings that might disable extension access to network data.
+
+---
+
+## 5. Check for Extension Updates and Reinstall if Needed
+
+Although uBO-Scope updates are infrequent, it's good to ensure you are running the latest version.
+
+### Steps:
+
+1. Visit the extension store for your browser (Chrome Web Store, Firefox Add-ons, or Safari Extensions).
+2. Confirm the installed version matches the latest release (version 1.0.1 or higher).
+3. If you suspect a corrupt installation, remove and reinstall uBO-Scope.
+
+<Note>
+Reinstalling can clear possible corrupted state causing persistent NO DATA behavior.
+</Note>
+
+---
+
+## 6. Confirm Browser Toolbar Badge Appearance
+
+The badge is a quick indicator showing the count of distinct connected third-party domains.
+
+### What to check:
+
+- Is the badge visible on the toolbar icon? If not, the extension might not be enabled or might lack permissions.
+- Does the badge show a number larger than zero on websites with many connections?
+
+If the badge does not appear correctly, revisit permissions and browser compatibility.
+
+---
+
+## 7. Additional Troubleshooting Tips
+
+- **Reload the tab:** Network connections tracked are per tab session and require page reload to re-capture.
+- **Open the popup only on active tabs:** uBO-Scope shows per-tab data; opening the popup on inactive tabs may show no or stale data.
+- **Clear session storage:** Though rare, clearing browser storage for the extension (in browser extension settings or manually) can help reset faulty data caching.
+
+---
+
+## Summary
+
+Following these immediate steps will resolve most cases where no network connection data appears in uBO-Scope’s popup after installation. Ensuring the extension is properly enabled with all required permissions, verifying browser compatibility, and refreshing network activity on active tabs will restore full visibility to your remote server connections.
+
+For persistent issues, refer to the [Troubleshooting Common Installation Issues](../installation-and-setup/troubleshooting-installation) and [Validating Your Installation](../first-use-and-validation/validating-installation) guides.
+
+---
+
+## References & Next Steps
+
+- [Installing the Extension](../installation-and-setup/installing-extension): How to get uBO-Scope for your browser
+- [First Run & Minimal Configuration](../installation-and-setup/first-run-configuration): Understand default behavior and setup
+- [Troubleshooting Common Installation Issues](../installation-and-setup/troubleshooting-installation): Additional diagnostics
+- [Validating Your Installation](../first-use-and-validation/validating-installation): Steps to confirm data accuracy
+- [Understanding the Popup Interface](../first-use-and-validation/understanding-the-popup): How to interpret displayed data
+
+---
+
+_Last updated: 2024_
+
+---
+
+## Example Command
+
+While uBO-Scope works entirely within your browser and requires no command-line interaction, here is a quick way to verify the extension's presence and version via the browser console:
+
+```javascript
+// Open browser devtools (F12 or Ctrl+Shift+I) and run:
+browser.management.getAll().then(extensions => {
+  const uboScope = extensions.find(e => e.name === 'uBlock Origin Scope');
+  if (uboScope) {
+    console.log('uBO-Scope version:', uboScope.version);
+  } else {
+    console.warn('uBO-Scope is not installed or enabled.');
+  }
+});
+```
+
+If this script reports the version, uBO-Scope is installed and enabled.
+
+---
+
+## Troubleshooting FAQ
+
+<AccordionGroup title="Common Troubleshooting Questions">
+<Accordion title="Why does the popup show NO DATA after installation?">
+Make sure you have reloaded the tabs you want to monitor. uBO-Scope only tracks network requests after it is installed and active.
+</Accordion>
+<Accordion title="My badge count is always zero. What should I check?">
+Verify that the extension has host permissions enabled for all sites, and the browser version meets minimum requirements for the `webRequest` API.
+</Accordion>
+<Accordion title="Does uBO-Scope work with any content blocker?">
+Yes, it tracks network requests independently of other content blockers but relies on the browser reporting these requests through its APIs.
+</Accordion>
+<Accordion title="I suspect a conflict with another extension. How to isolate?">
+Temporarily disable other extensions affecting network traffic or privacy and observe if uBO-Scope begins reporting data.
+</Accordion>
+</AccordionGroup>
