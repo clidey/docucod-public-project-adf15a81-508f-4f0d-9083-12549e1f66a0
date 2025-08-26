@@ -1,0 +1,139 @@
+---
+title: "Why aren’t all network requests visible in uBO Scope?"
+description: "Explains technical limitations (such as requests outside the browser’s webRequest API), reasons some requests might not appear in the extension, and recommendations for verifying coverage."
+---
+
+# Why Aren’t All Network Requests Visible in uBO Scope?
+
+uBO Scope is designed to provide a clear and concise view of network connections initiated by your browser's active tab, focusing on third-party remote servers contacted during web browsing sessions. However, you might notice that not every single network request appears within uBO Scope's popup or badge count. This FAQ explains the underlying reasons for this behavior, details technical limitations, and offers practical tips to verify how comprehensively uBO Scope covers your network activity.
+
+---
+
+## Understanding the Source of Network Requests in uBO Scope
+
+uBO Scope relies exclusively on the browser's `webRequest` API to monitor and log network requests. This API serves as the gateway through which uBO Scope learns about connections including main page loads, third-party resource fetches, WebSocket connections, redirects, errors, and successes.
+
+However, not all network activity in a browser is surfaced through the `webRequest` API due to inherent architectural and security models of modern browsers.
+
+### What uBO Scope Monitors:
+
+- HTTP/HTTPS requests (`http:`, `https:`)
+- WebSocket (`ws:`, `wss:`) connections
+- Requests that pass through the browser’s networking stack and are observable by the `webRequest` listeners
+
+### What uBO Scope Does Not Monitor:
+
+- Requests triggered outside the `webRequest` API scope, including certain internal or privileged browser operations
+- Network activity initiated by browser extensions or native code outside the webRequest API
+- System-level or OS-level DNS requests or traffic
+
+This limitation is critical to understand: **uBO Scope can only report on requests the browser itself surfaces to the extension via the webRequest interface.**
+
+---
+
+## Common Reasons Some Network Requests Are Not Shown
+
+### 1. Requests Originating Outside the WebRequest API Scope
+
+Some network requests, including those initiated by special browser features or protocols, might bypass the `webRequest` event listeners. Such requests do not get reported to uBO Scope.
+
+### 2. Browser Permission and API Limitations
+
+- Some browsers or browser versions may restrict or filter the available `webRequest` events due to security, privacy models, or manifest permission settings.
+- Requests from tabs or frames that the extension cannot map properly might not get tracked or associated correctly.
+
+### 3. Requests That Don’t Match the Extension’s Host Permissions
+
+uBO Scope’s manifest explicitly requests permission to observe requests on these URL patterns:
+
+- `http://*/*`
+- `https://*/*`
+- `ws://*/*` and `wss://*/*` (in Chromium and Firefox)
+
+Requests to URLs outside these patterns or on protocols not included also won’t be captured.
+
+### 4. Requests Inside Frames or Redirects Handled Differently
+
+Requests triggered within frames or those resulting from redirects can sometimes be categorized differently (e.g., stealth-blocked, blocked, or allowed) but still might not immediately appear if they lack relevant metadata (IP address, status code).
+
+---
+
+## Verifying What uBO Scope Sees
+
+To confirm that uBO Scope is actively observing network requests as expected, follow these steps:
+
+<Steps>
+<Step title="Open uBO Scope Popup">
+Click the uBO Scope toolbar icon to open the popup for the active tab. Observe if domains are listed under the categories "not blocked," "stealth-blocked," and "blocked."
+</Step>
+<Step title="Trigger Network Activity">
+Visit websites known to load resources from third-party domains (like CDNs or trackers). Refresh pages or open multiple tabs to generate network events.
+</Step>
+<Step title="Check Badge Count">
+Observe the badge on the toolbar icon. It shows the count of distinct third-party domains connected in the active tab.
+</Step>
+<Step title="Confirm Extension Permissions">
+Ensure uBO Scope has permissions to monitor all required URL patterns matching your browsing activity.
+</Step>
+</Steps>
+
+<Tip>
+If you notice fewer requests or domains than expected, refresh the page, and verify your browser is a supported version listed in the installation requirements.
+</Tip>
+
+---
+
+## Best Practices to Maximize Visibility in uBO Scope
+
+- **Keep uBO Scope Updated:** While updates are infrequent, using the latest version ensures compatibility with browser API changes.
+
+- **Use Supported Browsers and Versions:** Currently, uBO Scope supports Chrome (v122+), Firefox (v128+), and Safari (v18.5+). Older versions may not expose all network requests.
+
+- **Verify Host Permissions:** Permissions in the extension manifest cover typical web protocols. If your browsing involves uncommon protocols, uBO Scope won’t monitor those requests.
+
+- **Understand WebRequest API Boundaries:** Some browser-internal requests or encrypted DNS queries are beyond the webRequest API's reach.
+
+- **Test Across Sites:** Use different sites with third-party resources to understand the range of visibility uBO Scope offers.
+
+---
+
+## Common Misconceptions and Troubleshooting
+
+<AccordionGroup title="Common Questions About Missing Requests in uBO Scope">
+<Accordion title="Why don't I see every single network request my browser makes?">
+Browser architectures and security policies prevent some requests from being exposed via the webRequest API, which uBO Scope depends on. It focuses on web and websocket requests within its permission scope, hence some internal or protocol-specific requests remain hidden.
+</Accordion>
+<Accordion title="Can uBO Scope capture requests from other browser extensions or native apps?">
+No. uBO Scope only monitors network requests initiated by web pages and outgoing socket connections exposed via the browser's webRequest API. Extension- or system-level traffic is not visible.
+</Accordion>
+<Accordion title="Why do some redirected requests not show up?">
+Redirects can trigger multiple events, but only network requests conforming to allowed protocols and permissions appear. Some redirects may point to non-network schemes or filtered URLs, excluding them from reporting.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+uBO Scope provides valuable transparency into your browsing session’s network connections within the constraints of browser APIs. While it cannot show every conceivable network request—due to browser design, security, and API exposure—it reveals all connections visible through the webRequest API scope with full fidelity. Understanding these limitations helps set proper expectations and maximizes the usefulness of uBO Scope.
+
+For comprehensive usage, verify your browser support and extension installation, and review how to interpret the data shown in the popup UI.
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](https://docs.uBO-Scope/overview/introduction-and-value/what-is-ubo-scope) — Understand the purpose and overview of uBO Scope.
+- [Interpreting Badge Counts and Request Outcomes](https://docs.uBO-Scope/guides/real-world-usage-analysis/interpreting-badge-and-panel) — Learn to read and understand the extension’s badge and popup data.
+- [Troubleshooting Common Installation Issues](https://docs.uBO-Scope/getting-started/troubleshoot-validate/troubleshooting-install) — Resolve common setup problems.
+- [How to Interpret the Results in the Popup](https://docs.uBO-Scope/faq/using-ubo-scope/interpreting-results) — Detailed guide on popup categories and data meaning.
+
+---
+
+## Want to Explore More?
+
+Check the [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) for source details and contributions.
+
+**Remember:** The extension’s effectiveness depends on its ability to monitor requests via the browser's APIs—not every network request in your system can be captured or displayed by uBO Scope.
+
+---
