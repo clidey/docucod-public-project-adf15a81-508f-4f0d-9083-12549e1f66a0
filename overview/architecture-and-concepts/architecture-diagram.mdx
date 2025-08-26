@@ -1,100 +1,118 @@
 ---
-title: "Architecture Diagram"
-description: "Visual overview of uBO Scope's core architecture. Shows how the background script collects network request data, how it is processed and sent to the popup, and how supporting libraries and manifest files integrate to deliver a seamless user experience across browsers. Utilizes a Mermaid diagram for clarity."
+title: "Component Flow Diagram"
+description: "Visualize how the browser, background monitoring, and popup user interface interconnect. See the flow from browser network events through the background data processor into the user's view."
 ---
 
-# Architecture Diagram
+# Component Flow Diagram
 
-## Visual Overview of uBO Scope's Core Architecture
+## Visualizing uBO Scope's Internal Data Flow
 
-This page presents a clear, visual representation of the fundamental architecture behind uBO Scope. By following this diagram, you will gain a comprehensive understanding of how uBO Scope captures, processes, and displays network request data in your browser, ensuring a seamless and insightful user experience.
+Understanding the interaction between the browser, the background monitoring service, and the popup user interface is essential to appreciate how uBO Scope transparently surfaces information about network connections. This page offers a clear visualization and explanation of how network events originating from your browser flow through uBO Scope's internal components to present actionable data in the extension's popup panel.
 
-## Understanding the Flow: From Network Requests to User Insights
+---
 
-At the heart of uBO Scope lies a background script that continuously monitors network activity. This script leverages the browser's `webRequest` API to detect all network connections initiated by web pages, whether they succeed, are blocked, or stealth-blocked by content blockers in use.
+## How uBO Scope Works: From Network Events to User Interface
 
-The collected data is then processed and transmitted to the popup UI, where users find real-time, per-tab connection information. Additional supporting libraries parse domain information and serialize data efficiently, enhancing the clarity and performance of the extension across multiple browsers.
+At the core, uBO Scope listens to your browser’s network activity in real time. It captures crucial network events about each outgoing connection, processes and stores them in the background, then updates the popup panel you interact with. Here’s an overview of the journey:
 
-## Why This Matters to You
+- **Browser Network Events:** Your web browser observes all network requests initiated by web pages. These include requests for scripts, images, stylesheets, or websockets.
+- **Background Service Worker:** uBO Scope runs a background service worker script (`background.js`) that receives these network events. It processes the raw network data, categorizing each connection as allowed, stealth-blocked, or blocked.
+- **Session Data Management:** The background script keeps a session map linking each browser tab to detailed connection statistics, continually updating this data based on network request outcomes.
+- **Popup Interface:** When you click the uBO Scope toolbar icon, the popup panel fetches relevant data for the active tab from the background script. This data includes counts and lists of third-party domains contacted, broken down by their connection status.
+- **User Display:** The popup renders this information in a structured, easy-to-read format, allowing you to quickly assess the privacy landscape of the current tab.
 
-If you've ever wondered exactly which remote servers your browser is contacting while browsing, this architecture shows exactly how uBO Scope reveals that transparency. It does this without interfering with your current content blockers, offering an unbiased, comprehensive view of all network connection attempts.
+This flow ensures that uBO Scope always offers fresh, accurate insights into remote connections while maintaining a lightweight footprint within your browser.
 
-This enables you to make informed decisions on your privacy, understand potential third-party exposure, and debunk common misconceptions regarding content blocking effectiveness.
+---
 
-## Key Components in the Architecture
-
-- **Background Script**: The core engine that listens to network requests via the `webRequest` API, capturing all connection data.
-- **Popup UI**: The interface that presents the aggregated and categorized network insights to users for each browser tab.
-- **Supporting Libraries**: Utilities for domain parsing and data serialization that streamline data processing.
-- **Manifest Files**: Browser-specific configurations (for Chromium, Firefox, Safari) that define permissions, background scripts, and popup integrations.
-
-## How It Fits Together
-
-The architecture is designed around a clean flow ensuring data integrity and user clarity:
-
-1. The browser initiates or encounters network requests from web pages.
-2. The **background script** intercepts these requests, capturing details such as request URLs and blocking outcomes.
-3. Using supporting libraries, domain information is parsed and prepared for efficient data transmission.
-4. The processed data is sent to the **popup UI**, keeping its information up to date.
-5. Users interact with the popup to view categorized lists of allowed, blocked, and stealth-blocked connections.
-6. Manifest files ensure compatibility and correct permissions across supported browsers.
-
-This design guarantees that uBO Scope remains lightweight, responsive, and compatible with common content blockers and browser environments.
-
-## Architecture Diagram
+## Detailed Component Flow Illustration
 
 ```mermaid
 flowchart TD
 
-    subgraph Browser Environment
-        direction TB
-        BrowserAPI["Browser webRequest API"]
-        PopupUI["Popup UI"]
-    end
+  %% Browser and Network Events
+  Browser["Browser Network Events"]
 
-    subgraph uBO_Scope_Extension
-        direction LR
-        BGScript["Background Script<br/>- Listens to webRequest events<br/>- Captures network data"]
-        Libs["Supporting Libraries<br/>- Domain parsing<br/>- Data serialization"]
-        Manifest["Manifest Files<br/>- Browser-specific configs<br/>- Permissions and integration"]
-    end
+  %% Background Service Worker
+  Background["Background Service Worker\n(/js/background.js)"]
 
-    BrowserAPI --> BGScript
-    BGScript --"Parsed & Serialized Data"--> PopupUI
-    BGScript --> Libs
-    Libs --> BGScript
-    Manifest --> BGScript
-    Manifest --> PopupUI
+  %% Session Data
+  Session["Session Data Storage\n(Map of tabId to connection details)"]
 
-    style BGScript fill:#cbe4f9,stroke:#0a437a,stroke-width:2px
-    style PopupUI fill:#d1f0d1,stroke:#0a7a0a,stroke-width:2px
-    style Libs fill:#f9f1cb,stroke:#8a7500,stroke-width:2px
-    style Manifest fill:#f4c2c2,stroke:#7a0a0a,stroke-width:2px
+  %% Popup UI
+  Popup["Popup User Interface\n(popup.html + js/popup.js)"]
+
+  %% Interaction Arrows
+  Browser -->|"webRequest events (success, error, redirect)"| Background
+  Background -->|"Update connection records"| Session
+  Popup -->|"Request data for active tab"| Background
+  Background -->|"Send serialized tab connection data"| Popup
+  Popup -->|"Render lists and counts"| PopupUI["User sees connection summary\nin popup panel"]
+
+  %% Style for clarity
+  classDef browserStyle fill:#f9f,stroke:#333,stroke-width:2px;
+  classDef backgroundStyle fill:#bbf,stroke:#333,stroke-width:2px;
+  classDef sessionStyle fill:#bfb,stroke:#333,stroke-width:2px;
+  classDef popupStyle fill:#fbf,stroke:#333,stroke-width:2px;
+
+  class Browser browserStyle;
+  class Background backgroundStyle;
+  class Session sessionStyle;
+  class Popup,popupUI popupStyle;
 
 ```
 
-## Practical Tips
+---
 
-- When inspecting network connections, remember that uBO Scope shows connection attempts regardless of any blocking — giving you a full picture beyond what you might see in content blocker block counters.
-- The architecture supports all major browsers through dedicated manifest files, ensuring smooth cross-browser operation.
-- If you encounter any discrepancies in displayed network data, verify that your browser version and permissions allow background scripts to monitor `webRequest` events.
+## User Journey in Observing Network Connections
 
-## Common Pitfalls
+1. **Browsing as Normal:** As you load webpages, the browser generates network requests to various servers.
+2. **Extension Listening:** uBO Scope’s background service worker intercepts these request outcomes via browser webRequest APIs.
+3. **Connection Categorization:** Each request is classified based on whether it succeeded (allowed), was stealth-blocked (redirected), or outright blocked (error).
+4. **Data Aggregation:** This information is aggregated per tab, tracking distinct hostnames and domains contacted.
+5. **Popup Interaction:** Click the uBO Scope toolbar icon to open the popup panel.
+6. **Visual Insight:** The popup displays a real-time snapshot of connection counts and domain lists segmented by allowed, stealth, and blocked outcomes.
 
-- The extension relies on the browser's `webRequest` API; if certain network requests are made outside this API's scope, they won't appear in uBO Scope.
-- Background script may behave differently on different browsers due to their API implementation and manifest nuances; always check supported browser documentation.
-
-## Next Steps
-
-Explore related pages to deepen your understanding:
-- [Extension Architecture Overview](/overview/architecture-and-concepts/extension-architecture-overview)
-- [Core Terminology and Concepts](/overview/architecture-and-concepts/core-terminology)
-- [Supported Browsers & Prerequisites](/getting-started/installing-ubo-scope/supported-browsers-and-requirements)
-
-These will provide expanded insights on how the architecture operates in practice, essential terminology, and installation details.
+When coupled with the popup panel's clear organization, you gain complete transparency into which remote servers webpages connect to and how content blockers impact those connections.
 
 ---
 
-For source code, manifests, and detailed integration, visit the project's GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope).
+## Practical Tips & Best Practices
+
+- **Keep the Popup Open for Live Updates:** uBO Scope updates the popup with fresh data correlated to the active tab. Switching tabs refreshes this data automatically.
+- **Understand Connection Statuses:**
+  - *Allowed* means the connection occurred without interference.
+  - *Stealth-blocked* often indicates a redirected request that the content blocker handled subtly.
+  - *Blocked* means the connection was prevented due to an error or deliberate blocking.
+- **Badge Utility:** The extension icon badge increments dynamically with the number of unique allowed third-party domains; lower numbers signify fewer connections.
+- **Tab Removal Awareness:** When you close browser tabs, uBO Scope automatically cleans up data related to those tabs to maintain accuracy.
+
+---
+
+## Common Pitfalls and Troubleshooting
+
+- **No Data in Popup:** If the popup shows 'NO DATA' or zero domains, ensure you are on an active browsing tab with network activity and that the extension has been granted necessary permissions.
+- **Delayed Updates:** Network events are batched and processed every second to optimize performance. Expect slight delays in popup updates.
+- **Unsupported Browsers or Versions:** uBO Scope works on Chromium, Firefox, and Safari with minimum specified browser versions. Confirm compatibility if issues arise.
+
+---
+
+## Related Documentation
+
+- [System Architecture Overview](/overview/architecture-and-concepts/system-architecture) for understanding the broader architectural context.
+- [Popup Panel and Badge Explained](/overview/feature-overview-usage/popover-and-badge) for in-depth guidance on interpreting displayed data.
+- [What is uBO Scope?](/overview/introduction-and-value/what-is-ubo-scope) for core product purpose and value.
+
+---
+
+## Explore the Source Code
+
+To dive into the specific implementations of this flow, review the following key source files in the repository:
+
+- Background script handling network events: `js/background.js`
+- Popup UI rendering logic: `js/popup.js`
+- Manifest file declaring permissions and scripts: `platform/chromium/manifest.json` (or respective browser folder)
+
+You can browse the full codebase here: [GitHub Repository](https://github.com/gorhill/uBO-Scope)
 
 ---
