@@ -1,120 +1,157 @@
 ---
-title: "System Architecture"
-description: "Explains the component structure of uBO Scope using a simple architecture diagram (Mermaid-based), showing how the popup, background script, and supporting libraries interact to monitor and display network request outcomes for each browser tab."
+title: "System Architecture Overview"
+description: "Visual summary of how the background process, browser APIs, popup UI, and auxiliary scripts interact to detect and display connection statistics. Includes a mermaid diagram highlighting the session lifecycle and communication flow."
 ---
 
-# System Architecture
+# System Architecture Overview
 
-## Introducing the Core Components of uBO Scope
+Discover how uBO Scope orchestrates its components—the background process, browser APIs, popup UI, and auxiliary scripts—to provide a seamless, real-time view of network connections initiated by your active browser tab. This page offers a visual and narrative explanation of the system’s communication flow and session lifecycle, empowering you to understand how data is captured, processed, and displayed.
 
-Understanding how uBO Scope operates under the hood empowers you to maximize its value for monitoring and analyzing network requests. This page uncovers the essential architecture underpinning uBO Scope, illustrating how its main components—the popup UI, background script, and supporting libraries—work together seamlessly to deliver live insights into browser tab network activity.
+---
 
-### Why This Matters to You
-When you activate uBO Scope, it silently observes network requests across your browser tabs, categorizing connections that are allowed, blocked, or stealth-blocked by content blockers or other mechanisms. This architecture enables the extension to provide accurate, tab-specific data, helping you identify the actual third-party servers your browser interacts with in real time.
+## Understanding the System at a Glance
 
+At its core, uBO Scope is designed to observe and report every remote connection a webpage attempts, categorizing them as allowed, stealth-blocked, or blocked. To achieve this transparency, multiple components collaborate:
 
-## The Components at a Glance
+- **Background Process:** The backbone that listens to network events using browser APIs.
+- **Browser APIs:** The conduit for capturing and relaying network request data.
+- **Popup UI:** The interactive user interface displaying live summaries and detailed statistics.
+- **Auxiliary Scripts:** Helper logic that processes and formats data for storage and display.
 
-- **Popup Interface**: The visible panel users interact with when clicking on the extension icon.
-- **Background Script**: The extension's persistent process that listens to all network events.
-- **Supporting Libraries**: Utilities for domain parsing, serialization, and browser API abstraction.
+This page provides a structured overview of how these elements communicate and work together continuously to track your browsing session's network connections.
 
-These elements collaborate to collect, process, and display detailed connection outcomes per browser tab.
+---
 
+## How It Works: The Session Lifecycle and Communication Flow
 
-## How It All Works Together: A Simple Architecture Diagram
+Each browsing session involves continuous tracking of network requests per active tab. Here’s what happens behind the scenes:
+
+- When a tab initiates network requests, the **background process** uses `webRequest` listeners to capture events for each connection attempt—successes, errors, and redirects.
+- These events are aggregated and stored in a session-based data store, organized by tab and domain.
+- The **popup UI**, activated by the user clicking the extension icon, requests the relevant session data from the background.
+- The data is then deserialized and rendered into human-readable statistics, showing the count and categories of accessed domains.
+- Auxiliary scripts handle the serialization, storage, and parsing of complex data structures underpinning the system.
+
+This continuous cycle ensures that users receive up-to-date connection information while browsing.
+
+---
+
+## Visualizing the Architecture
 
 ```mermaid
 flowchart TD
 
-  Popup["Popup UI"] -->|Requests Data| Background["Background Script"]
-  Background -->|Stores & Processes| SessionData[("Session Storage")]
-  Background -->|Fetches| PublicSuffixList[("Public Suffix List")]
-  Background -->|Use Helpers| Libraries["Supporting Libraries"]
+    subgraph Browser Environment
+      PopupUI["Popup UI"]
+      AuxScripts["Auxiliary Scripts"]
+      BrowserAPIs["Browser APIs (webRequest, storage, tabs)"]
+    end
 
-  subgraph Browser
-    Popup
-    Background
-  end
+    subgraph Extension Background
+      BackgroundProcess["Background Process (Service Worker / Persistent Script)"]
+      SessionData[("Session Data Storage")]
+      PublicSuffixList[("Public Suffix List Storage")]
+    end
 
-  SessionData -->|Persist Data| BrowserStorage[("Browser Session Storage")]
+    %% Communication Flow
+    PopupUI -->|Request Session Data| BackgroundProcess
+    BackgroundProcess -->|Respond with Serialized Data| PopupUI
 
-  Popup -->|Displays| User["User"]
+    BackgroundProcess -->|Listen to Network Events| BrowserAPIs
+    BrowserAPIs -->|Network Event Details| BackgroundProcess
 
-  %% Styling
-  classDef component fill:#f9f,stroke:#333,stroke-width:2px
-  class Popup,Background,Libraries component
-  class SessionData,BrowserStorage component
+    BackgroundProcess -->|Serialize and Save| SessionData
+    BackgroundProcess -->|Load Public Suffix List| PublicSuffixList
 
-```
+    BackgroundProcess -->|Update Badge Counts| BrowserAPIs
 
+    %% User actions
+    BrowserAPIs -->|Tab Removal Event| BackgroundProcess
+    PopupUI -->|Render Data| AuxScripts
 
-### Detailed Workflow
+``` 
 
-1. **Network Monitoring in Background Script**: Running continuously, the background script subscribes to the browser's `webRequest` API. It listens to network events such as redirects, errors, and successful responses across all active tabs.
+This diagram captures the interplay between components:
 
-2. **Capturing and Categorizing Outcomes**: As requests occur, the script identifies the hostname and domain of each connection attempt. It categorizes outcomes as 'allowed', 'stealth-blocked' (redirected), or 'blocked'. These results are organized per tab in an in-memory session data structure.
+- The **Background Process** acts as a central hub, listening for network requests and managing session data.
+- The **Browser APIs** provide the data stream and environment hooks necessary for monitoring.
+- The **Popup UI** queries the background for the latest data and uses auxiliary scripts to render it.
 
-3. **Session Persistence**: To maintain continuity, session data is serialized and saved in the browser's session storage, ensuring that tab-specific connection information persists throughout the browsing session.
+---
 
-4. **Public Suffix List Utilization**: A public suffix library is loaded and kept up-to-date in session storage, allowing accurate determination of root domains from hostnames. This is crucial for meaningful aggregation and reporting.
+## Key Components in Detail
 
-5. **Popup UI Fetches Tab Data**: When you open uBO Scope’s popup, it sends a message to the background script requesting the latest network connection information for the active tab.
+### Background Process
+The heart of data capture, this service listens for network request outcomes (`success`, `redirect`, `error`) via browser `webRequest` events.
 
-6. **Rendering Connection Outcomes**: The popup script deserializes the received data and dynamically displays the categorized list of domains, providing you with a clear breakdown of network interactions, including counts for each outcome category.
+- Maintains a session map of tab IDs to detailed connection data.
+- Aggregates paths, domains, and results into categorized sets: allowed, stealth-blocked, and blocked.
+- Updates the browser toolbar badge count reflecting active connection numbers.
+- Persists session information using browser storage APIs to maintain state across extension lifecycle events.
 
+### Browser APIs
+The extension relies on standardized APIs:
 
-## Practical Example
+- **webRequest API:** Tracks network requests, their outcomes, and URLs.
+- **storage API:** Handles both local and session data storage.
+- **tabs API:** Monitors tab lifecycle events such as removal.
 
-Imagine you are browsing a webpage that loads resources from several third-party servers:
+These APIs provide consistent, cross-browser capabilities essential to uBO Scope.
 
-- uBO Scope’s background script records each request outcome as you navigate.
-- When you click the extension icon, the popup queries the background for the active tab’s details.
-- The popup lists the distinct domains that were allowed, stealth-blocked, or blocked during your visit.
+### Popup UI
+A dynamic interface that retrieves current tab data from the background process and presents it as:
 
-This live feedback loop helps you gauge how effectively your content blockers work and understand your real network exposure.
+- A clear summary of connected domains.
+- Lists categorized by connection outcome.
+- Support for Unicode domain names, enhancing readability.
 
+Behind the scenes, this UI runs scripts that deserialize session data and update HTML elements accordingly.
 
-## Best Practices & Tips
+### Auxiliary Scripts
+Small but critical helpers that:
 
-- **Keep Your Browser Updated**: uBO Scope relies on the `webRequest` API and session storage features supported by modern browsers.
-- **Understand Outcome Categories**:
-  - *Allowed*: Connections successfully completed.
-  - *Stealth-blocked*: Requests redirected silently by blockers.
-  - *Blocked*: Requests that failed due to blocking.
-- **Use the Badge Count** as a quick indicator of the number of distinct third-party domains contacted.
-- **Leverage the Architecture Understanding** to report issues or contribute to extension improvements with greater context.
+- Serialize and deserialize complex session objects efficiently.
+- Handle domain parsing, including applying the public suffix list to accurately distinguish effective domains.
+- Normalize and format connection counts for display.
 
+---
 
-## Troubleshooting Common Scenarios
+## Practical User Flow Example
 
-<AccordionGroup title="Troubleshooting System Architecture">
-<Accordion title="Popup Shows ‘No Data’">
-Possible causes include the background script not having data for the current tab, which can happen if the tab was just opened or if the extension lacks permissions. Try reloading the tab or verifying permissions.
-</Accordion>
-<Accordion title="Badge Count Not Updating">
-Background process batches request outcomes and updates the badge asynchronously. If you see stale counts, wait a few seconds or reload the tab to refresh data.
-</Accordion>
-<Accordion title="Session Data Lost After Browser Restart">
-Session storage is ephemeral and clears with browser restarts. This is by design; persistent tracking across sessions is not supported currently.
-</Accordion>
-</AccordionGroup>
+1. **Loading a Webpage:** You navigate to a new tab. The background process begins tracking all network requests initiated by this tab.
 
+2. **Request Monitoring:** As resources load, the webRequest API fires events for each request. The background collects data, categorizing connections by outcome.
+
+3. **Display Trigger:** You click the extension icon, opening the popup UI.
+
+4. **Data Retrieval:** The popup sends a message to the background requesting network connection data related to the active tab.
+
+5. **Data Presentation:** Background responds with serialized data, popup deserializes it, and auxiliary scripts populate the UI with domain connection summaries.
+
+6. **User Insight:** You immediately see which domains are contacted, whether any connections were blocked stealthily, and the total count, guiding informed privacy decisions.
+
+---
+
+## Tips for Effective Use and Troubleshooting
+
+- **Refreshing Data:** Because the data updates asynchronously, if you open the popup but see NO DATA, wait a few moments or reload the tab to trigger fresh network recording.
+- **Tab Lifecycle:** Closing or switching tabs resets the data for that session accordingly; the background process cleans up stored session details.
+- **Performance Considerations:** The use of event batching and serialization ensures minimal performance impact on browser responsiveness.
+
+---
 
 ## Summary
+This System Architecture Overview clarifies how uBO Scope components collaborate to provide you with transparent, real-time insights into your tab's web connections. Leveraging browser APIs and well-engineered background processing, the extension delivers precise connection statistics visible through an intuitive popup UI.
 
-uBO Scope’s system architecture orchestrates its core components—the popup UI, background script, session storage, and utility libraries—to deliver real-time and tab-specific visibility into network requests. This design ensures accurate monitoring, meaningful aggregation, and user-friendly presentation of network connection outcomes, empowering you with transparent insights into web activity.
+Explore related documentation for deeper dives into core terminology, feature details, and practical usage:
 
-
----
-
-For further exploration, visit the [What is uBO Scope?](../product-introduction/what-is-ubo-scope) page or learn how to get started with [Getting Started](../../getting-started/installation-setup/prerequisites-requirements).
-
----
-
-_Source: [uBO-Scope GitHub Repository](https://github.com/gorhill/uBO-Scope/tree/main)_
-
+- [Core Terminology & Concepts](/overview/architecture-and-core-concepts/core-terminology-and-concepts)
+- [Feature Overview & Quickstart](/overview/architecture-and-core-concepts/feature-overview)
+- [Understanding the Popup: Viewing Domain Connections](/guides/getting-started-ubo-scope/using-the-popup)
 
 ---
 
-<Source url="https://github.com/gorhill/uBO-Scope" paths={[{"path": "js/background.js", "range": "1-191"},{"path": "js/popup.js", "range": "1-105"}]} />
+For insight into starting procedures, installation, and troubleshooting, refer to the Getting Started tab and the FAQ sections.
+
+
+---
