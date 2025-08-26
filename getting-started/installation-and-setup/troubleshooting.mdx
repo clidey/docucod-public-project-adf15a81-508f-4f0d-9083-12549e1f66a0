@@ -1,0 +1,200 @@
+---
+title: "Troubleshooting Installation & Setup"
+description: "Find solutions to the most common roadblocks users may encounter during installation or first use. This includes resolving permissions issues, verifying that network activity is being reported, and checking if the extension's badge and popup are working properly."
+---
+
+# Troubleshooting Installation & Setup
+
+Discover practical solutions to common challenges encountered during the installation and initial setup of uBO Scope. This guide equips you to resolve permission errors, verify that network requests are being tracked correctly, and ensure the extension's badge and popup display the expected connection information.
+
+---
+
+## 1. Verifying Installation and Permissions
+
+After installing uBO Scope from your browser’s official store, confirm it has the necessary permissions to operate fully.
+
+### Steps to Verify Permissions
+
+1. **Access Extension Settings:**
+   - Navigate to your browser's extensions management page (e.g., `chrome://extensions`, `about:addons` for Firefox, or Safari Extensions preferences).
+2. **Check Permissions:**
+   - Ensure that `activeTab`, `storage`, and especially `webRequest` permissions are granted.
+   - Confirm the extension has host permissions for URLs matching `http://*/*`, `https://*/*` and for Chromium and Firefox, also `ws://*/*` and `wss://*/*`.
+3. **Update Permissions if Needed:**
+   - Some browsers require explicit user approval for permissions after install. Accept any prompts requesting access.
+
+<Tip>
+If the extension lacks the necessary `webRequest` permission or host permissions, it won’t capture network requests. Reinstalling or refreshing the extension and explicitly granting permissions often resolves this.
+</Tip>
+
+---
+
+## 2. Confirming Network Activity Reporting
+
+uBO Scope relies on browser APIs to listen to web requests and report third-party connections. Ensuring proper network activity monitoring is crucial.
+
+### How to Confirm Reporting Works
+
+1. **Open Any Webpage:**
+   - Visit a commonly used website, ideally one with mixed content from multiple domains.
+2. **Observe Extension Badge:**
+   - The toolbar icon badge should display a number representing distinct third-party remote servers connected.
+   - A blank or zero badge indicates no connections have been observed.
+3. **Open Popup Interface:**
+   - Click the uBO Scope icon to open its popup.
+   - Confirm you see categories: **not blocked**, **stealth-blocked**, and **blocked** domains.
+   - Each category should list domains and counts, reflecting recent network activity.
+
+### Troubleshooting No Network Data
+
+- **Disable Other Conflicting Extensions:** Sometimes, other privacy or content blockers interfere. Temporarily disable other extensions.
+- **Restart Browser:** Restart to reload extension background scripts.
+- **Check Browser Version:** Ensure minimum browser versions supported (Chrome≥122, Firefox≥128, Safari≥18.5).
+
+<Warning>
+Network requests initiated outside the browser's webRequest API scope (e.g., some encrypted DNS setups or OS-level blockers) will not be reported by uBO Scope.
+</Warning>
+
+---
+
+## 3. Badge and Popup Not Displaying Correctly
+
+If the badge count is absent or the popup shows 'NO DATA,' this indicates a problem capturing or retrieving tab network details.
+
+### Steps to Diagnose and Fix Badge Issues
+
+1. **Check if Network Requests Are Captured:**
+   - Navigate to a site known to load external resources.
+   - Wait a few seconds for data to update.
+2. **Verify Tab Information Storage:**
+   - uBO Scope stores per-tab data via browser storage. Browser settings blocking storage APIs can disrupt this.
+3. **Reload the Extension:**
+   - Disable and re-enable the extension in your browser.
+   - Alternatively, remove and reinstall to reset state.
+4. **Inspect Console for Errors:**
+   - Open browser developer tools for the extension popup/background (in Chrome: `chrome://extensions`, enable developer mode, inspect views).
+   - Look for permission, API, or runtime errors indicating failure points.
+
+### Common Causes
+
+- Lack of required permissions or partial installation.
+- Browser incompatibility or outdated versions.
+- Browser storage being disabled or cleared unexpectedly.
+
+<Tip>
+Ensure your browser's privacy settings do not block third-party cookies or storage for extensions, as this can interfere with uBO Scope’s data persistence.
+</Tip>
+
+---
+
+## 4. Permission Errors During Installation or Runtime
+
+Occasionally, uBO Scope may report errors related to permissions or access.
+
+### Typical Permission Issues
+
+- **WebRequest API Access Denied:**
+  - The extension lacks `webRequest` or proper host permissions in the manifest or from the browser.
+- **Active Tab or Storage Access Blocked:**
+  - Browser security settings restrict access to the tab or storage API.
+
+### Resolution Steps
+
+- Verify that the extension was installed from an official source:
+  - Chrome Web Store: [uBO Scope - Chrome](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+  - Firefox Add-ons: [uBO Scope - Firefox](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+- Update your browser to the supported minimum version.
+- Remove and reinstall the extension to reset any permission states.
+- If manually installing (e.g., for Safari), check the platform-specific manifest and browser permission dialogs carefully.
+
+<Warning>
+Manually sideloaded or developer mode installations may trigger permission issues or incomplete operation until user approval is granted.
+</Warning>
+
+---
+
+## 5. Verifying Extension Behavior Using Example Test
+
+To confirm everything functions:
+
+1. **Open a Multi-Domain Website:**
+   - Use a popular news website or a content-rich site that loads assets from multiple origins.
+2. **Look at the Toolbar Badge:**
+   - A non-zero number represents detected third-party connections.
+3. **Open Popup and Inspect Domains:**
+   - See domains listed under **not blocked**, **stealth-blocked**, and **blocked**.
+   - Domains shown illustrate the extension tracking network request outcomes.
+
+<Tip>
+If you see the badge update and domain lists refreshing on navigation, uBO Scope is functioning correctly.
+</Tip>
+
+---
+
+## 6. Additional Troubleshooting Resources
+
+- **Developer Console:**
+  - Inspect background and popup console logs to identify runtime errors.
+- **Browser Compatibility Check:**
+  - Consult the [Requirements & Supported Browsers](https://docs.example.com/getting-started/introduction-and-prerequisites/requirements) to ensure your environment meets the conditions.
+- **Known Issues:**
+  - Permissions and API usage issues remain the primary challenges.
+- **Support & Community Forums:**
+  - Engage on the uBO Scope GitHub repository for issue reporting: [uBO Scope Issues](https://github.com/gorhill/uBO-Scope/issues)
+
+---
+
+## Appendix: Checking Manifest Permissions
+
+Here are the critical permissions needed according to browser platform manifests:
+
+- **ActiveTab** - access to the active tab
+- **Storage** - saving session data
+- **WebRequest** - monitoring network activity
+- **Host Permissions** - for all urls:
+  - Chromium Example:
+  ```json
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+  ]
+  ```
+  - Firefox and Safari similar, except Safari does not include ws/wss.
+
+Ensure your browser’s extension install confirms these permissions.
+
+---
+
+By following this troubleshooting guide, users will confidently resolve setup issues and begin leveraging uBO Scope to transparently monitor network connections in their browser.
+
+<Check>
+For detailed installation instructions, visit: [Installing uBO Scope](/getting-started/installation-and-setup/installation)
+</Check>
+
+<Check>
+To understand the extension’s interface and what data the badge represents, see: [Understanding the Popup and Badge](/guides/getting-started-essentials/understanding-the-popup)
+</Check>
+
+<Check>
+For common questions beyond installation, consult: [Troubleshooting and Common Questions](/guides/advanced-monitoring-tips/troubleshooting-and-faq)
+</Check>
+
+---
+
+## Related Documentation
+
+- [Installing uBO Scope](/getting-started/installation-and-setup/installation)
+- [Requirements & Supported Browsers](/getting-started/introduction-and-prerequisites/requirements)
+- [First Run & Onboarding](/getting-started/installation-and-setup/first-run)
+- [Understanding the Popup and Badge](/guides/getting-started-essentials/understanding-the-popup)
+- [Troubleshooting and Common Questions](/guides/advanced-monitoring-tips/troubleshooting-and-faq)
+
+---
+
+# Summary
+
+This guide provides actionable steps for resolving the most common hurdles after installing uBO Scope, focused on permissions, network request monitoring, and UI feedback verification. Users are guided through validation of extension permissions, network activity observation, badge and popup functionality checks, and practical tips to restore proper operation.
+
+---
