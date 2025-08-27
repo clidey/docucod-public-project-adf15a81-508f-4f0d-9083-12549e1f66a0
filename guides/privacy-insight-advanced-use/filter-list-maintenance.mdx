@@ -1,0 +1,166 @@
+---
+title: "Enhancing Filter Lists: Practical Tips for Maintainers"
+description: "Best practices for filter list maintainers using uBO Scope to audit connection attempts and improve list coverage, particularly on platforms where developer tools are unavailable."
+---
+
+# Enhancing Filter Lists: Practical Tips for Maintainers
+
+## Overview
+
+### Purpose of This Guide
+This guide equips filter list maintainers with practical strategies to leverage uBO Scope for auditing network connection attempts and improving filter list coverage, especially on platforms where developer tools are limited or unavailable.
+
+By using uBO Scope’s concise connection insights, maintainers can identify missing or ineffective filter rules, ensure comprehensive blocking without overreach, and maintain user privacy.
+
+### Prerequisites
+- You have installed uBO Scope in your browser (see [Installing and Activating uBO Scope](/guides/getting-started-essentials/install-activate)).
+- Familiarity with basic content blocking concepts and filter list syntax.
+- Access to typical browsing scenarios or test sites representative of your filter list’s intended coverage.
+
+### Expected Outcome
+After following this guide, you will be able to:
+- Monitor all third-party connection attempts from web pages effectively.
+- Identify gaps in your filter list coverage.
+- Adjust and improve filter rules based on real usage data.
+
+### Time Estimate
+Approximately 20–30 minutes to complete initial audits and adjustments.
+
+### Difficulty Level
+Intermediate – designed for maintainers with some experience in filter lists and network monitoring.
+
+---
+
+## How to Use uBO Scope to Enhance Filter Lists
+
+### Step 1: Open uBO Scope Popup
+1. Ensure the browser tab you want to audit is active.
+2. Click the uBO Scope extension icon in the toolbar.
+3. The popup will display connection data filtered by three categories:
+   - **Not blocked** — allowed connections.
+   - **Stealth-blocked** — connections blocked silently.
+   - **Blocked** — explicitly blocked connections.
+
+<Tip>
+Use the popup to get a real-time snapshot of distinct third-party domains your list affects.
+</Tip>
+
+### Step 2: Analyze Connection Domains
+1. Review the **Domains connected:** count at the top to understand the number of distinct allowed connections.
+2. Examine the lists of domains in each outcome category.
+3. Pay special attention to domains in the **Not blocked** section, indicating allowed third-party connections which may require filter coverage.
+
+<Tip>
+The badge on the extension icon shows the count of allowed third-party domains; fewer domains generally indicate better blocking.
+</Tip>
+
+### Step 3: Identify Missing or Ineffective Rules
+1. For each domain in the **Not blocked** section:
+   - Determine if the domain should be blocked according to your filter list objectives.
+   - Check your filter list for existing rules covering the domain or subdomains.
+2. If missing rules or exceptions are found, prepare additions or adjustments to the filter list.
+
+<Tip>
+Use the domain’s public suffix and registrable domain to write precise, maintainable blocking rules instead of overly generic or overly specific ones.
+</Tip>
+
+### Step 4: Validate Changes
+1. After updating your filter list, reload the webpage and open the uBO Scope popup again.
+2. Verify if the domains you aimed to block have moved from the **Not blocked** to **Blocked** category.
+3. Monitor that necessary first-party connections remain unaffected to avoid breaking sites.
+
+### Step 5: Iterate Regularly
+- Repeatedly audit different websites and edge cases.
+- Use varied browsing scenarios to uncover stealthy or redirected connections.
+- Refine filter rules progressively for broad yet accurate coverage.
+
+---
+
+## Practical Tips for Maximizing Effectiveness
+
+### Audit in Environments Without Developer Tools
+On platforms like some mobile browsers or restricted OS environments where developer consoles are unavailable, uBO Scope becomes indispensable by revealing connection attempts without needing in-depth debugging tools.
+
+### Focus on Domain Granularity
+- Use uBO Scope’s domain and hostname display alongside registered domain detection to avoid blocking overly broad domains.
+- Leverage the Public Suffix List integrated in uBO Scope to identify truly third-party domains.
+
+### Understand Outcome Categories
+- **Allowed domains** are those successfully connected to.
+- **Stealth-blocked** connections indicate the filter silently prevented a request.
+- **Blocked** domains are explicitly blocked and logged.
+
+Use these categories to prioritize fixes — stealth-blocked might need rule tuning, while allowed but unwanted connections require new rules.
+
+### Watch Out for Redirects
+Redirects may cause some connection attempts to appear differently in the logs. Re-check for domains in the **Stealth-blocked** or unusual patterns that could circumvent blocking.
+
+### Use Chrome or Firefox for Initial Audits
+While the extension supports multiple browsers, desktop Chrome and Firefox provide the richest environment for detailed audits before deploying to more restricted platforms.
+
+---
+
+## Common Pitfalls and How to Avoid Them
+
+### Overblocking Causes Site Breakage
+When blocking, test to ensure no essential domains or services are inadvertently blocked, causing broken page functionality.
+
+### Ignoring Subdomain Variations
+Many trackers or ad servers use multiple subdomains; blocking only the base domain might not be sufficient.
+
+### Not Refreshing Tabs After Updates
+Always reload the page after updating your filter list to see real-time effect of your changes in uBO Scope.
+
+---
+
+## Example Scenario
+
+Imagine you maintain a filter list targeting ad servers and trackers. While auditing a popular news website:
+
+1. Open uBO Scope popup.
+2. Notice unexpectedly allowed connections to "tracker.example.com" under **Not blocked**.
+3. Review existing filter rules and see that "example.com" is missing.
+4. Add `||example.com^` to your filter list.
+5. Reload the webpage.
+6. Confirm in uBO Scope popup that "tracker.example.com" now appears under **Blocked**.
+
+This simple flow improves your filter list’s effectiveness with real data-driven validation.
+
+---
+
+## Troubleshooting
+
+### No Data in Popup After Opening
+- Ensure uBO Scope is active and the tab has loaded network requests.
+- Reload the tab and open the popup after a few seconds.
+- Confirm browser permissions for uBO Scope are granted.
+
+### Badge Count Not Updating
+- Close and reopen the tab to trigger fresh data collection.
+- Ensure no conflicting extensions interfere with webRequest API.
+- Consult [Troubleshooting Common Setup Issues](/getting-started/first-steps-usage-validation/troubleshooting-common-setup-issues) for detailed guidance.
+
+### Domains Seem Incorrect or Missing
+- Remember uBO Scope relies on browser webRequest events; some network requests on platforms or special browsing modes may not be captured.
+- Validate that your browsing session includes traffic relevant to the filter list’s focus.
+
+---
+
+## Next Steps and Related Documentation
+
+- Review [Installing and Activating uBO Scope](/guides/getting-started-essentials/install-activate) to ensure setup.
+- Use [First Use: Viewing and Interpreting Connections](/guides/getting-started-essentials/first-use) to get familiar with popup data.
+- Deepen understanding with [Interpreting the Badge Count](/guides/privacy-insight-advanced-use/interpreting-badge-count).
+- Avoid pitfalls detailed in [Debunking Ad Blocker Test Myths](/guides/privacy-insight-advanced-use/debunking-adblock-tests).
+- For more concepts, see [Terminology & Core Concepts](/overview/core-concepts-architecture/terminology-core-concepts).
+
+---
+
+## Resources
+- Official GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List for domain parsing: [https://publicsuffix.org/](https://publicsuffix.org/)
+
+---
+
+<u>Empower your filter list maintenance with real-world data insights from uBO Scope, bridging gaps where developer tools fall short.</u>
+
