@@ -1,0 +1,188 @@
+---
+title: "Troubleshooting Content Blockers and Myths"
+description: "Explore real-world diagnostic workflows using uBO Scope to identify differences between content blockers, debunk misleading metrics, and understand why block counts can be deceptive. Follow examples that clarify the impact of stealth blocking and browser reporting limitations."
+---
+
+# Troubleshooting Content Blockers and Myths
+
+Explore practical workflows to diagnose and understand content blockers using uBO Scope. This guide helps you distinguish between different content blockers accurately, debunk misleading metrics such as badge counts, and clarify why apparent blocking numbers can be deceptive. Leveraging real-world examples, you will learn how stealth blocking and browser reporting limitations shape what content blockers reveal.
+
+---
+
+## Workflow Overview
+
+- **Task Description**: Use uBO Scope to analyze content blocker behavior, identify true network connection outcomes, and debunk common myths about block counts and ad blocker test sites.
+- **Prerequisites**: Have uBO Scope installed and configured (refer to [Install and Configure uBO Scope](./install-configure-extension) guide). Ensure the extension has necessary permissions and you can open the popup panel for the active tab.
+- **Expected Outcome**: You will confidently identify differences in content blocker behaviors, properly interpret block counts, and recognize why some metrics or test sites fail to reflect true blocking effectiveness.
+- **Time Estimate**: 15-30 minutes
+- **Difficulty Level**: Intermediate
+
+---
+
+## Understanding the Challenge
+
+Content blockers often report blocking metrics that can mislead users unfamiliar with how network requests and browser reporting operate. uBO Scope reveals third-party connections regardless of blocking, enabling a ground-truth perspective.
+
+### Common Misconceptions
+
+- **Higher block count means better blocker:** Actually, a blocker that shows higher block counts might still allow connections to more unique third-party servers, resulting in poorer privacy.
+- **Ad blocker test sites are valid checks:** Such sites simulate artificial conditions and fail to account for stealth blocking techniques used by modern content blockers.
+
+Understanding these key points is crucial to analyzing content blockers with uBO Scope.
+
+---
+
+## Step-by-Step Diagnostic Workflows
+
+### 1. Compare Content Blocker Block Counts vs. Unique Connections
+
+#### Purpose
+Determine if a higher block count corresponds to fewer distinct third-party connections.
+
+#### Steps
+
+1. **Open a webpage of interest with a content blocker enabled.** 
+2. **Open uBO Scope popup panel** by clicking the toolbar icon.
+3. **Observe the "not blocked" section:** It shows distinct third-party domains from which network requests succeeded.
+4. **Note the badge count on uBO Scope icon:** It reports the number of distinct allowed third-party servers.
+5. **Switch between different content blockers or configurations.**
+6. **Compare badge counts:** A *lower* badge count means fewer distinct third parties connected, indicating better blocking.
+
+#### Expected Results
+- Blockers with lower badge counts demonstrate fewer allowed third-party connections.
+- Higher block counts in a blocker do not necessarily mean fewer connections.
+
+#### Decision Points
+- If a blocker has a higher block count but *also* a higher number of allowed third-party domains, it may be less effective.
+
+#### Verification
+- Confirm with multiple websites.
+- Use real-world sites instead of synthetic test pages.
+
+---
+
+### 2. Identify Stealth Blocking vs. Explicit Blocking
+
+#### Purpose
+Understand how stealth blocking affects reported network requests and why it may conceal blocking behavior.
+
+#### Steps
+
+1. Visit a website where a content blocker is active.
+2. Open uBO Scope popup and review the three sections:
+   - **Not Blocked**: Requests allowed through.
+   - **Blocked**: Requests explicitly blocked where errors are reported.
+   - **Stealth-Blocked**: Requests rerouted or redirected stealthily, invisible to the webpage.
+3. Take note if the stealth-blocked section contains domains but the badge count remains low.
+
+#### Expected Results
+- Stealth blocking reduces block counts in the browser UI but effectively prevents resource loading.
+- uBO Scope reports stealth-blocked requests separately, reflecting actual blocking.
+
+#### Verification
+- Confirm stealth-blocked domains disappear on disabling the content blocker.
+
+---
+
+### 3. Avoid Relying on Ad Blocker Test Pages
+
+#### Purpose
+Debunk inaccurate reliance on artificial 'ad blocker test' pages for blocker evaluation.
+
+#### Steps
+
+1. Try visiting an ad blocker test site with your content blocker active.
+2. Observe reported block counts and resource loading visually.
+3. Open uBO Scope popup and compare results to real-world sites.
+
+#### Key Insights
+- Test pages use contrived URLs and networking requests not representative of real websites.
+- Blockers use sophisticated stealth methods that test pages cannot detect.
+
+#### Best Practice
+- Use uBO Scope on real popular websites to validate blocking effectiveness.
+
+---
+
+## Examples
+
+### Example: Comparing Two Content Blockers
+
+| Content Blocker | uBO Scope Badge Count | Block Count on Blocker Badge | Interpretation |
+|-----------------|----------------------|------------------------------|----------------|
+| Blocker A       | 5 distinct domains    | 20 blocks                    | Low badge count + moderate block count => more effective
+| Blocker B       | 8 distinct domains    | 30 blocks                    | Higher blocks but more allowed domains => less effective
+
+### Example: Analyzing Stealth Blocking
+
+On visiting a site:
+
+- Not Blocked: `cdn.example.com` (count 7)
+- Stealth Blocked: `ads.adnetwork.com` (count 3)
+- Blocked: (empty)
+
+This means some ad-related domains are stealth-blocked by the content blocker, invisible to the web page but still prevented from loading.
+
+---
+
+## Troubleshooting & Tips
+
+<AccordionGroup title="Troubleshooting Content Blockers Using uBO Scope">
+<Accordion title="The Badge Count Seems Inconsistent With Expectations">
+If the badge count is unexpectedly low or high:
+- Verify extension permissions are correct.
+- Refresh the webpage to clear stale data.
+- Consider stealth blocking: some blocked requests may not appear in standard connection lists.
+- Test with multiple websites to confirm behavior.
+</Accordion>
+<Accordion title="Blocked Section Is Empty While Ads Are Visible">
+- Confirm the content blocker is active.
+- Check for stealth-blocking entries – these requests may be hidden.
+- Some web traffic may bypass the webRequest API, limiting visibility.
+</Accordion>
+<Accordion title="uBO Scope Does Not Show Stealth-Blocked Domains">
+- Ensure you are running the latest uBO Scope version.
+- Some stealth blocking techniques might be browser or content blocker specific.
+- Check related documentation and GitHub issues for updates.
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Regularly clear browsing cache and reload pages when performing content blocker diagnostics to prevent stale data influencing results.
+</Tip>
+
+<Warning>
+Do not rely on block counts from content blockers’ own badges as these often represent number of blocked requests, not the actual distinct third-party connections allowed or blocked.
+</Warning>
+
+---
+
+## Best Practices
+
+- Use uBO Scope alongside your content blocker to get an accurate, independent view.
+- Focus on the badge count in uBO Scope for real insight into distinct third-party connections.
+- Cross-check stealth-blocked and blocked domains to understand different blocking methods.
+- Avoid synthetic ad blocker test pages; use popular real-world sites when evaluating blockers.
+
+---
+
+## Next Steps & Related Content
+
+- After this guide, explore [Interpret the Badge Count and Results](../getting-started-workflows/interpreting-badge-count) to deepen your understanding of uBO Scope’s badge mechanics.
+- See [Reveal and Review Remote Connections](../getting-started-workflows/reveal-remote-connections) for detailed workflows on examining network activity in uBO Scope.
+- For installation and setup, refer to [Install and Configure uBO Scope](../getting-started-workflows/install-configure-extension).
+- If you encounter technical issues, consult [Troubleshooting Common Installation Issues](../../getting-started/getting-first-results/troubleshooting-common-issues).
+
+---
+
+## References
+
+- [What is uBO Scope?](../../overview/foundation/what-is-ubo-scope)
+- [How uBO Scope Works](../../overview/foundation/how-it-works)
+- [Key Benefits & Typical Use Cases](../../overview/foundation/key-benefits)
+
+---
+
+Thank you for using uBO Scope. Your informed analysis helps improve privacy and transparency on the web.
+
+---
