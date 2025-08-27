@@ -1,0 +1,156 @@
+---
+title: "Comparing Content Blockers with uBO Scope"
+description: "Demonstrates how to use uBO Scope to objectively compare the effectiveness of different content blockers by analyzing which third-party servers are truly contacted. Explores common misconceptions and provides recommended testing techniques."
+---
+
+# Comparing Content Blockers with uBO Scope
+
+## Overview
+
+This guide demonstrates how to use uBO Scope to objectively compare the effectiveness of different content blockers by analyzing which third-party servers are actually contacted during web browsing. It explains common misconceptions around content blocker performance metrics and offers recommended techniques for reliable testing using uBO Scope.
+
+## What You Will Learn
+
+- How to use uBO Scope to monitor third-party connections across different content blockers
+- Why block counts reported by content blockers can be misleading
+- How to interpret uBO Scope’s domain connectivity data to assess blocking effectiveness
+- Best practices to run fair and meaningful comparisons between content blockers
+
+---
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Installed uBO Scope extension on a supported browser (Chromium 122+, Firefox 128+, Safari 18.5+).
+- At least two different content blockers installed and enabled, which you want to compare.
+- Basic familiarity with opening and interpreting the uBO Scope popup panel. If new, see the [Understanding the Popup Panel guide](/guides/core-workflows/understanding-the-popup) for an introduction.
+- A consistent set of websites or browsing sessions to test across content blockers.
+
+---
+
+## Why Use uBO Scope for Comparing Content Blockers?
+
+Many users rely on the "block count" displayed by ad or content blockers to decide which blocker is better. However, this is often misleading because:
+
+- **Higher block counts do not always mean better blocking.** A blocker can report many blocks but still load resources from more third-party servers.
+- **Block count does not reflect the number of distinct remote servers contacted.** Ultimately, the privacy impact is related to the number of unique third-party connections that are allowed, not just request blocks.
+- **Stealth behaviors affect webpage detection.** Some content blockers operate stealthily, making it hard for test scripts or webpages to detect blocking accurately.
+
+uBO Scope reveals the precise domains contacted (grouped by allowed, blocked, and stealth-blocked) by listening to actual network requests, giving you an objective view across all blockers.
+
+---
+
+## Step-by-Step Workflow to Compare Content Blockers
+
+### 1. Prepare Your Test Environment
+
+- Disable all content blockers initially except the one you want to test first.
+- Restart the browser if necessary to apply changes.
+- Choose a representative website or browsing session that includes a mix of typical third-party content: ads, analytics, CDNs, social widgets, etc.
+
+### 2. Use uBO Scope to Monitor Connections
+
+- Navigate to your chosen website.
+- Click the uBO Scope extension toolbar icon to open the popup panel.
+- Observe the summary count of distinct third-party domains connected.
+- Review the detailed lists:
+  - **Not Blocked (Allowed)**: Domains from which requests succeeded.
+  - **Stealth-Blocked**: Domains where requests were intercepted stealthily by the content blocker.
+  - **Blocked**: Domains where requests failed due to explicit blocking.
+
+### 3. Record Your Observations
+
+- Write down or export the sets of domains in each category if you need record keeping.
+- Note the total count of distinct domains connected (badge count or summary panel).
+
+### 4. Switch to a Different Content Blocker
+
+- Disable the current blocker and enable the next one you want to compare.
+- Repeat the browsing and monitoring steps under the same conditions.
+- Compare the domain lists and counts side-by-side.
+
+### 5. Analyze the Results Objectively
+
+- Look for which content blocker results in the **lowest number of distinct allowed third-party domains**.
+- Block counts reported inside each content blocker UI are not sufficient; rely on what uBO Scope reveals about actual allowed connections.
+- Identify if a blocker is stealth-blocking certain requests, which may not be countable by other testers.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Test on real-world websites, not synthetic 'ad blocker test' pages.** These test pages often simulate unrealistic request patterns that do not reflect actual browsing.
+- **Clear your browser cache between tests** to avoid effects of cached content hiding or enabling requests.
+- **Perform tests in private/incognito mode** or with a fresh profile to eliminate baseline noise.
+- **Repeat tests multiple times** to factor in dynamic content variation.
+- **Use consistent browsing actions and session states** to ensure fairness.
+
+---
+
+## Common Misconceptions to Avoid
+
+<AccordionGroup title="Common Misconceptions">  
+<Accordion title="Block Count Means Better Blocking">Block count visible on a content blocker’s toolbar or dashboard does not directly correlate with better blocking. A higher block count might actually mean a blocker lets through more third-party connections overall.</Accordion>  
+<Accordion title="Ad Blocker Testing Websites Are Accurate">Ad blocker test websites are not reliable measurements. They often request fake or unusual content patterns and cannot detect stealth blocking. Always use live browsing sessions and tools like uBO Scope instead.</Accordion>  
+<Accordion title="All Third-Party Connections Are Bad">Not all third-party domains connected are harmful or privacy-invasive. Some, like CDNs or trusted service providers, are legitimate and often necessary. uBO Scope helps you see the actual distinct domains connected so you can make informed decisions.</Accordion>  
+</AccordionGroup>
+
+---
+
+## Interpreting uBO Scope Data for Your Comparison
+
+- **Lower allowed domain counts = tighter blocking, better privacy.**
+- Domains in the **stealth-blocked** category indicate blocked connections not obvious to the webpage and often represent more subtle privacy protection.
+- Domains in the **blocked** category are outright blocked with network errors.
+
+---
+
+## Example Scenario
+
+You want to compare Content Blocker A and Content Blocker B:
+
+1. With Content Blocker A enabled, visit `https://example-news-site.com`.
+2. Open the uBO Scope popup and see 15 allowed domains, 7 stealth-blocked, and 3 blocked.
+3. Record these counts.
+4. Disable Content Blocker A, enable Content Blocker B, refresh the page.
+5. uBO Scope now shows 20 allowed domains, 2 stealth-blocked, and 1 blocked.
+6. Despite Content Blocker B having fewer blocks, it allowed more distinct third-party domains — less effective in privacy protection.
+
+---
+
+## Troubleshooting & Tips
+
+- If you see no data in uBO Scope popup:
+  - Ensure uBO Scope has all required permissions (activeTab, storage, webRequest).
+  - Confirm the browser version is supported.
+  - Reload the extension or browser.
+- Unexpected high allowed counts:
+  - Clear browser cache.
+  - Disable other extensions that may alter network requests.
+- Ensure you’re testing the same page state and content across blockers to avoid skewed results.
+
+---
+
+## Next Steps
+
+- Explore the [Testing and Debunking Ad Blocker Myths guide](/guides/privacy-analysis-patterns/testing-ad-blocker-myths) to deepen your understanding of evaluation techniques.
+- Learn how to interpret the popup panel in detail via [Understanding the Popup Panel](/guides/core-workflows/understanding-the-popup).
+- For advanced analysis, consider reviewing session data and domain mappings as explained in the [System Architecture & Data Flow overview](/overview/architecture-core-concepts/system-architecture-overview).
+
+---
+
+## Additional Resources
+
+- [uBO Scope Official GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- [Public Suffix List Reference (used by uBO Scope)](https://publicsuffix.org/)
+
+---
+
+## Summary
+
+Using uBO Scope as your objective monitoring tool ensures you break through misleading metrics and myths common in content blocker comparisons. It grounds your evaluation in actual third-party network connections and clarifies what is truly blocked, stealth-blocked, or allowed.
+
+By following this guide’s workflow and best practices, you gain clear insights into which content blockers truly limit third-party connections and enhance your online privacy effectively.
+
+---
