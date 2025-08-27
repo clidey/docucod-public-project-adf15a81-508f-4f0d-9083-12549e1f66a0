@@ -1,0 +1,197 @@
+---
+title: "Validating Filter List Changes and Diagnosing Issues"
+description: "Shows filter list maintainers and privacy-conscious users how to use uBO Scope to confirm whether new or tweaked filter lists actually reduce third-party requests. Includes tips for using the extension on locked-down or mobile environments where devtools are unavailable."
+---
+
+# Validating Filter List Changes and Diagnosing Issues with uBO Scope
+
+## Workflow Overview
+
+### Task Description
+This guide helps filter list maintainers and privacy-conscious users verify that new or modified filter lists effectively reduce unwanted third-party network requests. Using uBO Scope, users will confirm whether their filter lists succeed in minimizing network connections to third-party domains. This guide also provides practical advice for environments without developer tools, such as locked-down or mobile browsers.
+
+### Prerequisites
+- Have uBO Scope installed and activated on a supported browser (Chromium, Firefox, or Safari). Ensure it has the necessary permissions (`webRequest`, `activeTab`, `storage`).
+- Basic familiarity with how to open the uBO Scope popup and interpret the toolbar badge.
+- Access to the environments where changes will be tested.
+
+### Expected Outcome
+By following this guide, you will confidently determine whether filter list adjustments decrease the number of distinct third-party connections your browser makes. You will also learn how to identify patterns and diagnose potential issues in privacy-focused environments or when browser devtools are restricted.
+
+### Time Estimate
+Approximately 15–30 minutes, depending on the complexity of changes and testing environment.
+
+### Difficulty Level
+Intermediate – aimed at users with some experience in browser privacy tooling and filter list maintenance.
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Prepare Your Testing Environment
+- Open your browser with uBO Scope enabled.
+- Disable any other privacy or content blocking extensions temporarily to isolate filter list effects.
+- Ensure the site or pages to test are refreshable and representative of real browsing.
+
+### 2. Baseline Measurement
+- Navigate to a test website before applying any changes to your filter list.
+- Click the uBO Scope toolbar icon to open the popup panel.
+- Observe the badge count indicating distinct third-party domains connected.
+- Note the counts in each outcome category within the popup panel:
+  - **Not blocked (allowed)**: third parties the browser connected to successfully.
+  - **Stealth-blocked**: requests redirected or modified by content blocking stealth mechanisms.
+  - **Blocked**: requests that failed due to blocking.
+
+### 3. Apply Your Filter List Changes
+- Update or switch to the new or modified filter list in your content blocker.
+- Reload the test website to trigger fresh network activity.
+
+### 4. Validate Changes with uBO Scope
+- Open the uBO Scope popup again for the same tab.
+- Compare the badge count and detailed domain lists against the baseline.
+- Success is indicated by a reduced number of distinct third-party domains under the **allowed** category.
+- Review blocked and stealth-blocked lists to understand which domains are now being mitigated.
+
+### 5. Diagnose Inconsistencies or Issues
+- If the number of allowed connections remains high, double-check:
+  - Filter rules syntax and scope.
+  - Whether the browser caches previous connections (try a hard reload or clearing cache).
+  - Network and browser proxy/DNS settings that might interfere with blocking.
+
+- For stealth-blocked entries, understand they indicate requests that were redirected or subtly handled to avoid web breakage or detection. Sometimes these are acceptable to keep site functionality.
+
+- Use uBO Scope’s per-tab data to confirm that changes apply to the site and context of interest.
+
+### 6. Testing in Locked-Down or Mobile Environments
+- In environments where browser devtools are unavailable:
+  - Rely exclusively on the uBO Scope toolbar badge count as your primary indicator.
+  - Frequent reloading and comparison of badge counts after filter updates will help assess effectiveness.
+  - Keep the uBO Scope popup open in a separate window if possible, for live observation.
+
+- Consider using browser syncing or remote debugging tools where feasible to gain better visibility.
+
+---
+
+## Practical Examples
+
+### Example 1: Validating a New Regional Filter List
+1. Visit example news site.com.
+2. Note badge shows 18 distinct third-party domains.
+3. Apply your regional filter list.
+4. Reload the site.
+5. Badge count drops to 10, with some additional stealth-blocked entries.
+6. Confirm that key trackers known to be blocked by your list no longer appear in allowed domains.
+
+### Example 2: Diagnosing Unexpected Persistent Connections
+1. Badge count stays at 20 despite robust filter list changes.
+2. Open uBO Scope popup and identify domains repeatedly appearing.
+3. Cross-reference with your filter list syntax.
+4. Discover an overlooked rule exclusion or whitelist entry.
+5. Update the list, reload, and observe expected reduction.
+
+---
+
+## Tips & Best Practices
+- **Always compare against a known baseline.** Understanding the previous state helps interpret results accurately.
+- **Refresh the page fully** with cache cleared to get up-to-date network data.
+- **Use uBO Scope's domain lists** in the popup to identify persistent third-party domains at a glance.
+- **Beware of stealth-blocked connections**—these may be intentional compromises for site usability.
+- **Remember the badge counts show distinct domains, not raw request counts.** This clarifies true privacy exposure.
+- **For mobile or restricted environments, favor simple iterative testing** and badge observation.
+- **Keep your public suffix list updated via the background session.** This ensures domain parsing is accurate.
+
+---
+
+## Troubleshooting
+
+### Issue: Badge Count Does Not Reflect Filter List Changes
+- **Cause:** Browser cache or persistent connection data.
+- **Solution:** Perform a hard reload (Ctrl+Shift+R or Cmd+Shift+R), clear cache, or open a new tab.
+
+### Issue: No Data or Empty Popup Panel
+- **Cause:** uBO Scope not monitoring this tab or permissions missing.
+- **Solution:** Verify extension permissions; reload uBO Scope; check browser extension settings.
+
+### Issue: Stealth-Blocked Domains Appear Unexpectedly High
+- **Cause:** Filter list uses subtle block techniques.
+- **Solution:** Review stealth-blocked domains to balance privacy and site functionality; adjust filter rules if needed.
+
+### Issue: Unable to Test in Locked-Down Environment
+- **Cause:** Absence of devtools.
+- **Solution:** Use badge count as proxy, cycle filter list changes carefully, and consider sync/debug tools if accessible.
+
+---
+
+## Next Steps & Related Content
+- Explore the **[Monitoring Third-Party Network Connections](https://example.com/guides/getting-started-usage/monitoring-network-connections)** guide to deepen your understanding of uBO Scope’s core usage.
+- Read **[Interpreting the Badge and Popup Panel](https://example.com/guides/getting-started-usage/interpreting-badge-popup)** for detailed insights on how to read domain lists and badge indicators effectively.
+- Consult **[Comparing Content Blockers With uBO Scope](https://example.com/guides/use-cases-best-practices/compare-content-blockers)** to expand your workflows in evaluating privacy tools.
+- For common issues during initial use, refer to **[Troubleshooting Common Setup Issues](https://example.com/getting-started/first-steps-and-validation/troubleshooting-setup-issues)**.
+
+---
+
+## Appendix: Understanding uBO Scope Outcomes
+
+| Outcome        | What it Means                                                               |
+|----------------|----------------------------------------------------------------------------|
+| Not Blocked    | Successful third-party connections are allowed to proceed by current filter rules or no blocking applies.           |
+| Stealth-Blocked| Requests redirected or stealthily blocked to avoid site breakage while preventing tracking or unwanted connections.   |
+| Blocked        | Requests failed outright due to blocking, effectively cutting the connection.
+
+
+---
+
+## Screenshot Reference
+
+The uBO Scope popup panel displays three categories of third-party domains tracked for the current tab:
+- Allowed (not blocked)
+- Stealth-blocked
+- Blocked
+
+Each domain entry includes a count badge representing the number of requests for that domain.
+
+---
+
+## Additional Resources
+- **uBO Scope GitHub repository:** [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List (used in domain parsing): [https://publicsuffix.org/list/](https://publicsuffix.org/list/)
+
+
+---
+
+# Using uBO Scope Popup to Validate and Diagnose
+
+1. Click the uBO Scope extension icon in the toolbar to open the popup panel.
+2. Review the `domains connected` count for the active tab; this is the number of distinct allowed third-party domains.
+3. Examine the three domain outcome sections:
+   - **Not blocked:** Domains from which network requests succeeded.
+   - **Stealth-blocked:** Domains where requests were redirected or stealthily handled.
+   - **Blocked:** Domains with blocked requests.
+4. Verify that, after your filter list changes, unwanted or suspicious third-party domains move from the **Not blocked** column into **Blocked** or **Stealth-blocked**.
+5. When the popup shows `NO DATA`, it typically means the tab does not currently have any monitored network request data (e.g., a blank tab).
+
+<Tip>
+For the most accurate results, always reload your test pages using a hard refresh after updating filter lists to avoid cached resource effects.
+</Tip>
+
+<Note>
+On mobile browsers or heavily locked-down desktops where devtools are unavailable, the uBO Scope badge count remains your best real-time privacy indicator.
+</Note>
+
+---
+
+## uBO Scope Troubleshooting Highlights
+
+| Symptom                      | Quick Fix Tip                                                                  |
+|------------------------------|-------------------------------------------------------------------------------|
+| Badge count stuck or missing | Reload tab; check extension's permissions; confirm `webRequest` enabled       |
+| Popup shows no domain data   | Reload extension or browser tab; verify session data; clear cache if needed   |
+| Unexpected allowed domains   | Double-check filter list logic; confirm no whitelisting or rule exceptions    |
+| Stealth-blocked counts high  | Acceptable as stealth blocking balances site usability with privacy           |
+
+
+---
+
+*This page focuses solely on how to use uBO Scope to validate filter list changes and diagnose issues. For installation, setup, and basic usage, see related documentation.*
+
+---
