@@ -1,0 +1,190 @@
+---
+title: "Troubleshooting: When Are Connections Not Reported?"
+description: "Clarifies the extension’s tracking limitations, e.g., network connections outside browser-reported APIs or blocked by DNS. Offers solutions for understanding gaps and maximizing uBO Scope's visibility. Helps users interpret missing or unexpected data."
+---
+
+# Troubleshooting: When Are Connections Not Reported?
+
+Understanding why uBO Scope may not report some network connections is essential for accurate interpretation and to avoid confusion. This guide explains the core limitations of the extension’s tracking capabilities, the reasons behind missing or unexpected data, and steps you can take to maximize visibility into your browser's network activity.
+
+---
+
+## 1. Workflow Overview
+
+### Task Description
+This guide helps you diagnose why certain network connections may not appear in uBO Scope's reports. It explains the extension's intrinsic limitations tied to browser APIs and network layers and provides actionable advice to better understand and interpret the data you see.
+
+### Prerequisites
+- uBO Scope installed and enabled in a supported browser (Chromium 122+, Firefox 128+, Safari 18.5+).
+- Understanding of basic browser popup and badge usage as explained in the [Using the Popup View guide](/guides/getting-started/using-popup-view).
+- Awareness of the role of content blockers and DNS-level blocking.
+
+### Expected Outcome
+After following this guide, you will:
+- Know common scenarios leading to unreported connections.
+- Be able to identify whether missing data is due to technical limitations or settings.
+- Understand best practices to get the most accurate connection reporting from uBO Scope.
+
+### Time Estimate
+Approximately 10–15 minutes.
+
+### Difficulty Level
+Beginner to Intermediate.
+
+---
+
+## 2. Why Some Connections Are Not Reported
+
+uBO Scope relies solely on the browser's `webRequest` API to monitor network requests. Consequently, the extension can only track connections that the browser itself reports through this API.
+
+### Key Limitations:
+
+- **Network Requests Outside the Browser's Scope**: Some connections initiated by software outside the browser (e.g., system apps, other processes) do not appear in uBO Scope.
+
+- **WebRequest API Coverage Variations**: Browsers differ in which connections they expose to the `webRequest` API. Connections made through some protocols or internally handled by the browser may be invisible.
+
+- **DNS-Level or External Blocking**: When blocking occurs at the DNS level or by a system-wide firewall—not tracked by the browser's `webRequest` API—uBO Scope cannot detect or report those blocked connections.
+
+- **Private Browsing and Session Limitations**: Some browsers may limit or restrict access to network request data in private or incognito windows, affecting uBO Scope's visibility.
+
+- **Service Workers and Non-Network Sources**: Requests handled internally by service workers or fetched from cache might not generate trackable webRequest events.
+
+### Real Scenario Examples
+- If you use a VPN or system firewall that blocks domains before requests reach the browser, uBO Scope does not report these.
+- Connections made by plugins or other browser internal components might be invisible.
+- Sudden drops in reported connections after changing your DNS server to one with filtering reflect external blocking outside uBO Scope's reach.
+
+<Note>
+A low or zero count on the toolbar badge **does not always mean a connection-free browsing experience**, but rather that uBO Scope did not detect any third-party server connections reported via the browser's APIs.
+</Note>
+
+---
+
+## 3. Step-by-Step: Diagnosing Missing Connection Reports
+
+<Steps>
+<Step title="Verify Browser Compatibility and Permissions">
+Ensure you are using a supported browser version:
+- Chromium 122+
+- Firefox 128+
+- Safari 18.5+
+
+Also, confirm uBO Scope has the necessary permissions `webRequest`, `storage`, and `activeTab` as seen in the browser extension settings.
+
+Outcome: An unsupported browser or missing permissions will cause zero or limited data reporting.
+</Step>
+
+<Step title="Check for DNS or External Blocking">
+If you use system-wide DNS filtering or network firewalls, understand these blocks happen before the browser’s network events. Try temporarily switching to a DNS without filtering and observe if connection counts increase.
+
+Outcome: Increases indicate DNS-level blocks not visible to uBO Scope.
+</Step>
+
+<Step title="Open uBO Scope Popup and Cross-Check Badge">
+Click the toolbar icon to open the popup and compare the badge count.
+
+- No badge or zero count with many visible connections elsewhere suggests a monitoring gap.
+- Confirm you are on an active browser tab where connections are expected.
+
+Outcome: Badge and popup data mismatch may highlight browser API or extension issues.
+</Step>
+
+<Step title="Reload the Webpage and Observe">
+Refreshing the page forces new network requests.
+
+- Watch the badge update.
+- If connections are still missing, suspect browser API coverage or private browsing modes.
+
+Outcome: Fresh requests aid in confirming the extension's current monitoring status.
+</Step>
+
+<Step title="Inspect for Private or Service Worker Requests">
+Some requests handled by service workers or cached responses do not generate new network events.
+
+- Use browser developer tools alongside uBO Scope to identify such cases.
+
+Outcome: This clarifies if observed missing connections originate from non-network events.
+</Step>
+
+<Step title="Clear Extension Session Data">
+Persistent session errors can affect tracking.
+
+- Use the browser extension management page to clear storage/data.
+- Restart the browser.
+
+Outcome: A clean state can resolve issues caused by corrupted or stale data.
+</Step>
+</Steps>
+
+---
+
+## 4. Practical Tips & Best Practices
+
+- **Expect Some Blind Spots**: No extension can capture 100% of network requests due to varying browser API and network environment constraints.
+
+- **Use uBO Scope alongside Browser Developer Tools** for comprehensive analysis.
+
+- **Understand Badge Count Meaning**: The number shows distinct third-party domains connected — a missing or low count doesn't imply no network activity.
+
+- **Update Public Suffix List**: uBO Scope periodically updates its domain parsing P.S.L. to better classify third-party domains.
+
+- **Monitor Extension Permissions** after browser updates, which may revoke or require re-approval.
+
+---
+
+## 5. Troubleshooting Common Issues
+
+<AccordionGroup title="Common Troubleshooting Scenarios">
+<Accordion title="Popup Shows No Data, Badge Zeroed">
+- Confirm the extension is enabled and permissions are correct.
+- Reload the page and try again.
+- Check for conflicting privacy or content blocking extensions.
+- Clear extension storage and restart browser.
+</Accordion>
+
+<Accordion title="Some Third-Party Domains Not Reported">
+- Understand that DNS or network-level blocks are invisible to uBO Scope.
+- Verify by disabling such filters temporarily.
+- Check browser’s `webRequest` API limitations for your browser version.
+</Accordion>
+
+<Accordion title="Connections Not Updating in Real-Time">
+- uBO Scope batches events with a short delay (~1 second). Wait for the badge to update.
+- Browser may delay reporting under heavy load or power-saving mode.
+</Accordion>
+
+<Accordion title="Stealth-Blocked Domains Count Missing or Unexpected">
+- Stealth-blocked indicates links redirected or hidden by content blockers.
+- Some redirects might happen outside the `webRequest` API.
+- Verify with additional tools or paired content blockers such as uBlock Origin.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. How uBO Scope Tracks Network Requests (Conceptual Summary)
+
+uBO Scope listens to the browser’s `webRequest` events as follows:
+
+- **onBeforeRedirect**: Captures redirects, marking stealth-blocked domains.
+- **onErrorOccurred**: Marks blocked or failed requests.
+- **onResponseStarted**: Marks successful requests.
+
+For each tab, domains are tracked in sets by their status: allowed, stealth-blocked, or blocked.
+
+The extension then serializes this state and updates the badge and popup UI accordingly.
+
+
+---
+
+## 7. Next Steps & Related Documentation
+
+- Visit the [Using the Popup View guide](/guides/getting-started/using-popup-view) to learn about interpreting domain connection reports.
+- Review the [Analyzing Third-Party Connections guide](/guides/usage-patterns/analyze-thirdparty-connections) for deeper exploration of multiple-site comparisons.
+- Consult the [Troubleshooting Setup Issues](/getting-started/configuration-usage/troubleshooting) page for resolution of installation or permissions problems.
+- Understand core concepts in [Core Concepts & Terminology](/overview/key-concepts-and-architecture/core-terms-concepts) for clarification of connection categories.
+
+
+<Tip>
+Fully comprehending uBO Scope’s reporting limitations empowers you to better evaluate your browsing privacy posture and content blocker effectiveness.
+</Tip>
