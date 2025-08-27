@@ -1,0 +1,208 @@
+---
+title: "Debunking Blocker Myths & Interpreting Counts"
+description: "Walk through common misconceptions about block counts, toolbar badges, and 'ad blocker test' pages. Learn how uBO Scope provides objective measurement and how to avoid misinterpreting extension reporting."
+---
+
+# Debunking Blocker Myths & Interpreting Counts
+
+This guide helps you understand common misconceptions about block counts, toolbar badges, and the use of 'ad blocker test' pages in the context of uBO Scope. It explains how uBO Scope objectively measures network request outcomes and how to correctly interpret the data it provides to avoid misjudgment of your content blocking tools.
+
+---
+
+## Why This Matters
+
+Many users rely on block counts or badge numbers displayed by content blockers or companion tools as a proxy for effectiveness. However, this often leads to misunderstandings about what these numbers really mean. uBO Scope is designed to clarify these misconceptions by transparently showing the network connections your browser attempts or succeeds in making, regardless of which blocking solution is active.
+
+
+---
+
+## What You Will Learn
+
+- The true meaning behind the numbers on uBO Scope’s toolbar badge
+- Why block counts can be misleading when comparing different blockers
+- How to interpret stealth-blocked connections
+- Why ‘ad blocker test’ websites are unreliable for judging blocker effectiveness
+- How uBO Scope uses objective metrics based on the browser’s webRequest API
+
+
+---
+
+## Prerequisites
+
+- uBO Scope installed and enabled in your browser
+- Basic familiarity with the extension’s popup interface and toolbar badge
+- Using a modern Chromium, Firefox, or Safari browser (see prerequisites in installation guides)
+
+
+## Time Estimate
+
+Reading and understanding this guide should take approximately 10–15 minutes.
+
+
+---
+
+# 1. Understanding the Toolbar Badge Count
+
+### What the Badge Represents
+
+The badge count on the uBO Scope toolbar icon shows **the number of distinct third-party remote domains that your browser successfully connected to or attempted to connect to within the active tab**.
+
+- A **lower badge number is better** because it means fewer third-party connections were allowed.
+- The count reflects domains from which resources were fetched and does not equal blocked requests.
+
+### Key Points:
+
+- The badge **counts distinct domain names**, not individual network requests.
+- It counts only **distinct third-party domains**, excluding the main site domain.
+- It reflects connections that **were allowed or stealth-blocked**, not just blocked.
+
+<Tip>
+Think of the badge as a measure of how many external sites your browser actually talked to, not how many requests were blocked.
+</Tip>
+
+
+---
+
+# 2. Debunking Common Myths About Block Counts
+
+### Myth: “A blocker with a higher block count is necessarily better.”
+
+This is false. A higher block count might mean your browser is contacting more distinct third-party domains overall, leading to more blocks but also potentially more leaks.
+
+- uBO Scope clarifies that **what matters is the number of allowed distinct remote servers, not just the number blocked.**
+- More blocks can coexist with more allowed connections due to different blocking strategies or lists.
+
+### Myth: “Ad blocker test pages reflect actual blocker effectiveness.”
+
+Such test pages often generate artificial scenarios that don’t reflect real-world browsing. They:
+
+- May not detect stealth blocking techniques used by extensions.
+- Use fabricated requests from unfamiliar domains not representative of practical browsing.
+
+<Tip>
+Avoid relying on these test pages for realistic evaluation. Instead, use uBO Scope to observe actual network connections.
+</Tip>
+
+
+---
+
+# 3. How uBO Scope Measures and Reports Connections
+
+uBO Scope uses the browser's `webRequest` API to monitor network request events for each active tab:
+
+- It categorizes connections as **allowed (successful), stealth-blocked (redirected or hidden), or blocked (failed/error)**.
+- The extension tracks results on a **per domain and per hostname** basis.
+- The toolbar badge count updates live per tab to reflect **allowed distinct domains**.
+
+### Interpreting uBO Scope Outcomes
+
+| Outcome       | Description                                                     | User Impact                            |
+|---------------|-----------------------------------------------------------------|--------------------------------------|
+| Allowed       | Requests that succeeded in connecting                           | Resources loaded, counted in badge   |
+| Stealth-Blocked | Requests intercepted and hidden or redirected by blockers     | Hidden connections, not always obvious |
+| Blocked       | Requests prevented from connecting or failed                   | Clearly blocked, not counted in badge|
+
+
+---
+
+# 4. Interpreting the uBO Scope Popup Panel
+
+To dive deeper than the badge, open the uBO Scope popup (click on the toolbar icon). You will see three sections:
+
+- **Not Blocked:** Domains your browser connected to.
+- **Stealth-Blocked:** Domains that were blocked in a stealthy way.
+- **Blocked:** Domains whose requests failed or were explicitly blocked.
+
+Each domain entry shows how many times it was encountered during the current session for the active tab.
+
+<Tip>
+The popup provides granular insight so you can understand exactly what is going on under the hood, beyond simplistic counts.
+</Tip>
+
+
+---
+
+# 5. Practical Tips to Avoid Misinterpretation
+
+- **Ignore raw block counts from other extensions or test sites; use uBO Scope’s allowed domain count as a transparency metric.**
+- **Understand the distinction between stealth blocking and outright blocking.**
+- **Use the popup panel counts to spot domains with high activity, which might be of interest during audits.**
+- **Avoid making conclusions based solely on the toolbar badge; review detailed data when needed.**
+
+
+---
+
+# 6. Example Scenario: Evaluating Your Blocker’s Effectiveness
+
+Imagine you have two content blockers, A and B:
+
+- Blocker A shows a high block count but uBO Scope reveals many allowed third-party domains — indicating more network leakage.
+- Blocker B shows a lower block count with fewer allowed domains, signaling tighter control.
+
+uBO Scope helps you objectively measure what truly matters — the **number of distinct allowed third-party servers** — rather than raw block tallies or artificial tests.
+
+
+---
+
+# 7. Troubleshooting Common Confusions
+
+<AccordionGroup title="Troubleshooting uBO Scope Counts">
+<Accordion title="Why is the badge count sometimes zero on sites I expect traffic?">
+If you see zero badge but expect network connections, check:
+- You are on a compatible browser with webRequest API supported.
+- The tab is actively monitored and uBO Scope is enabled.
+- Some network requests may happen outside of webRequest API scope and are not counted.
+</Accordion>
+<Accordion title="Why do I sometimes see stealth-blocked domains but the badge count is low?">
+Stealth blocking may prevent requests without increasing the allowed count. Badge count only shows allowed domains.
+</Accordion>
+<Accordion title="Are all third-party connections bad? Should I block everything?">
+No. Many third-party servers, like reputable CDNs, are legitimate and necessary. The goal is balance and awareness, not blanket blocking.
+</Accordion>
+<Accordion title="Why does uBO Scope not report every single request I see in developer tools?">
+Developer tools can see all requests, including some that are not exposed to the browser extension APIs due to browser limitations or private protocols.
+</Accordion>
+</AccordionGroup>
+
+
+---
+
+# 8. Next Steps
+
+After understanding blocker myths and interpreting counts:
+
+- Use the [Understanding Allowed, Stealth, and Blocked Domains](https://yourdocs/guides/interpreting-results-and-real-world-use/understanding-domain-status) guide to deepen comprehension of domain statuses.
+- Learn how to perform your [First Network Connection Analysis](https://yourdocs/guides/getting-started-essentials/first-analysis) with uBO Scope.
+- Consult [Validating uBO Scope Operation](https://yourdocs/getting-started/setup-validation-and-troubleshooting/validating-ubo-scope-operation) if you face unexpected results.
+
+
+---
+
+# Related Resources
+
+- [What is uBO Scope?](https://yourdocs/overview/introduction-and-value/what-is-ubo-scope) — the product overview
+- [Why Use uBO Scope?](https://yourdocs/overview/introduction-and-value/why-use-ubo-scope) — to understand value
+- [Core Terminology](https://yourdocs/overview/core-concepts-and-architecture/core-terminology) — definitions to get familiar
+
+
+---
+
+# Quick Recap
+
+| Common Mistake                    | Reality                                                   |
+|----------------------------------|-----------------------------------------------------------|
+| Higher block count = better blocker | Block count alone insufficient; more blocks can mean more allowed domains too |
+| Ad blocker test sites are reliable | They often do not represent real browsing and do not detect stealth blocking |
+| Badge number shows blocked requests | Badge shows distinct allowed third-party domains            |
+
+
+---
+
+# Additional Information
+
+For source code and updates, visit the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+
+---
+
+<u>Empower yourself with accurate, transparent data — interpret blocker results with confidence and clarity using uBO Scope.</u>
