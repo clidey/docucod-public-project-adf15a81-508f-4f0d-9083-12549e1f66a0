@@ -1,220 +1,157 @@
 ---
 title: "What is uBO Scope?"
-description: "Learn what uBO Scope provides: real-time visibility into all successful and attempted connections to remote servers by your browser. Understand its function, key differentiation from traditional content blockers, and the scenarios it helps investigate."
+description: "An overview of uBO Scope, describing its goal to reveal all network connections—both blocked and successful—made by webpages. Learn why the extension is indispensable for visibility into real browsing privacy and debunking common misconceptions about content blockers."
 ---
 
 # What is uBO Scope?
 
-## Overview
-uBO Scope is a lightweight browser extension designed to provide **transparent, real-time visibility into all connections — both attempted and successful — that your browser makes to remote servers**. Unlike traditional content blockers which primarily focus on blocking unwanted content, uBO Scope specializes in revealing exactly *where* your browser is reaching out, empowering you with insights into your web traffic that go beyond simple blocking statistics.
+## Discover Every Network Connection Made by Webpages
 
-## Why This Matters
-Every webpage you visit can potentially connect to numerous third-party servers—some necessary (like content delivery networks), others less transparent (such as trackers or invasive advertising networks). While content blockers often show you how many requests were blocked, they rarely disclose the distinct number of different remote servers your browser connected to, which is a more telling metric of exposure.
+uBO Scope is an indispensable browser extension designed to shed light on all network connections — both blocked and successful — initiated by webpages you visit. Unlike traditional content blockers that primarily focus on blocking ads or trackers, uBO Scope reveals the full network activity spectrum, ensuring you understand exactly which remote servers your browser contacts.
+
+### Why uBO Scope Matters
+
+- **Complete Visibility:** See every distinct third-party server your browser connects to, not just those blocked.
+- **Accurate Privacy Insights:** Understand your real browsing privacy by knowing what connections are allowed or stealth-blocked.
+- **Debunk Common Myths:** Challenge misleading assumptions about content blocking effectiveness.
+- **Independent of Content Blockers:** Works seamlessly regardless of which content blocker or DNS filtering you use, as long as your browser reports network requests.
+- **Streamlined Interface:** A clear badge count and categorized details to help you interpret network activity at a glance.
+
+### Who Benefit Most from uBO Scope?
+
+- Privacy-focused users curious about all remote servers contacted during browsing.
+- Security enthusiasts seeking transparency beyond what content blockers reveal.
+- Filter list maintainers who want to validate the effectiveness of rules in real-world scenarios.
+- Researchers and analysts debunking claims about blocker performance.
+
+---
+
+## Understanding uBO Scope: Revealing Browser Network Connections
+
+### What is uBO Scope?
+
+uBO Scope is a lightweight companion extension to uBlock Origin that captures and reveals *every* network request your browser attempts while loading webpages. It reports on connections that are successfully made, those stealthily blocked by content blockers, and those actively blocked or failed.
+
+Its core goal is to give users unparalleled transparency into what happens behind the scenes on the web, exposing connections that might otherwise go unnoticed. This clarity empowers you to make informed decisions about privacy and security.
+
+### What Problem Does uBO Scope Solve?
+
+Standard browser tools and content blockers often provide partial or misleading views of network activity. Many users assume that a low block count or the results of “ad blocker test” sites accurately reflect the effectiveness of blocking — but these are flawed indicators.
 
 uBO Scope fills this gap by:
-- Reporting the **number of distinct third-party remote servers your browser communicates with**.
-- Differentiating between **allowed, stealth-blocked, and fully blocked connections**.
-- Functioning independently, regardless of which content blocker you use or how it operates.
 
-Its badge icon count specifically indicates the number of unique third-party domains accessed, providing a clear, easily understandable gauge of your browsing exposure.
+- Tracking *all* network requests via the browser's `webRequest` API, including those blocked invisibly by content blockers.
+- Distinguishing between allowed, stealth-blocked, and blocked connections.
+- Displaying the actual number of unique third-party domains contacted per tab.
 
----
+### What Makes uBO Scope Unique?
 
-## What Is uBO Scope?
-
-### Core Definition
-uBO Scope is a browser extension that listens for network requests fired by webpages and reports their outcomes—in real time—across all tabs. It tracks every remote connection your browser attempts, whether these connections succeed, are blocked stealthily (undetected by the webpage), or are outright blocked.
-
-### Core Purpose
-Its main goal is to **offer complete visibility into your browser’s network activity at the domain level**, giving users accurate insight into which remote servers are being accessed when visiting webpages. This transparency helps you spot unexpected or suspicious third-party connections and evaluate the effectiveness of any content blockers you have activated.
-
-### How uBO Scope Stands Apart
-- **Not a blocker:** It does not block or modify network traffic; it only reports.
-- **Independent of blocking method:** It reports connections regardless of how or if they were blocked—by DNS, extensions, or other means—so long as the browser reports them.
-- **Focus on distinct third-party domains:** Instead of raw block counts or individual requests, it counts unique domains, a more meaningful privacy metric.
+- **Comprehensive Connection Reporting:** Unlike other extensions, it reveals *all* network activity regardless of blocking technique.
+- **Real-time Badge Updates:** The toolbar icon shows the number of distinct third-party servers connected, providing a clear indicator of your exposure.
+- **Myth Busting:** Helps disprove common misconceptions about block counts and test pages.
+- **Content Blocker Agnostic:** Works alongside any content blocker, including those using DNS filtering or stealth blocking.
 
 ---
 
-## Key Features & Capabilities
+## Core Capabilities
 
-### 1. Real-Time Connection Visibility
-Using browser APIs, uBO Scope listens to all outgoing network requests, capturing their status immediately. This allows users to see a live tally of distinct remote domains for each tab.
+### 1. Monitoring Every Network Request
 
-### 2. Detailed Outcome Categorization
-Connections are classified into three categories:
-- **Allowed:** Connections that were successful.
-- **Blocked:** Connections that were explicitly blocked by the browser or extensions.
-- **Stealth-Blocked:** Connections prevented in a manner invisible to the requesting webpage (e.g., silently intercepted).
+uBO Scope listens to browser network events (`onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`) to track the outcome of each request:
 
-This nuanced outcome reporting helps users understand the precise behavior of network interactions beyond simple block/no-block.
+- **Success:** Requests completed and connections allowed.
+- **Redirect:** Requests that resulted in URL redirection.
+- **Error:** Requests blocked or failed.
 
-### 3. Tab-Specific Reporting
-Each browser tab maintains its own isolated session data tracking domains accessed. This allows granular inspection of domain connectivity on a per-site basis.
-
-### 4. Summary Badge for Quick Insight
-The toolbar icon badge shows the count of distinct third-party remote servers contacted by the active tab, giving immediate feedback on exposure level.
-
-### 5. Support for Modern Browsers
-uBO Scope is available for Chromium-based browsers (like Chrome and Edge), Firefox, and Safari, supporting contemporary web standards and ensuring broad compatibility.
+These are continuously logged and processed per browser tab.
 
 
-<AccordionGroup title="How uBO Scope Works Under the Hood">
-<Accordion title="Network Request Listening and Categorization">
+### 2. Categorizing Connections
 
-uBO Scope leverages the browser's `webRequest` API to monitor network events:
-- Captures redirects, errors, and response starts for all network requests.
-- Uses this data to classify requests as 'allowed', 'blocked', or 'stealth-blocked'.
-- Maintains domain-based aggregates nested by tab.
+Each network request is associated with its remote hostname and domain, then classified into one of three categories:
 
-</Accordion>
-<Accordion title="Domain and Hostname Resolution">
+- **Allowed:** Connections successfully established.
+- **Stealth-blocked:** Connections that were redirected to prevent access (often hidden by stealth blocking).
+- **Blocked:** Connections that failed or were explicitly blocked.
 
-Domains are identified through the Public Suffix List, ensuring accurate extraction of registrable domains from hostnames, helping avoid conflating subdomains or unrelated hosts.
+### 3. Badge Count Reflecting Distinct Third-Party Connections
 
-</Accordion>
-<Accordion title="Data Presentation">
+The toolbar icon dynamically updates to display the count of unique third-party domains for which connections were successfully allowed within the active tab. This helps quantify your browsing exposure at a glance.
 
-The collected data is rendered in the extension popup:
-- Domains are listed with counts of how many requests were made.
-- The interface separates outcomes distinctly, improving readability.
+> **Note:** A lower badge count indicates fewer third-party connections, which is typically more desirable for privacy.
 
-</Accordion>
-</AccordionGroup>
+### 4. Popup Panel for Detailed Inspection
+
+Clicking the icon opens a popup with a clear, categorized list of domains:
+
+- **Not blocked:** Domains from which resources were loaded.
+- **Stealth-blocked:** Domains where blocking occurred quietly.
+- **Blocked:** Domains where connections failed or were actively blocked.
+
+Counts beside each domain show how many requests were made.
 
 ---
 
-## Why Should I Care?
+## Why You Should Care
 
-### Outcomes You Can Expect
-- **Enhanced Privacy Awareness:** Know exactly which third-party servers your browser contacts, exposing trackers or unwanted services.
-- **Transparency Over Content Blockers:** See beyond block counts and verify if your blockers actually prevent connections from reaching their targets.
-- **Debunk Myths:** Understand why high block counts don’t always mean better blocking and why certain ad-blocker test pages can be misleading.
-- **Filter List Maintenance:** Filter list developers gain an observational tool to collect network request data even in environments with limited developer tools access.
+### Real Benefits
 
-### Real-World Scenarios Where uBO Scope Excels
-- While browsing, if you suspect a site is invoking trackers or loading resource-heavy third-party content, quickly verify the domains contacted.
-- Test and compare different content blockers or custom filter lists by examining their real-world effectiveness in preventing remote connections.
-- Investigate unusual network behavior on corporate or public networks that may intercept or redirect requests stealthily.
+- **Full Transparency:** Know every remote destination your browsing session touches.
+- **Accurate Privacy Assessment:** Identify genuine exposure levels beyond mere block counts.
+- **Filtering Validation:** For filter maintainers, verify which connections persist despite blocking.
+- **Informed Decisions:** Better understand and choose content blockers based on real network behavior.
 
-### Before & After
-Before uBO Scope: You rely on block counts or vague extension reports, not seeing the actual extent of third-party connections.
+### Common Use Cases
 
-After uBO Scope: You see a concrete list and counts of distinct third-party domains, enabling more informed privacy choices and troubleshooting.
+- Evaluating if a content blocker truly limits your exposure to trackers and ads.
+- Debunking the idea that a higher block count means better privacy.
+- Investigating stealth techniques used by some blockers or web services.
+- Filtering and refining your blocking rules to improve effectiveness.
 
-### Return on Investment (ROI)
-- Save time by detecting privacy risks quickly.
-- Avoid false assumptions about blockers’ effectiveness.
-- Empower yourself with clear, actionable network visibility without complex tools.
+### Typical Scenarios
+
+**Without uBO Scope:** You rely on block counts or ad-block tests, risking misunderstanding the true network footprint of your browsing.
+
+**With uBO Scope:** You gain crystal-clear visibility into all connections attempted, including those hidden or obscured by stealth blocking. Your privacy decisions are evidence-based.
 
 ---
 
 ## Getting Started Preview
 
-### Quick Start
-- Install uBO Scope from your browser’s extension store.
-- Click the toolbar icon when browsing any webpage.
-- Instantly view the number of distinct third-party domains connected.
-- Drill down into allowed, stealth-blocked, and blocked domains in the popup.
+### Quick Launch
+
+- Install uBO Scope from your browser's addon store (available for Chrome, Firefox, Safari).
+- Visit a website and observe the badge count on the extension icon.
+- Click the icon to see a detailed breakdown of allowed, stealth-blocked, and blocked domains.
 
 ### Prerequisites
-- Uses modern browsers supporting `webRequest` API (Chromium 122+, Firefox 128+, or Safari 18.5+).
-- Requires permission to observe network requests on all HTTP/HTTPS URLs.
 
-### Next Steps
-- Visit the [Installation Instructions](https://github.com/gorhill/uBO-Scope) for detailed setup guidance.
-- Explore [Getting Started: Your First Analysis](../getting-started/basic-usage-and-troubleshooting/first-steps-usage) to learn how to interpret the data uBO Scope provides.
+- A modern browser supporting Manifest Version 3 extensions (e.g., Chrome 122+, Firefox 128+, Safari 18.5+).
+- No special configuration is required; the extension works out-of-the-box.
 
----
+### What’s Next
 
-## Tips and Best Practices
-
-- Remember that not all third-party connections indicate tracking or risk: many are essential services like CDNs.
-- Use the difference between allowed and blocked counts to evaluate your current content blocking setup’s effectiveness.
-- Avoid relying on ad-blocker test pages—they can be misleading. Trust uBO Scope’s real-world data instead.
+- Explore [Who Should Use uBO Scope?](#) to see if it fits your needs.
+- Proceed to [Installation Instructions](#) and [First Run & Quick Validation](#) to verify setup.
+- Delve deeper with [How uBO Scope Works (Architecture)](#) for technical insights.
 
 ---
 
-## Troubleshooting Common Issues
+## Technical Insight (Optional)
 
-- **No badge count visible:** Confirm the extension permissions are granted and the browser version supports necessary APIs.
-- **Low or zero domains reported on sites you expect connections:** Check if the content blocker or DNS-level block is preventing network requests from being reported.
-- **Popup does not show data:** Try refreshing the tab or reopening the popup after page load.
+uBO Scope hooks into the browser's `webRequest` API to monitor network requests. It parses request URLs to extract domains and hostnames, categorizes outcomes, and maintains session state per tab. This architecture ensures accurate tracking regardless of blocking mechanisms employed by other extensions or DNS filters.
 
-
----
-
-## Additional Resources
-For detailed usage instructions and advanced scenarios, visit the following guides:
-- [Who Should Use It & Why?](../introduction-and-value/target-audience-use-cases)
-- [Core Concepts & Terminology](../concepts-architecture/core-concepts-and-terminology)
-- [Real-world Usage: Analyzing Third-Party Connections](../../guides/real-world-usage/analyzing-3rd-party-requests)
-
+The extension also uses the Public Suffix List to correctly identify registrable domains, enabling precise third-party distinction.
 
 ---
 
-## Example: How uBO Scope Displays Connection Data
+## References
 
-When you click the uBO Scope icon in your browser, the popup shows:
-
-```
-domains connected: 5
-
-not blocked
- - example-cdn.com (3 requests)
- - trusted-analytics.net (2 requests)
-
-stealth-blocked
- - suspicious-tracker.io (1 request)
-
-blocked
- - known-adserver.org (4 requests)
-```
-
-This clear layout helps you instantly understand which domains are fully allowed, which were silently blocked, and which were explicitly blocked.
-
+- GitHub Repository: [uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Browser Add-on Listings:
+  - [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+  - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
 
 ---
 
-## Diagram: Data Flow within uBO Scope
-
-```mermaid
-flowchart TD
-  subgraph Browser
-    A[User Navigates to Website]
-  end
-
-  subgraph uBO Scope Extension
-    B[Listens to webRequest API events]
-    C[Records request URL and outcome]
-    D[Classifies by tabId and domain]
-    E[Updates tab badge counts]
-    F[Displays data in popup]
-  end
-
-  A --> B
-  B --> C
-  C --> D
-  D --> E
-  E --> F
-
-  click B "js/background.js" "Lines 50-130"
-  click F "js/popup.js" "Lines 10-80"
-```
-
-
----
-
-## Where to Get uBO Scope
-- For Chromium-based browsers, install from the [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp).
-- For Firefox, find it on [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/).
-- For Safari, install via the [App Store with Safari Web Extensions](https://apps.apple.com).
-
-
----
-
-Harness the power of visibility. Understand and control your browser’s network footprint today with uBO Scope.
-
-
----
-
-**For more detailed setup and usage, see the **[Getting Started](../../getting-started/installation-setup/installing-ubo-scope)** and **[First Use & Troubleshooting](../../getting-started/basic-usage-and-troubleshooting/first-steps-usage)** documentation.**
+Harness the power of uBO Scope to uncover the unseen web of network connections beneath your browsing experience. Gain confidence in your privacy, challenge common myths, and make better decisions about blockers and filters with full network transparency.
