@@ -1,0 +1,165 @@
+---
+title: "Interpreting Badge Counts and Domains List"
+description: "Explains how the extension calculates the badge number, how to interpret the list of connected domains, and best practices for distinguishing between allowed, stealth, and blocked requests when analyzing page behavior."
+---
+
+# Interpreting Badge Counts and Domains List
+
+## Overview
+This guide explains how uBO Scope calculates the badge number you see on the extension's toolbar icon, how to read and understand the categorized list of connected domains presented in the popup, and best practices to distinguish between allowed, stealth-blocked, and blocked network requests when analyzing a webpage's behavior.
+
+uBO Scope provides real-time visibility into your browser's network connections. Understanding these visual cues unlocks the full value of the extension, empowering you to assess third-party connections accurately and troubleshoot privacy or performance concerns.
+
+---
+
+## 1. How the Badge Number is Calculated
+
+### What the Badge Number Represents
+- The badge number on the uBO Scope icon reflects the **number of distinct third-party remote domains** that have successfully connected during your current browser session for the active tab.
+- It **excludes** domains whose requests were blocked or stealth-blocked.
+- The badge count therefore tells you how many unique remote third-party servers your browser fetched resources from.
+
+### Why This Matters
+- Fewer unique third-party domains generally indicate less exposure to external services.
+- High counts may highlight excessive third-party dependencies, which can impact privacy and performance.
+
+### Behind the Scenes (Conceptual)
+- Each network request is analyzed by uBO Scope's background process.
+- Requests are categorized as **allowed**, **stealth-blocked**, or **blocked**.
+- The badge count is set to the number of unique domains in the **allowed** category.
+
+<Check>
+The badge updates in real time as you browse, showing an accurate count for the current tab's connections.
+</Check>
+
+---
+
+## 2. Understanding the Domains List in the Popup
+
+When you open the uBO Scope popup (by clicking its icon), you are presented with a clear, categorized list of domains the active tab has interacted with.
+
+### Sections Explained
+
+| Section           | Meaning                                                       | What You See                                               |
+|-------------------|---------------------------------------------------------------|------------------------------------------------------------|
+| **Not Blocked**   | Domains that successfully connected without interference       | Domains and a count of requests allowed through             |
+| **Stealth-Blocked** | Requests that were intercepted stealthily by filters          | Domains that were silently blocked without visible disruption |
+| **Blocked**       | Requests explicitly blocked by content filters or other means | Domains whose requests failed due to blocking                |
+
+### Domain and Count Columns
+- **Domain:** The third-party domain involved.
+- **Count:** Number of individual requests involving that domain.
+
+### Interpreting Counts
+- High counts on allowed domains may indicate heavy usage from that third party.
+- A domain appearing in multiple sections can reveal redirects or retry attempts.
+
+### Display Details
+- Domains are sorted alphabetically.
+- The top domain shown (in the heading) is the origin tab's hostname.
+- Domain names use Unicode, ensuring internationalized domains display clearly.
+
+<Note>
+Empty categories are hidden to reduce clutter.
+</Note>
+
+---
+
+## 3. Differentiating Allowed, Stealth-Blocked, and Blocked Requests
+
+### Allowed Requests (Green Section)
+- These are requests that your browser fetched successfully.
+- They represent external servers that contributed resources to the page.
+
+### Stealth-Blocked Requests (Red Section)
+- These requests were intercepted and suppressed quietly.
+- Filters blocked them without triggering visible errors or page breakage.
+- This ensures privacy or performance without user-noticeable disruption.
+
+### Blocked Requests (Red Section)
+- Requests that failed due to blocking explicitly by filters or errors.
+- Unlike stealth blocking, these may produce visible signs such as missing content or errors.
+
+### Best Practices for Analysis
+- Focus on **allowed** domains to gauge third-party service exposure.
+- Investigate **stealth-blocked** domains if you’re debugging privacy filters or suspect hidden trackers.
+- Review **blocked** domains to assess filter effectiveness or troubleshooting missing resource issues.
+
+---
+
+## 4. Step-by-Step Quick Interpretation Workflow
+
+<Steps>
+<Step title="Step 1: Observe the Badge Number">
+Open uBO Scope and note the badge count on the toolbar icon. This summarizes unique allowed third-party domains.
+</Step>
+<Step title="Step 2: Open the Popup and Review Summaries">
+Click the icon to open the popup. Check the 'domains connected' count for detailed reference.
+</Step>
+<Step title="Step 3: Review Not Blocked Domains">
+Examine the green section for all domains that successfully connected and the volume of requests.
+</Step>
+<Step title="Step 4: Investigate Stealth-Blocked Domains">
+Look at the 'stealth-blocked' list. These are silently blocked connections — often trackers or ads.
+</Step>
+<Step title="Step 5: Check Blocked Domains">
+Review any explicitly blocked domains showing failed requests. Identify any impact on page functionality.
+</Step>
+<Step title="Step 6: Cross-reference with Page Behavior">
+Correlate this data with site performance or visible content to assess impact.
+</Step>
+</Steps>
+
+---
+
+## 5. Practical Tips and Common Pitfalls
+
+### Tips
+- **Refresh the page** before opening uBO Scope to get the most up-to-date data.
+- If the badge count is zero but the page loads third-party content, confirm that uBO Scope has correct permissions.
+- Use the domain counts to identify heavy third-party trackers or CDN usage.
+- Look for unexpected third-party domains in the allowed list as a sign of potential privacy concerns.
+
+### Common Pitfalls
+- Treat the badge number as an indicator of risk, not a definitive privacy score.
+- Don't confuse blocked request counts with quality — sometimes more blocks means more allowed connections due to retry or fallback mechanisms.
+- Extensions or filters that block at DNS level may reduce network requests without uBO Scope visibility if browser APIs do not report them.
+
+<Warning>
+The badge count does not include first-party domains or local requests. It focuses solely on third-party remote servers.
+</Warning>
+
+---
+
+## 6. Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting Badge Counts and Domains List">
+<Accordion title="Badge Count Is Missing or Always Zero">
+- Verify uBO Scope has permissions to access active tab network requests.
+- Check the browser version is supported (Chrome 122+, Firefox 128+, Safari 18.5+).
+- Reload the page after installation or permission changes.
+</Accordion>
+<Accordion title="Domain Lists Are Empty or Not Updating">
+- Ensure the popup is opened on an active tab with network activity.
+- Refresh the tab after opening the popup to capture fresh data.
+- Confirm no other extension or privacy setting blocks webRequest API access.
+</Accordion>
+<Accordion title="Domains Appear Only in Blocked or Stealth Sections, Never Allowed">
+- The page may be heavily restricted or using DNS filtering not visible to uBO Scope.
+- Confirm the page has actually loaded resources by inspecting network tab in browser devtools.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Next Steps & Related Documentation
+
+- For installation and initial setup, see [Installing uBO Scope](/guides/getting-started/install-extension).
+- To learn about using the popup interface on your first analysis, see [Your First Look: How to Use the uBO Scope Popup](/guides/getting-started/first-use).
+- Dive deeper into understanding core concepts and terminology in [Core Concepts & Terminology](/overview/concepts-architecture/core-concepts-and-terminology).
+- For troubleshooting broader issues, consult [Troubleshooting Installation & Setup](/getting-started/basic-usage-and-troubleshooting/troubleshooting-installation).
+
+
+---
+
+For detailed technical insights, source code, and community discussions, visit the uBO Scope GitHub repository at: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
