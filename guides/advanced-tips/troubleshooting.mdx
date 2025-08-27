@@ -1,0 +1,157 @@
+---
+title: "Troubleshooting Data & Understanding Limitations"
+description: "Advice on how to resolve common issues, such as missing data or unexpected results, and guidance on understanding known limitations of uBO Scope with respect to webRequest API coverage, stealth blocking, and CDNs."
+---
+
+# Troubleshooting Data & Understanding Limitations
+
+## Overview
+This guide helps you address common issues encountered while using uBO Scope, such as missing or incomplete data and unexpected results in connection reporting. It also explains uBO Scope's known technical limitations, particularly regarding its reliance on the browser's `webRequest` API, the nuances of stealth blocking, and the impact of Content Delivery Networks (CDNs) on data interpretation.
+
+By following this guide, you will gain clarity on why some connections may not appear in uBO Scope’s interface, how to distinguish expected behaviors from actual problems, and practical tips to enhance your use of the extension.
+
+---
+
+## What This Guide Helps You Achieve
+- Understand why some network requests might not be captured or reported.
+- Recognize the role and constraints of the `webRequest` API in data collection.
+- Identify how stealth blocking affects connection visibility.
+- Interpret how CDNs influence reported connection counts.
+- Resolve or work around common scenarios where data seems missing or inconsistent.
+
+
+## Prerequisites
+- uBO Scope must be installed and enabled in your browser.
+- Familiarity with the uBO Scope popup interface and what the badge counts mean.
+- Basic understanding of browser network request behavior (helpful but not required).
+
+## Expected Outcome
+By the end of this guide, you will confidently identify when uBO Scope data reflects technical limits rather than errors, troubleshoot missing or incomplete connection details, and better interpret the connection categories (allowed, blocked, stealth-blocked).
+
+## Time Estimate
+Approximately 10-15 minutes to read through and apply troubleshooting checks.
+
+## Difficulty Level
+Intermediate understanding of browser extension behavior and network debugging.
+
+
+---
+
+# Step-by-Step Troubleshooting & Understanding
+
+### 1. Confirm Installation and Browser Support
+- Verify uBO Scope is installed correctly by checking for the extension icon on your browser toolbar.
+- Confirm you are using a supported browser version (Chromium-based browsers 122+, Firefox 128+, Safari 18.5+).
+
+### 2. Recognize Core Data Collection Limitations
+- uBO Scope depends entirely on the browser's `webRequest` API for detecting network requests.
+- Network requests made through mechanisms not exposed to `webRequest` (e.g., certain browser optimizations, prefetching, or underlying DNS filtering) will not be recorded.
+- If data is missing, it may be due to these intrinsic API constraints rather than a fault in uBO Scope.
+
+### 3. Understand Stealth Blocking Effects
+- Content blockers sometimes stealth-block requests by intercepting them before they register in `webRequest`.
+- Such stealth-blocked requests appear in the "stealth-blocked" category in the popup.
+- These requests might be entirely invisible to uBO Scope or only partially visible, leading to some data gaps.
+
+### 4. Identify Impact of CDNs on Counts
+- Content hosted on large CDN domains (e.g., cdn.example.com) may bundle resources from many internal subdomains.
+- uBO Scope groups connections by effective second-level domain; this means multiple underlying hosts may appear as a single domain.
+- Higher volume of seemingly fewer domains can be normal behavior and should not alarm you.
+
+### 5. Validate Data with Real-World Testing
+- Browse normal websites and observe live badge counts and popup domain lists.
+- If connections are unexpectedly missing, check whether your browser’s content blockers or network environment (such as VPNs or proxy servers) could impact visibility.
+- Use uBO Scope alongside other diagnostic tools to cross-verify observed behavior.
+
+
+---
+
+# Practical Tips & Best Practices
+
+- **Refresh or restart your browser** if data seems stale or unresponsive.
+- **Monitor developer console logs** for any extension-related warnings if feasible.
+- Remember that some third-party connections are ephemeral and may not show if they fail before reaching `webRequest`.
+- When analyzing stealth blocking, keep in mind it is a technique purposely designed to hide detection from webpages and tools alike.
+- Regularly update your browser to benefit from improved API access and extension compatibility.
+
+
+---
+
+# Common Issues & Troubleshooting
+
+<AccordionGroup title="Troubleshooting Common Scenarios">
+<Accordion title="Why am I seeing fewer connections than expected?">
+<ul>
+<li>This is often caused by connection attempts that do not reach or are not exposed by the `webRequest` API, such as those blocked stealthily or handled by network-level filters.</li>
+<li>Confirm content blocker configurations; some aggressive blocking techniques reduce evidence visible to uBO Scope.</li>
+<li>Check for browser features like DNS over HTTPS that might affect request visibility.</li>
+</ul>
+</Accordion>
+<Accordion title="Some blocked or stealth-blocked connections are missing from the popup list">
+<ul>
+<li>Stealth blocking can result in requests that never emit events to `webRequest` listeners, thus they may not be logged or counted.</li>
+<li>Browser security policies or privacy restrictions may suppress event delivery.</li>
+<li>This behavior is a known limitation, not an error in uBO Scope.</li>
+</ul>
+</Accordion>
+<Accordion title="Why is the badge count inconsistent or does not change as I browse?">
+<ul>
+<li>Extension service workers can be temporarily evicted by the browser, delaying updates.</li>
+<li>Browser session data persistence might be interrupted—restart the browser to reset.</li>
+<li>Ensure uBO Scope has required permissions (activeTab, webRequest, storage).</li>
+</ul>
+</Accordion>
+<Accordion title="How do CDNs affect the data reported?">
+<ul>
+<li>CDNs aggregate multiple resource hosts under one domain umbrella, reducing the distinct domain count even when many hosts are contacted.
+<li>This grouping is expected behavior reflecting domain aggregation logic based on the public suffix list.</li>
+<li>uBO Scope reports data consistent with domain grouping but does not expand to individual hostname granularity beyond counting.</li>
+</ul>
+</Accordion>
+</AccordionGroup>
+
+
+---
+
+# Understanding uBO Scope’s Data Model & Limitations
+
+uBO Scope categorizes connections per tab into three outcomes:
+
+| Category       | Meaning |
+|----------------|---------|
+| Allowed        | Connections successfully made and visible to the browser network stack.
+| Blocked        | Connections prevented from completing, indicated by error events.
+| Stealth-Blocked| Connections blocked invisibly by content blockers or browser stealth techniques, partially or entirely hidden from `webRequest`.
+
+These distinctions rely on accurate event delivery from browser network APIs, which themselves have environmental and technical dependencies.
+
+
+---
+
+# Next Steps
+
+- For installation and basic setup issues, see [Troubleshooting Installation & Setup](/getting-started/basic-usage-validation/troubleshooting-installation).
+- To learn how to interpret the popup interface and badge counts effectively, consult [Navigating the Popup and Interface](/guides/getting-started/explore-popup).
+- If you want to validate content blockers and understand deeper workflows, visit [Validating Content Blockers and Debunking Myths](/guides/main-workflows/validate-blocking).
+
+
+---
+
+# Additional Resources
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) — source code, issue reporting, and community discussion.
+- [What Is uBO Scope?](/overview/product-introduction-and-value/what-is-ubo-scope) — foundational context on extension purpose.
+- Browser documentation on `webRequest` API and extension permissions (Chromium, Firefox, Safari official docs).
+
+
+
+---
+
+<Callout title="Remember">
+Understanding and accepting the technical bounds of network monitoring with browser APIs empowers you to use uBO Scope effectively. Missing or partial data is often a reflection of these limits—not bugs.
+</Callout>
+
+---
+
+This concludes the Troubleshooting Data & Understanding Limitations guide.
+
+---
