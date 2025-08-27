@@ -1,0 +1,128 @@
+---
+title: "Browser and System Integration"
+description: "Explains compatibility across Chrome, Firefox, and Safari; highlights the extension’s use of standard browser APIs; and describes integration points with browser environments and limitations imposed by API visibility."
+---
+
+# Browser and System Integration
+
+## Ensuring Seamless Compatibility Across Browsers
+
+uBO Scope delivers a consistent and reliable user experience across the three major browsers: **Chrome**, **Firefox**, and **Safari**. This consistent behavior is achieved by adhering exclusively to standard WebExtension APIs supported by these platforms, ensuring broad compatibility without sacrificing functionality.
+
+### Supported Browsers at a Glance
+- **Chrome**: Requires Chrome version 122.0 or later.
+- **Firefox**: Compatible with Firefox 128.0 and above (including Firefox for Android).
+- **Safari**: Supported from Safari 18.5 onward.
+
+Each browser platform includes a tailored manifest configuration respecting both version and permission idiosyncrasies while maintaining feature parity wherever feasible.
+
+## Foundations: Use of Standard Browser APIs
+
+uBO Scope leverages standardized browser extension APIs such as:
+
+- **`webRequest` API**: For capturing and analyzing network requests initiated by web pages.
+- **`storage` API**: To persist user session and configuration data locally and per session.
+- **`runtime` API**: For extension lifecycle communication, including message passing between the background service worker and the popup UI.
+- **`tabs` API**: To identify active tabs and manage per-tab data collections.
+
+These APIs are central to the extension's functionality and are uniformly implemented across supported browsers. This standardization simplifies maintaining feature consistency and ensures uBO Scope can record and report third-party network connections across different environments.
+
+## Integration Points Specific to Each Browser Environment
+
+Though uBO Scope’s functionality is largely uniform, platform-specific nuances exist in how the extension integrates with the host browser:
+
+| Browser  | Integration Details                                             |
+|----------|----------------------------------------------------------------|
+| **Chrome** | Uses a manifest declaration with an MV3 service worker background script (`background.js` as a module).
+| **Firefox** | Similar to Chrome, but with additional gecko-specific settings like an extension ID and minimum version enforced.
+| **Safari** | Uses a background script with module type and requires a minimum version of 18.5; certain APIs may have stricter permissions.
+
+Each manifest includes appropriate `host_permissions` and `permissions` ensuring the extension can observe web requests across HTTP, HTTPS, WebSocket, and secure WebSocket protocols (though Safari currently limits this to HTTP and HTTPS).
+
+## API Visibility and Limitations
+
+Extensions like uBO Scope depend heavily on the visibility and accessibility of `webRequest` API events. The following constraints impact how and what can be observed:
+
+- **Network Request Visibility**: uBO Scope observes **network requests only when those requests are reported through the browser's `webRequest` API.** Requests made outside this API scope (e.g., certain low-level or platform-specific connections not exposed by the browser) cannot be captured.
+
+- **Content Blocking and Filtering Impact**: Because uBO Scope leverages the `webRequest` API independently, it can report on requests regardless of which content blocker (extension or DNS-based) is enforcing filtering. This provides transparency even when other blockers are stealthy or obscure.
+
+- **Protocol Support**: Supported schemes for observing connections include `http`, `https`, `ws`, and `wss` on Chrome and Firefox. Safari's more restrictive permissions currently cover only `http` and `https` protocols.
+
+- **Service Worker Lifecycle**: On Chromium-based browsers, the extension runs a service worker in the background responsible for request monitoring. This worker can be unloaded when idle and restarted as needed. Handling transient worker lifecycles ensures efficient resource use without sacrificing request monitoring continuity.
+
+## How Integration Works: The Core Flow
+
+1. **Browser Tab Initiates Network Requests:** As users browse, web pages generate various network calls to remote servers.
+2. **Extension Listeners Capture Events:** uBO Scope registers listeners for key `webRequest` events such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` to track request lifecycle outcomes.
+3. **Data Aggregation in Background Service Worker:** The background script maintains mappings of tab IDs to connection details, tracks outcomes (success, blocked, stealth), and stores session data via the browser's storage API.
+4. **Badge Updates and Popup UI Rendering:** Based on aggregated data, the extension updates the toolbar icon badge with the count of distinct third-party servers connected and renders detailed per-tab connection summaries in the popup UI.
+
+This integrated flow is facilitated by standard browser APIs and optimized for cross-platform compatibility.
+
+## Practical Implications for Users
+
+- **Consistent Data Across Browsers:** Whether running on Chrome, Firefox, or Safari, users can expect to see accurate, actionable data about network connections.
+
+- **Limitations Due to API Exposure:** Users should be aware that uBO Scope can only report on requests that are visible to the browser's webRequest API. This means some background or opaque network activity may not be captured.
+
+- **Permissions Transparency:** The extension requires explicit host permissions for all URLs (`https://*/*`, `http://*/*`) and full access to `webRequest`. Upon installation, users are prompted to grant these permissions necessary for comprehensive network analysis.
+
+- **Browser Updates Matter:** Because uBO Scope depends on modern WebExtension APIs, using supported browser versions is essential for full functionality.
+
+## Best Practices and Tips
+
+- Keep your browser updated to maintain API compatibility.
+- Review and understand the permissions requested during installation.
+- Recognize that certain network requests originating outside browser visibility—such as from native apps or OS services—are beyond uBO Scope’s scope.
+- Use uBO Scope in tandem with other privacy tools to gain a holistic view of your network behavior.
+
+## Troubleshooting Integration Issues
+
+If you notice discrepancies or missing data:
+
+- Verify you are running on a supported browser version.
+- Ensure the extension has been granted all necessary permissions.
+- Recognize that some requests may be blocked or handled by external systems (e.g., OS-level DNS filtering) and thereby invisible to browser APIs.
+- Consult the [Troubleshooting Installation & Startup Issues](/getting-started/first-use-and-setup/troubleshooting-startup) guide for more in-depth diagnostics.
+
+---
+
+# Diagram: uBO Scope Integration with Browser APIs
+
+```mermaid
+graph TD
+  BrowserTabs["Browser Tabs"] --> WebRequestAPI["webRequest API Events"]
+  WebRequestAPI --> BackgroundSW["Background Service Worker"]
+  BackgroundSW --> Storage["Browser Storage (local & session)"]
+  BackgroundSW --> Badge["Toolbar Icon Badge"]
+  BackgroundSW --> PopupUI["Extension Popup UI"]
+  PopupUI --> User["User Viewing Connection Data"]
+  BrowserTabs ---|makes network requests| RemoteServers["Remote Servers"]
+
+  subgraph Browser Components
+    BrowserTabs
+    WebRequestAPI
+    Storage
+    Badge
+    PopupUI
+  end
+
+  subgraph Extension Components
+    BackgroundSW
+  end
+
+  User --- Browser
+
+  classDef extComponent fill:#f9f,stroke:#333,stroke-width:2px;
+  BackgroundSW class extComponent;
+
+```
+
+---
+
+By understanding this integration, users can trust that uBO Scope accurately reports network connections observable within their browsing environment, offering a transparent window into third-party interactions.
+
+For more details on the internal data flow and user interface interaction, consult the [Architecture & Data Flow](/overview/core-concepts-and-architecture/architecture-and-data-flow) and [Reading the Popup Panel](/guides/getting-started-essentials/understanding-the-popup) documentation.
+
+---
