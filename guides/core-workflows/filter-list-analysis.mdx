@@ -1,0 +1,209 @@
+---
+title: "Using uBO-Scope for Filter List Verification"
+description: "A practical guide for filter list maintainers to verify the effectiveness of their blocking rules, detect allowed/blocked requests, and make evidence-based list adjustments—even on constrained devices."
+---
+
+# Using uBO-Scope for Filter List Verification
+
+## Overview
+
+This guide empowers filter list maintainers to leverage uBO-Scope effectively for verifying the performance and accuracy of their blocking rules. By analyzing allowed, blocked, and stealth-blocked network connections through the uBO-Scope popup UI, maintainers can detect unintended allowance or overblocking and make targeted, evidence-based adjustments to their filter lists—even on devices with limited tooling.
+
+---
+
+## Prerequisites
+
+Before starting, ensure the following:
+
+- **uBO-Scope is installed and active** on your preferred supported browser (Chrome, Firefox, Safari).
+- You have a basic understanding of filter lists and their role in content blocking.
+- You have an active webpage or web application open where you can test the filter list.
+- Browser permissions for uBO-Scope are granted so it can monitor network requests.
+
+If you need to install or configure uBO-Scope, please refer to the [Installation Guide](guides/getting-started/install-and-setup) and [Initial Configuration](getting-started/introduction-setup/configuration).
+
+---
+
+## Expected Outcome
+
+After completing this workflow, you will be able to:
+
+- Identify which domains your filter list successfully blocks, stealth blocks, or allows.
+- Understand real-world network requests in the context of your filter rules.
+- Detect false positives (overblocking) and false negatives (underblocking).
+- Use quantitative domain counts and categorized lists to direct filter list improvements.
+- Perform these analyses even on devices where developer tools or browser consoles are limited.
+
+---
+
+## Time Estimate
+
+Approximately 15-30 minutes, depending on complexity of the filter list and browsing session.
+
+---
+
+## Difficulty Level
+
+Intermediate — assumes familiarity with filter list maintenance concepts.
+
+---
+
+# Step-by-Step Instructions
+
+### 1. Open uBO-Scope Popup on Your Testing Tab
+
+- Click the uBO-Scope toolbar icon while on the webpage/tab you want to analyze.
+- The popup automatically loads data for the active tab and displays the hostname at the top.
+
+### 2. Understand the Popup Layout
+
+- **Domains Connected:** Shows a summary count of connected domains.
+- **Outcome Sections:** Three categorized panels display domains:
+  - **Not Blocked (Allowed):** Domains from which requests were allowed.
+  - **Stealth-Blocked:** Domains that were redirected or stealthily blocked by the content blocker.
+  - **Blocked:** Domains where requests failed or were explicitly blocked.
+
+Each domain is shown alongside a counter indicating the number of requests observed.
+
+### 3. Analyze Domain Outcomes
+
+- Review the **Blocked** domains to confirm your filter rules are effective against known unwanted domains.
+- Examine the **Stealth-Blocked** section for domains handled invisibly by the blocker, which might still deliver fragments or trackers.
+- Check the **Allowed** domains for any unexpected or suspicious connections that might require additional blocking.
+
+### 4. Detect False Positives and False Negatives
+
+- **False Positives:** Allowed domains that should have been blocked. Consider adding or tightening filter rules.
+- **False Negatives:** Blocked domains that were not intended to be blocked or cause site breakage. Consider whitelisting or relaxing rules.
+
+### 5. Iterate with Controlled Browsing
+
+- Navigate through your website or web app, refreshing or interacting with elements that trigger network requests.
+- Re-open or refresh the uBO-Scope popup to see updated domain outcomes.
+- Use the data to validate changes to your filter list.
+
+### 6. Use the Domain Counts Quantitatively
+
+- Sort through domains by request count to prioritize which domains generate the most network activity.
+- Focus first on high-request domains that are unexpectedly allowed or stealth blocked.
+
+### 7. Save and Apply Filter List Adjustments
+
+- Back in your filter list editor, update rules informed by the uBO-Scope analysis.
+- Deploy changes and repeat the verification workflow to confirm improvements.
+
+---
+
+## Tips & Best Practices
+
+- **Use Different Browsers or Devices:** When maintaining cross-platform compatibility, verify your lists on varied environments.
+- **Leverage the Domain-Based Categorization:** Remember, domains are aggregated even if multiple hostnames exist.
+- **Focus on Third-Party Domains:** uBO-Scope’s count reflects distinct third-party domains, the true privacy exposure metric.
+- **Refresh the Page Often:** Network activity can change dynamically, so refreshing ensures you see current connections.
+- **Use Stealth-Blocked Insight:** Some trackers are stealthy and not fully blocked; use this insight to tighten filters.
+
+---
+
+## Common Pitfalls to Avoid
+
+- **Relying Solely on Block Counts:** uBO-Scope emphasizes distinct third-party domains, not just block counts, which can be misleading.
+- **Ignoring Stealth Blocking:** Overlooking stealth-blocked domains could leave privacy gaps.
+- **Assessing Only During Initial Load:** Some requests happen after user interaction; ensure comprehensive testing.
+- **Misinterpreting Allowed Domains:** Some allowed third-party domains are legitimate (e.g., CDNs). Don’t block them unnecessarily.
+
+---
+
+## Troubleshooting
+
+<AccordionGroup title="Troubleshooting Filter List Verification with uBO-Scope">
+<Accordion title="No Data Showing in Popup">
+- Ensure the uBO-Scope extension is enabled and has the necessary permissions.
+- Refresh your current tab and reload the popup.
+- Confirm the browser version meets minimum requirements.
+- Check uBO Scope’s badge count for activity; a blank badge might indicate no network data.
+</Accordion>
+<Accordion title="Unexpected Domains Are Allowed or Blocked">
+- Verify your filter list syntax and rules in your content blocker.
+- Check if exceptions or whitelists affect these domains.
+- Review if stealth blocking applies and consider making rules stricter or relaxed accordingly.
+</Accordion>
+<Accordion title="Badge Count Not Updating">
+- Network requests might not be captured if browser permissions are missing.
+- Restart the browser to clear cached states.
+- Ensure no conflicts with other extensions that modify `webRequest`.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Examples
+
+### Scenario: Identifying an Allowed Tracker Domain
+
+Suppose after navigating your site, you notice in the allowed section a domain like `tracker.example.com` with multiple request counts:
+
+```
+not blocked
+tracker.example.com  15
+```
+
+This suggests your filter list is missing this tracker domain, allowing data leaks.
+
+**Action:** Add a blocking rule for `||tracker.example.com^` in your filter list and confirm via uBO-Scope that this domain moves into blocked or stealth-blocked categories after reloading.
+
+### Scenario: Detecting Overblocking Affecting Site Functionality
+
+If you see a domain essential to site operation, such as `cdn.example.com`, in the blocked list:
+
+```
+blocked
+cdn.example.com  10
+```
+
+This could break site features dependent on this resource.
+
+**Action:** Adjust your filter rules to whitelist `cdn.example.com` domains, ensuring necessary content loads correctly.
+
+---
+
+## Architecture Insight
+
+uBO-Scope collects and categorizes network requests by tab, aggregating domain data into three key buckets: allowed, stealth-blocked, and blocked. This segregation helps maintainers accurately assess the real-world impact of filters.
+
+The popup renders this information dynamically, presenting domain names with request counts for quick analysis. Domain parsing and normalization use the Public Suffix List to identify registrable domains precisely, ensuring aggregation is meaningful.
+
+---
+
+## Next Steps & Related Documentation
+
+- Explore [Installing and Setting Up uBO-Scope](guides/getting-started/install-and-setup) if you have not yet installed.
+- Read [Understanding the Popup: Your First Analysis](guides/getting-started/first-popup-overview) to deepen your understanding of the popup UI.
+- Consult [Interpreting the Badge Count and Popup Results](guides/core-workflows/interpreting-badge-and-results) for advanced insights on reading network outcomes.
+- Learn about [Debunking Common Content Blocker Myths](guides/advanced-exploration/debunking-content-blocker-myths) to avoid misinterpretations.
+- Review the [Troubleshooting Common Issues](getting-started/first-steps-validation/troubleshooting) guide for resolving operational problems.
+
+---
+
+## Additional Resources
+
+- Public Suffix List (PSL) used internally for domain extraction: <https://publicsuffix.org/>
+- uBO-Scope GitHub Repository: <https://github.com/gorhill/uBO-Scope>
+
+
+---
+
+<Check>
+Ensure you are running the latest uBO-Scope version and using a supported browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+</Check>
+
+---
+
+By rigorously applying this process, filter list maintainers gain transparent, actionable insights into which domains are interacting with webpages, significantly improving the accuracy and efficiency of content blocking strategies.
+
+---
+
+_Source code and internal details underpinning the popup data visualization are available in the GitHub repository, primarily in `js/popup.js` and `popup.html`._
+
+
+---
+
