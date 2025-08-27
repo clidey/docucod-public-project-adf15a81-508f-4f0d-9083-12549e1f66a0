@@ -1,0 +1,140 @@
+---
+title: "Core Concepts & Terminology"
+description: "Defines essential domain concepts used throughout uBO Scope: third-party remote servers, allowed vs. blocked vs. stealth-blocked connections, the significance of badge counts, and interpretations for filter list maintainers versus typical end users."
+---
+
+# Core Concepts & Terminology
+
+Understanding the foundational concepts and terminology of uBO Scope is crucial for effectively interpreting the data it presents and making informed decisions about your browsing privacy. This page defines key terms and ideas used throughout the extension, clarifies how connection outcomes are categorized, explains the badge counts' significance, and differentiates the perspective of typical end users versus filter list maintainers.
+
+---
+
+## What Is a Third-Party Remote Server?
+
+A third-party remote server is any server outside the domain of the website you are currently visiting. When you load a page, resources such as images, scripts, or fonts might be fetched not only from the website's own servers (first-party) but also from these external third-party servers.
+
+**Why does this matter?**
+
+Third-party connections can expose you to tracking, ads, or other unwanted content, affecting your privacy and security. uBO Scope helps identify and quantify these connections so you know exactly where your browser communicates when visiting a webpage.
+
+*Example:* If you visit `example.com` and your browser fetches an image or script from `cdn.examplecdn.com`, that counts as a third-party remote server.
+
+---
+
+## Allowed, Blocked, and Stealth-Blocked Connections
+
+uBO Scope categorizes network request outcomes into three distinct states:
+
+- **Allowed:** These are connections that succeeded and were permitted by the browser and any content blockers in place. They represent live network communications with third-party servers.
+
+- **Blocked:** These are connections that the content blocker or browser prevented from completing. They never reached the remote server.
+
+- **Stealth-Blocked:** This is a special category representing connections that were blocked in a stealthy manner, typically to prevent detection by the webpage. Unlike normal blocked connections, stealth-blocked requests do not appear as blocked to the webpage or its scripts but are still prevented from completing.
+
+Understanding these categories helps you grasp the nuances of how content blockers operate and the real impact on your web requests.
+
+---
+
+## Badge Counts Explained
+
+The badge on the extension's toolbar icon displays the count of **distinct third-party remote servers successfully connected to during a tab's lifespan**. This means:
+
+- The count reflects unique domains of allowed connections.
+- A lower badge count indicates fewer third-party connections, which is generally better from a privacy standpoint.
+- Blocked or stealth-blocked connections do not increase the badge count.
+
+This count serves as a clear, quantifiable metric of your browsing exposure to external third-party servers.
+
+<Tip>
+Keep in mind that not all third parties are harmful or undesirable—some are essential services such as Content Delivery Networks (CDNs). uBO Scope highlights actual connections rather than just blocked attempts.
+</Tip>
+
+---
+
+## Domain and Hostname Distinctions
+
+- **Hostname:** The full domain name of a server including subdomains (e.g., `ads.example.com`).
+- **Domain:** The main registered domain name without subdomains (e.g., `example.com`).
+
+uBO Scope records both hostnames and their corresponding domains to offer granularity. This distinction is often critical for filter list maintainers who need to understand blocking at different levels.
+
+---
+
+## Interpreting Results: End Users vs. Filter List Maintainers
+
+### For Typical End Users
+
+- Focus primarily on the **allowed** connections section and badge counts.
+- Aim to minimize distinct third-party server connections to enhance privacy.
+- Use uBO Scope to verify the effectiveness of your content blockers by observing the number and nature of allowed connections.
+
+### For Filter List Maintainers
+
+- Use all three outcome categories—allowed, blocked, and stealth-blocked—to understand the nuanced behavior of filter lists against various network requests.
+- Analyze patterns in stealth-blocked items to enhance stealth blocking techniques.
+- Leverage hostname and domain data to tune filters more precisely.
+
+---
+
+## How uBO Scope Tracks and Records Connections
+
+Behind the scenes, uBO Scope listens to browser network events through the `webRequest` API and logs every network request outcome per open tab, categorizing them according to the outcomes defined above. It then updates per-tab data, which the popup UI displays.
+
+Here’s a simplified flow of what happens when a network request occurs:
+
+1. **Request Initiation:** A webpage triggers a network request.
+2. **Outcome Determination:** The request is either allowed (success), blocked, or stealth-blocked.
+3. **Recording:** The background process records the connection outcome, associating it with the tab and categorizing by domain and hostname.
+4. **Badge Update:** If the request is allowed and it's a unique server, the badge count for that tab is updated.
+5. **Session Persistence:** Connection data persists during the browser session for consistent user feedback.
+
+This mechanism allows uBO Scope to give timely, tab-specific network connection snapshots.
+
+---
+
+## Practical Example: Understanding Your Popup Panel
+
+When you open the uBO Scope popup, you see three categorized lists of domains:
+
+- **Not Blocked:** Domains to which your browser successfully connected.
+- **Stealth-Blocked:** Domains for which requests were stealthily blocked.
+- **Blocked:** Domains for which requests were outright blocked.
+
+Each domain entry shows a count badge representing how many connections were made or blocked to that domain. The summary at the top shows the total number of distinct third-party domains connected.
+
+Using this view helps you quickly identify unusual or unexpected external connections. For instance, you might see some domains you recognize (like CDN providers) in green (allowed), while suspicious domains may appear under blocked or stealth-blocked, aiding in privacy troubleshooting.
+
+---
+
+## Tips and Best Practices
+
+- **Focus on the Badge:** A lower badge count means fewer distinct third-party servers connected, generally representing better privacy.
+- **Notice Stealth Blocking:** A high stealth-blocked count indicates that some blocking happens silently to avoid webpage detection, which some blockers employ for improved stealth.
+- **Use Domain Grouping:** Look at domains rather than just hostnames for a broader view of third-party connections, especially when refining filter lists.
+- **Refresh Tabs:** Network activity tracking resets on new page loads (main frame requests), so the data is relevant to current page context.
+
+---
+
+## Common Pitfalls
+
+- **Misinterpreting Badge:** The badge represents allowed remote server connections, not blocked ones. Don't assume a higher badge count means worse blocking effectiveness.
+- **Ignoring Legitimate Third Parties:** Some third-party servers are necessary and not inherently harmful.
+- **Overfocusing on Hostnames:** Filtering solely by hostname might miss related requests within the same domain.
+
+---
+
+## Further Reading and Related Documentation
+
+You can deepen your understanding by reading:
+
+- [What is uBO Scope?](./what-is-ubo-scope): Overview of product purpose and benefits
+- [Interpreting the Toolbar Badge & Popup Categories](./interpreting-badge-and-popup): How to use and understand the popup UI
+- [Advanced: Using uBO Scope for Filter List Maintenance](./use-in-filter-maintenance): For filter list maintainers seeking deeper insights
+
+Additionally, practical usage guides provide workflows to leverage this conceptual foundation effectively.
+
+---
+
+<Info>
+For more technical insights, the background processing of network requests and domain canonicalization rely on the Public Suffix List (PSL) to accurately identify domain boundaries, enhancing data grouping and analysis.
+</Info>

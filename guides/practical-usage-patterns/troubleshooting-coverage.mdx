@@ -1,0 +1,116 @@
+---
+title: "Troubleshooting Scope & Understanding Limitations"
+description: "Explains the boundaries of what uBO Scope can monitor, such as coverage of the browser webRequest API. Helps users understand which requests can and cannot be tracked, typical observable symptoms, and tips for interpreting incomplete data."
+---
+
+# Troubleshooting Scope & Understanding Limitations
+
+## Overview
+
+This page helps you understand the precise boundaries of what uBO Scope is capable of monitoring within your browser. Since uBO Scope relies on the browser's `webRequest` API to track network requests, there are inherent limitations on what it can observe. This guide clarifies which network connections uBO Scope can track, explains common symptoms when data appears incomplete or missing, and offers actionable advice to interpret the statistics accurately.
+
+Understanding these limitations ensures you can trust the data uBO Scope provides and avoid common misinterpretations.
+
+---
+
+## What uBO Scope Can Monitor
+
+uBO Scope operates by listening to the browser's `webRequest` API events, capturing network request outcomes per active tab. Specifically, it reports on:
+
+- **HTTP and HTTPS Requests:** All main and subresource requests made over these protocols.
+- **WebSocket (`ws://` and `wss://`) Connections:** When supported by the browser and listed in host permissions.
+- **Redirection, Success, and Error Events:** Captures redirects, successful connections, and network errors.
+
+Requests monitored are classified based on their outcome as "allowed" (successfully fetched), "blocked" (failed or blocked), or "stealth-blocked" (redirected in a way browsers treat as blocked).
+
+### Important Browser Permissions
+
+uBO Scope requires the following permissions and host access to function properly:
+
+- **Permissions:** `webRequest`, `activeTab`, and `storage`.
+- **Host Permissions:** Access to HTTP and HTTPS URLs (`http://*/*` and `https://*/*`). For some browsers (e.g., Firefox and Chromium), WebSocket URLs (`ws://*/*` and `wss://*/*`) are also included.
+
+Without these, uBO Scope cannot listen to all network events, resulting in incomplete monitoring.
+
+## What uBO Scope Cannot Monitor
+
+Due to the structural and security boundaries defined by browsers and their API restrictions, uBO Scope cannot track:
+
+- **Requests Outside Browser API Reach:** Network calls initiated by native apps, plugins, or browser components that bypass the `webRequest` API.
+- **Requests blocked before reaching the `webRequest` API:** For example, blocking at the DNS resolution level or via external tools that prevent request initiation.
+- **Requests on unsupported protocols:** Non-HTTP(S)/WebSocket protocols are not visible.
+
+## Typical Symptoms of Limitations
+
+If you experience any of the following, it may be due to these inherent limitations:
+
+- **Missing Domains in the Popup UI:** Some third-party connections you notice elsewhere may not appear.
+- **Lower-than-expected Connection Counts:** The badge shows fewer domains than you expect based on page resources.
+- **Inconsistent Block/Allowed Statistics:** Some connections may be unknown or misclassified due to stealth or redirect hacking.
+
+Understanding these symptoms helps in setting expectations and troubleshooting data gaps effectively.
+
+## Interpreting Incomplete or Partial Data
+
+uBO Scope aggregates network data using the effective second-level domain names (via the Public Suffix List) to better represent distinct third-party servers. However, since the `webRequest` API operates asynchronously and may delay event information, data visibility sometimes lags or misses brief connection attempts.
+
+Furthermore, redirects sometimes mask the true destination, counted as "stealth-blocked" to highlight potentially hidden blocking behaviors.
+
+### Best Practices for Interpretation
+
+- Focus on the **number of distinct third-party domains with allowed connections** rather than raw block counts.
+- Recognize that **a lower badge count is better**: It means fewer third-party servers connected.
+- Use uBO Scope as a **transparency tool, not an absolute monitor of every connection**, especially on pages with complex or dynamic network loads.
+
+## Practical Tips to Mitigate Visibility Gaps
+
+- **Ensure uBO Scope has full permissions and host access** by verifying installation completeness.
+- **Test network monitoring on well-known test pages** that generate multiple distinct domain requests to establish baseline expectations.
+- **Reload tabs or restart the browser** if data seems stale or incomplete.
+- Avoid relying solely on third-party adblock test pages; uBO Scope reflects real-world activity instead.
+
+## Troubleshooting Checklist
+
+<AccordionGroup title="Troubleshooting Common Issues">  
+<Accordion title="No Data or Popup Shows 'NO DATA'">  
+If your uBO Scope popup shows no data or just "NO DATA":  
+- Confirm the extension is properly installed and enabled.  
+- Check permissions granted to the extension (`webRequest`, host permissions).  
+- Verify you have actually loaded a page with external connections.  
+- Reload the tab or restart the browser to refresh session data.
+</Accordion>  
+<Accordion title="Incomplete or Missing Connection Entries">  
+If expected domains are missing from the allowed or blocked lists:  
+- Remember uBO Scope depends on the browser's `webRequest` API, which may not expose all requests.  
+- Check if connections are made through protocols or methods unobservable by the API.  
+- Understand that DNS-level or external filtering can prevent visibility.
+</Accordion>  
+<Accordion title="Badge Count Not Updating">  
+If the toolbar badge count doesn't change as you browse:  
+- Confirm that the background service worker is active (some browsers unload extensions).  
+- Reload or close and reopen the tab to reset count calculation.  
+- Update uBO Scope to the latest version.
+</Accordion>  
+<Accordion title="Unexpected Stealth-Blocked Domain Counts">  
+If many domains appear under "stealth-blocked":  
+- This typically indicates redirect-based blocking or stealth techniques by content blockers or page scripts.  
+- Consider that some requests might have been redirected and blocked invisibly to webpages.  
+- Use the popup categories to differentiate allowed vs stealth vs blocked for clearer insight.
+</Accordion></AccordionGroup>
+
+## Summary
+
+Understanding the scope and limits of uBO Scope's monitoring capabilities will empower you to interpret its data accurately. By focusing on distinct third-party domains and recognizing the asynchronous, API-limited nature of monitoring, you can leverage uBO Scope effectively in assessing your browsing exposure and filter effectiveness.
+
+---
+
+## Additional Resources and Related Guides
+
+- [Getting Your First Results](/getting-started/first-use-validation/getting-your-first-results): Learn how to generate and understand initial connection data.
+- [Interpreting the Toolbar Badge & Popup Categories](/guides/getting-started-usage/interpreting-badge-and-popup): Dive into detailed UI elements and their meanings.
+- [Troubleshooting Common Setup Issues](/getting-started/first-use-validation/troubleshooting-common-setup-issues): Step-by-step help for initial setup problems.
+- [High-Level Architecture](/overview/how-it-works-core-concepts/architecture-overview): Understand how uBO Scope captures network events internally.
+
+<Tip>
+For the most accurate monitoring, always ensure uBO Scope runs with all necessary permissions and test it on typical, real-world websites rather than artificial test pages.
+</Tip>
