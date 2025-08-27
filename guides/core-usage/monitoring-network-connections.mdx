@@ -1,0 +1,146 @@
+---
+title: "Monitoring Network Connections on Any Page"
+description: "Walk through the process of opening the uBO Scope popup, viewing connection summaries, distinguishing between allowed, stealth-blocked, and fully blocked requests, and understanding what these numbers tell you about a webpage."
+---
+
+# Monitoring Network Connections on Any Page
+
+## Overview
+This guide walks you through how to open and interpret the uBO Scope popup for any active browser tab. You will learn to view summarized details about network connections initiated by the webpage, differentiate between allowed, stealth-blocked, and fully blocked connections, and understand what these metrics reveal about the webpage's interaction with third-party servers.
+
+## Prerequisites
+- You have installed the uBO Scope extension in your supported browser (Chromium, Firefox, Safari).
+- The extension is active and the browser’s `webRequest` API is functional.
+- You are on an active webpage with at least some network activity.
+
+## What You Will Achieve
+- Open the uBO Scope popup from the browser toolbar.
+- Read and interpret the summary of connected domains.
+- Understand the significance of allowed, stealth-blocked, and blocked connection counts.
+- Gain insight into the privacy implications displayed by these connection metrics.
+
+## Time Estimate
+Approximately 2-3 minutes to follow the steps and explore the popup features.
+
+## Difficulty Level
+Beginner
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Open the uBO Scope Popup
+- Locate the uBO Scope icon in your browser's toolbar.
+- Click the icon; the popup window will open displaying connection data for the active tab.
+
+### 2. Read the Hostname Header
+- At the top, you will see two parts of the active tab’s hostname:
+  - The first span (if present) displays any subdomain portion.
+  - The second span shows the main domain.
+- This helps you confirm which website’s network connections you are viewing.
+
+### 3. Understand the Domains Connected Summary
+- Below the hostname, the `domains connected` section shows the total number of distinct domains contacted by the webpage.
+- This count reflects all third-party connections regardless of their blocked status.
+
+### 4. Review Connection Outcome Sections
+The popup has three distinct sections, each listing domains involved in different connection outcomes:
+
+#### Not Blocked (Allowed)
+- Domains listed here had connections permitted by your content blocking settings.
+- These represent active network connections where resources were successfully loaded.
+
+#### Stealth-Blocked
+- Domains here reflect requests that were blocked quietly by the browser or content blocker.
+- Stealth blocking means the request was prevented without alerting the webpage or causing errors.
+
+#### Blocked
+- Domains in this section are fully blocked connections, typically resulting in failed requests.
+- This section helps identify servers your browser refused to connect to.
+
+### 5. Interpret Domain and Count Data
+- Each domain is listed alongside a count number indicating how many requests were made to that domain.
+- Use these counts to gauge the intensity of communications per domain.
+
+### 6. Use Practical Insights
+- A low count of distinct allowed domains usually indicates a cleaner, more privacy-conscious webpage.
+- Numerous stealth-blocked or blocked connections might signal aggressive third-party tracking or advertising attempts.
+
+---
+
+## Real-World Scenario
+Imagine browsing a news website. Opening the uBO Scope popup shows 10 connected domains: 3 allowed (main CDN and content servers), 5 stealth-blocked (tracking or ad providers silently blocked), and 2 blocked (tracking servers outright blocked).
+
+This snapshot informs you that while some resources were loaded normally, many tracking attempts were stopped either stealthily or outright, enhancing your browsing privacy.
+
+---
+
+## Troubleshooting & Tips
+
+### Common Issues
+- **No Data Displayed**: If the popup shows 'NO DATA', refresh the tab and reopen the popup. Ensure the extension is active and your browser supports required API features.
+- **Counts Not Updating**: Sometimes the popup data might lag. Close and reopen the popup or reload the tab to refresh the network activity report.
+
+### Best Practices
+- Regularly check the popup on different websites to familiarize yourself with typical connection patterns.
+- Use the domain counts to spot suspiciously high third-party connections.
+- Remember that not all third-party connections are harmful; many sites rely on legitimate CDNs and service providers.
+
+### Performance Considerations
+- The popup fetches and renders live summary data for the active tab without impacting general browser performance.
+- It updates asynchronously with network request events, so results might slightly delay after navigation.
+
+---
+
+## Next Steps & Related Documentation
+- After mastering the popup interface, visit [Interpreting the Icon Badge Count](/guides/core-usage/interpreting-badge-count) to understand how the toolbar badge complements the popup data.
+- For installation help or to ensure your browser setup is correct, see [Installation Guide](/guides/getting-started/installing-extension) and [Supported Browsers & Requirements](/getting-started/setup-installation/prerequisites-browsers).
+- Explore the [Core Concepts & Terminology](/overview/how-it-works-architecture/core-concepts-terminology) page to deepen your understanding of connection outcomes and their implications.
+
+---
+
+## Appendix: Technical Background of the Popup Data
+
+While this guide focuses on practical usage, it is helpful to know how the data is collected and presented:
+- The extension uses browser `webRequest` API listeners to monitor network requests.
+- Network requests are categorized as allowed, stealth-blocked (redirect or filtered silently), or blocked (error or failure).
+- The popup displays domain-level summaries, translating punycode domains to readable Unicode.
+- The count on the popup and toolbar badge represent unique domains contacted, not individual requests.
+
+Understanding this ensures you can interpret the data with confidence and make better privacy decisions.
+
+---
+
+## Visual Example
+
+```text
++-----------------------------+
+|          uBO Scope          |
+|  example.  example.com      |  <-- Hostname header showing subdomain + main domain
+|-----------------------------|
+| domains connected: 25       |  <-- Total number of distinct connected domains
+|                             |
+| not blocked                 |  <-- Allowed connections section
+|   cdn.example.com (12)      |
+|   media.example.net (5)     |
+|                             |
+| stealth-blocked            |  <-- Stealth-blocked domains
+|   track.adprovider.com (8)  |
+|                             |
+| blocked                    |  <-- Blocked domains
+|   ads.tracker.org (3)       |
++-----------------------------+
+```
+
+Each section shows domains and how many requests were made, categorizing the nature of connection outcomes.
+
+
+---
+
+## Source
+This documentation reflects functionality implemented in the [popup.js](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js) and pre-existing data flow defined in the extension's background scripts.
+
+
+<Check>
+For best results, ensure your browser is updated to the latest supported version and the extension has required permissions.
+</Check>

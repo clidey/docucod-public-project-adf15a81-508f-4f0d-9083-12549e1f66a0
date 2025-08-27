@@ -1,0 +1,185 @@
+---
+title: "What uBO Scope Can and Cannot Measure"
+description: "Explore the technical boundaries of the extension: which web requests are visible, how stealth blocking works, and why some network activity may not be captured. Get clarity for accurate analysis and avoid data misinterpretation."
+---
+
+# What uBO Scope Can and Cannot Measure
+
+Understanding the limits of what uBO Scope can observe is crucial for interpreting its data accurately. This guide walks you through the boundaries defined by browser capabilities, stealth blocking behaviors, and network request reporting nuances. With this clarity, you’ll avoid false assumptions and get the most value from uBO Scope’s privacy insights.
+
+---
+
+## 1. Overview: The Scope of uBO Scope’s Measurement
+
+uBO Scope reports network connections observed by the browser’s `webRequest` API, exposing which third-party remote servers a webpage contacts or attempts to contact. However, the data it can collect depends on browser capabilities and networking behaviors.
+
+### What uBO Scope Measures
+
+- **All outgoing HTTP(S) and WebSocket requests visible through the browser’s `webRequest` events.**
+- **The outcome of those requests, classified as:**  
+  - **Allowed:** Requests that successfully reached the remote server,
+  - **Blocked:** Requests that failed and were blocked,
+  - **Stealth-blocked:** Requests that were redirected stealthily by content blockers.
+- **Distinct third-party remote server domains contacted per browser tab.**
+
+### What uBO Scope Does Not Measure
+
+- Network requests not reported by the browser's `webRequest` API.
+- Requests made outside the browser context (e.g., native apps, some browser features).
+- Network connections blocked at lower networking layers (like OS firewalls or DNS-level blocking) if undetectable by the browser.
+- Requests made via certain newer browser APIs (e.g., `fetch` with `keepalive` flag under some conditions, or WebTransport).
+
+---
+
+## 2. Browser and API Limitations
+
+uBO Scope relies entirely on the browser’s `webRequest` API, which imposes specific constraints:
+
+- **Supported Protocols:** HTTP, HTTPS, WS, WSS are supported as these trigger webRequest events.
+- **Incomplete Visibility in Some Browsers or Versions:**
+  - Safari restricts `webRequest` in various ways; typically does not fully report WebSocket connections.
+  - Firefox and Chromium-based browsers offer more comprehensive `webRequest` coverage.
+- **No Coverage of Background System Traffic:** Network activity originating outside the browser or from privileged browser subsystems is not captured.
+
+<Tip>
+Always check your browser version and verify that uBO Scope’s `webRequest` listener has the necessary permissions and supports the protocols of the sites you analyze.
+</Tip>
+
+---
+
+## 3. Understanding Stealth Blocking
+
+Stealth blocking attempts to prevent certain blocking actions from being observed by webpages, thus preserving their functionality and minimizing detection:
+
+- **What uBO Scope Sees:** Redirected network requests flagged as _stealth-blocked_.
+- **User Impact:** These requests do not reach their intended remote servers but may appear in uBO Scope’s popup as stealth-blocked domains.
+- **Why It Matters:** Stealth blocking ensures blocked requests are invisible to the page while letting uBO Scope track and classify these attempted connections.
+
+<Note>
+Stealth blocking differs from standard blocking by masking the blocked request from the webpage entirely but is fully visible to uBO Scope.
+</Note>
+
+---
+
+## 4. Network Requests That May Not Be Visible
+
+Certain types of network activity happen outside or are hidden from the `webRequest` API, and thus uBO Scope cannot detect them. Examples include:
+
+- **Browser-Managed Connections:** Such as prefetching, DNS over HTTPS (DoH), or internal resource requests not exposed.
+- **Background API Calls:** Some APIs or features (e.g., Service Workers’ cache fetches or some WebTransport connections) may not fire webRequest events.
+- **Non-Standard Transport Layers:** Such as QUIC or custom protocols.
+- **Requests From Extensions or External Apps:** Activity not originating from the page context.
+
+<Warning>
+When you notice unexpected discrepancies, consider that some network activity might be invisible to uBO Scope due to these restrictions.
+</Warning>
+
+---
+
+## 5. How Domains Are Classified
+
+uBO Scope uses the _Public Suffix List_ to determine the registrable domain from hostnames. This classification helps:
+
+- **Aggregate requests by domain rather than full hostname:** Requests to subdomains of the same registrable domain count as one domain.
+- **Provide clearer insights into distinct third-party entities contacted.**
+
+Example: `ads.example.co.uk` and `cdn.example.co.uk` count as the same domain `example.co.uk`.
+
+<Tip>
+This domain classification bases on the Public Suffix List data bundled with uBO Scope, ensuring consistent mapping.
+</Tip>
+
+---
+
+## 6. Interpreting Outcomes Displayed in the Popup
+
+The popup UI organizes domains contacted into three categories, reflecting request outcomes:
+
+| Outcome          | Meaning                                  | User Takeaway                               |
+|------------------|------------------------------------------|---------------------------------------------|
+| **Not blocked**  | Requests successfully reached the server | Domains actively transmitting data          |
+| **Stealth-blocked** | Requests intercepted and silently blocked | Potentially blocked trackers                  |
+| **Blocked**      | Requests failed or explicitly blocked     | Known blocked requests                       |
+
+<Info>
+Explore related guides like [Monitoring Network Connections on Any Page](https://docs.example.com/guides/core-usage/monitoring-network-connections) for details on reading this interface.
+</Info>
+
+---
+
+## 7. Practical Tips for Accurate Analysis
+
+- **Refresh pages while uBO Scope is open to see up-to-date connections.**
+- **Compare allowed vs blocked counts to gauge your content blockers’ effectiveness, but focus on distinct domains, not block counts.**
+- **Recognize that zero domains does not always mean zero connections due to invisible network traffic.**
+- **Use the extension on real-world sites rather than synthetic test pages to avoid misleading data.**
+
+---
+
+## 8. Troubleshooting Measurement Gaps
+
+| Symptom                         | Cause                                       | Solution/Advice                       |
+|---------------------------------|---------------------------------------------|-------------------------------------|
+| No domains shown on a busy site | Stealthy requests or non-HTTP protocols      | Check browser compatibility         |
+| Discrepancy with content blocker counts | Stealth blocking or DNS-level network blocking | Understand stealth blocking; read docs |
+| Badge count sticks or does not update | Browser API permissions or extension inactive | Verify extension installation & permissions; see [Checking If uBO Scope is Active](https://docs.example.com/guides/getting-started/checking-extension-status) |
+
+---
+
+## 9. Summary
+
+Understanding the capabilities and limits of what uBO Scope measures allows you to interpret its data with confidence. It exposes a near-comprehensive view of third-party connections visible via the browser’s `webRequest` API, including stealth-blocked requests. Keep in mind browser and API limitations to avoid missing or misreading network activity.
+
+---
+
+## 10. Additional Resources
+
+- [What is uBO Scope?](https://docs.example.com/overview/introduction-core-value/what-is-ubo-scope)  
+- [Feature Overview](https://docs.example.com/overview/how-it-works-architecture/feature-overview)  
+- [Monitoring Network Connections on Any Page](https://docs.example.com/guides/core-usage/monitoring-network-connections)  
+- [Interpreting the Icon Badge Count](https://docs.example.com/guides/core-usage/interpreting-badge-count)  
+- [Troubleshooting Common Issues](https://docs.example.com/getting-started/getting-aware/troubleshooting)
+
+---
+
+*This document is maintained in sync with uBO Scope version 1.0.1.*
+
+
+# Frequently Asked Questions
+
+<AccordionGroup title="Common Questions About Extension Limitations">
+<Accordion title="Why doesn’t uBO Scope show all WebSocket connections?">
+Different browsers expose WebSocket connections through the `webRequest` API to varying degrees. Safari, for example, offers limited reporting of WebSocket events, so some connections may not appear in uBO Scope.
+</Accordion>
+<Accordion title="Can uBO Scope see network requests blocked by my firewall?">
+No. uBO Scope only receives events for network requests visible to the browser. Blocking at the firewall or DNS level before the browser handles the request prevents uBO Scope from seeing those requests.
+</Accordion>
+<Accordion title="Why is the badge count sometimes lower than expected?">
+The badge represents distinct third-party domains with allowed connections. Some requests may be stealth-blocked or invisible to the extension, which means the badge count may underreport overall network activity.
+</Accordion>
+</AccordionGroup>
+
+
+---
+
+## Appendix: Technical Insights
+
+Operating with the browser’s `webRequest` API, uBO Scope listens to these key events:
+
+- onBeforeRedirect
+- onErrorOccurred
+- onResponseStarted
+
+Each event is queued and processed to update tab-specific details on allowed, blocked, and stealth-blocked hostnames and domains. The distinction between these outcomes is possible because the browser reports the success or failure of the network requests it monitors.
+
+The extension utilizes a Public Suffix List to normalize hostnames into their effective registered domains, improving clarity.
+
+For further technical reference or to explore implementation, see the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+---
+
+<Check>
+Always verify you are using the latest uBO Scope version compatible with your browser to maximize visibility and accuracy.
+</Check>
+
+---
