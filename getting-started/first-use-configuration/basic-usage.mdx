@@ -1,0 +1,187 @@
+---
+title: "Understanding the Toolbar and Popup UI"
+description: "Explore how the extension signals network activity using the toolbar badge and the popup UI. Learn to interpret the connection count, domain breakdown, and key indicators for allowed, blocked, and stealth domains."
+---
+
+# Understanding the Toolbar and Popup UI
+
+Explore how uBO Scope visualizes and signals network connection activity through its toolbar badge and popup interface. This page guides you to interpret the real-time connection counts, domain categorizations, and key indicators displayed, empowering you to assess your browser tab's network exposure instantly.
+
+---
+
+## 1. Overview of Toolbar Badge and Popup Purpose
+
+uBO Scope's core value lies in revealing the number and nature of remote server connections a browser tab initiates or attempts. It achieves this primarily through:
+
+- **Toolbar Badge**: Displays a numeric count signaling the number of distinct third-party domains with allowed (successful) connections for the active tab.
+- **Popup UI**: A detailed breakdown of domains your tab has connected to, divided by their connection outcomes: allowed, stealth-blocked, or fully blocked.
+
+Understanding these elements will help you quickly gauge your tab's privacy risk and content blocker effectiveness.
+
+<Info>
+The badge count signifies the count of unique third-party domains with **allowed connections**. A lower count generally means fewer external parties are contacted.
+</Info>
+
+---
+
+## 2. Toolbar Badge: What It Means and How to Interpret
+
+### Purpose
+
+The badge on the toolbar icon updates dynamically for each browser tab, showing the **number of distinct allowed third-party remote servers** the tab connected to. This gives an at-a-glance measure of network exposure.
+
+### How It Works
+
+- The backend monitors all network requests from the tab.
+- It groups requests by domain.
+- Only those third-party domains with successful connection outcomes contribute to the badge number.
+
+### Interpreting Badge Counts
+
+| Badge Count | Meaning                         | Privacy Considerations                         |
+|-------------|--------------------------------|-----------------------------------------------|
+| 0           | No allowed third-party domains  | Highest privacy, no external servers connected |
+| Low (1-5)   | Few third-parties connected     | Indicates minimal third-party exposure          |
+| High (10+)  | Many third-parties connected    | Possible increased tracking or resource fetching|
+
+<Warning>
+A high badge number doesn't always indicate malicious connections; some legitimate CDNs and services appear as third-parties as well.
+</Warning>
+
+---
+
+## 3. Popup UI: Detailed Connection Insights
+
+Clicking the toolbar icon opens the popup UI (`popup.html`), presenting a detailed view of network request outcomes for the active tab.
+
+### Popup Layout Breakdown
+
+- **Hostname Section**: Displays the current active tab's hostname and its base domain to provide context.
+
+- **Summary Section**: Shows the total count of distinct allowed domains, matching the toolbar badge number.
+
+- **Connection Outcome Sections**:
+  - **Not Blocked (Allowed)**: Lists third-party domains your tab connected to successfully.
+  - **Stealth-Blocked**: Domains for which network requests were blocked stealthily (e.g., redirected or silently intercepted).
+  - **Blocked**: Domains that were outright blocked by content blockers or network rules.
+
+Each section shows domains together with a badge indicating the number of requests to that domain.
+
+### How Domains Are Categorized
+
+- **Allowed Domains**: Remote servers that the browser tab successfully connected to.
+- **Stealth Domains**: Domains blocked in a subtle way that doesn't fully cancel connections but stealthily intercepts or redirects traffic.
+- **Blocked Domains**: Fully blocked domains where connections failed due to filters or content blockers.
+
+### Practical Actions
+
+1. **Review the "Not Blocked" section** to identify legitimate third party services or potentially unwanted connections.
+2. **Check stealth-blocked domains** to understand what the content blocker intercepted silently.
+3. **Examine blocked domains** to verify if your content blocker is effectively preventing connections you want to stop.
+
+---
+
+## 4. Step-by-Step: Accessing and Interpreting the Popup UI
+
+<Steps>
+<Step title="Open the Popup UI">
+Locate the uBO Scope icon in your browser's toolbar and click it to open the popup.
+</Step>
+<Step title="Identify the Active Tab's Domain">
+At the top, note the displayed hostname and base domain, confirming the page you are inspecting.
+</Step>
+<Step title="Review Connection Counts in Summary">
+See the total "domains connected" count summarizing successful third-party communications.
+</Step>
+<Step title="Examine Allowed Domains">
+Expand the 'not blocked' section to view each allowed third-party domain and how many requests were made.
+</Step>
+<Step title="Explore Stealth and Blocked Domains">
+Inspect 'stealth-blocked' and 'blocked' sections for domains your content blocker silently intercepted or fully blocked.
+</Step>
+<Step title="Interpret Badges and Counts">
+Use the accompanying counts to assess how frequently each domain is contacted and prioritize any privacy concerns.
+</Step>
+</Steps>
+
+<Tip>
+Hover over or click domain entries in the popup UI (depending on future versions) to get additional insights or copy domain names.
+</Tip>
+
+---
+
+## 5. Understanding Key Indicators and Visual Cues
+
+- The **badge count color** and **text** on the toolbar icon provide an immediate summary:
+  - Number shown: distinct allowed third-party domains.
+  - Blank badge: no allowed third-party connections or no data.
+
+- The **group headings** in the popup separate the three connection outcomes clearly, making it easy to understand your tab's network footprint.
+
+- Domain counts beside each domain provide insight into connection frequency, helping identify heavy or suspicious third-party usage.
+
+---
+
+## 6. Practical Tips and Best Practices
+
+- **Use the badge as a quick privacy check**:
+  - A rising badge number on a new page may signal many external parties loaded.
+  - A badge consistently at 0 or low suggests strong privacy or minimal third-party content.
+
+- **Regularly review the popup UI** to identify any unexpected domains or heavy third-party connections.
+
+- **Combine with your content blocker settings** to adjust or tighten blocking if needed based on observed stealth or blocked domains.
+
+- **Remember legitimate third-party domains** such as CDNs or analytics used by the site can inflate counts but may be expected.
+
+- **Reload the page if the popup shows ‘NO DATA’** or empty information; the extension collects data asynchronously and needs active page requests to track.
+
+<Warning>
+If you notice no badge updates or empty popup UI after browsing, ensure the extension is enabled and has necessary permissions.
+</Warning>
+
+---
+
+## 7. Troubleshooting Common Display Issues
+
+<AccordionGroup title="Popup UI Troubleshooting">
+<Accordion title="Popup shows 'NO DATA' or remains blank">
+Make sure you have an active tab with network activity. Reload the page and try again. Data collection is per-tab and can have a delay.
+</Accordion>
+<Accordion title="Badge count does not update as expected">
+Check that uBO Scope is enabled and the browser version meets minimum requirements (e.g., Firefox 128+, Chromium 122+).
+
+Also verify no conflicts with other extensions that might block webRequest API access.
+</Accordion>
+<Accordion title="Domains missing or counts seem inaccurate">
+Remember uBO Scope reports based on the browser's webRequest API. Requests outside this scope or made by native system components won't be counted.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Summary
+
+uBO Scope's toolbar badge and popup UI provide a powerful duo for assessing network activity on a per-tab basis with clarity:
+
+- The *toolbar badge* offers immediate feedback on the number of allowed third-party connections.
+- The *popup UI* breaks down each domain's connection outcome, showing allowed, stealth-blocked, and blocked domains.
+
+By mastering how to interpret these signals, you gain a transparent view into your browser's network relationships, essential for privacy auditing and content blocker evaluation.
+
+---
+
+## 9. Learn More
+
+- [What is uBO Scope?](https://github.com/gorhill/uBO-Scope/blob/main/README.md#purpose)
+- [Core Concepts & Terminology](../overview/introduction-core-concepts/core-concepts-terminology)
+- [First Launch and Extension Activation](../getting-started/first-use-configuration/first-launch)
+- [Quick Validation and Testing](../getting-started/first-use-configuration/quick-validation)
+- [Troubleshooting Common Issues](../getting-started/troubleshooting-support/common-issues)
+
+
+---
+
+<Check>
+For implementation details and live updates, refer to the source code under `popup.html` and `js/popup.js` in the [uBO-Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+</Check>

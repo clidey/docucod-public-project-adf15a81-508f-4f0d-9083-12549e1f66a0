@@ -1,0 +1,168 @@
+---
+title: "Interpreting Detailed Request Outcomes"
+description: "A practical look at domain categorization (allowed, blocked, stealth), outcome meanings, and how the extension tracks these using advanced parsing techniques. Unpack how uBO Scope determines and presents these results, and learn to interpret nuanced cases."
+---
+
+# Interpreting Detailed Request Outcomes
+
+## Overview
+This guide provides a practical understanding of how uBO Scope categorizes network request outcomes into three distinct domain states: **allowed**, **blocked**, and **stealth**. It explains how these categories are determined through advanced URL parsing and network event tracking, and how the extension presents these nuanced results. You will learn to interpret the data provided by uBO Scope’s popup interface, enabling you to better analyze the privacy implications of third-party connections.
+
+---
+
+## 1. Understanding Domain Categorization
+
+uBO Scope tracks domains involved in network requests and classifies them by their outcome status:
+
+- **Allowed Domains:** These are domains from which resources successfully loaded.
+- **Blocked Domains:** Domains for which the network request failed, typically due to content blocking.
+- **Stealth Domains:** Domains related to redirected network requests, often representing stealth blocking or re-routing.
+
+Each outcome reflects the nature of the connection from the active browser tab and helps you understand the flow of resource loading and blocking.
+
+### How Domains Are Identified and Categorized
+- **Domain Extraction:** uBO Scope utilizes the Public Suffix List (PSL) to extract the effective registered domain from the full hostname.
+- **Hostname vs Domain:** Connections are tracked both at the hostname and domain level, which helps attribute connections accurately.
+- **Outcome Assignment:** Based on browser-reported network events ('success', 'error', 'redirect'), requests are categorized into allowed, blocked, or stealth.
+
+<Tip>
+The classification is independent of any content blocker’s internal logic, meaning uBO Scope reports true observed network behavior, not just what the blocker reports.
+</Tip>
+
+---
+
+## 2. How uBO Scope Processes Request Outcomes
+
+### Event Types and Their Impact
+- **`success`**: A request that completed successfully is counted under allowed domains.
+- **`error`**: A failed request is counted under blocked domains.
+- **`redirect`**: A request that was redirected but still resulted in a network connection counted under stealth domains.
+
+### Session Management
+- The extension maintains a session-based map of tab IDs to detailed domain connection data.
+- For each tab, the allowed, blocked, and stealth domains are tracked separately.
+- When a main frame navigation occurs, the extension resets tracking data for that tab to ensure accurate and fresh reporting for the current webpage.
+
+### Badge Count
+- The toolbar badge reflects the distinct count of allowed third-party domains observed for the current tab.
+- This helps you see at a glance how many external domains your active tab is connecting to successfully.
+
+---
+
+## 3. Interpreting the Popup UI Outcomes
+
+When you open the uBO Scope popup, you will see three clearly listed sections showing domain connections:
+
+- **Not Blocked** (Allowed): Domains from which resources were fetched without interruption. This indicates successful external connections.
+- **Stealth-Blocked** (Stealth): Domains related to redirection events that indicate stealth blocking or rerouting without explicit errors.
+- **Blocked:** Domains from which resource loading attempts failed, indicating active blocking or failures.
+
+Each domain in these sections shows a count representing how many requests were observed for that domain.
+
+### Practical Interpretation Examples
+- Domains appearing in **Allowed** mean those third parties successfully delivered resources.
+- Domains in **Blocked** suggest active blocking by your content blockers or network errors.
+- **Stealth** domains usually reflect subtle network behaviors like silent redirects or background reroutes that evade direct blocking but are detected.
+
+<Tip>
+Pay special attention to domains in the stealth list if you suspect some tracking or content loading behaviors bypass your blockers.
+</Tip>
+
+---
+
+## 4. Step-by-Step: From Browsing to Outcome Interpretation
+
+<Steps>
+<Step title="Start Browsing a Website">
+Open a webpage you want to analyze in your browser with uBO Scope enabled.
+</Step>
+<Step title="Observe Toolbar Badge">
+Look at uBO Scope’s toolbar icon; the badge shows the count of unique allowed third-party domains for that tab.
+</Step>
+<Step title="Open the Popup UI">
+Click the toolbar icon to reveal detailed connection data categorized by outcome.
+</Step>
+<Step title="Review Allowed Domains">
+See which domains successfully delivered resources, indicating your exposure level to third parties.
+</Step>
+<Step title="Check Stealth Domains">
+Identify any stealth connections that may not be overtly blocked but involve redirects or hidden rerouting.
+</Step>
+<Step title="Review Blocked Domains">
+Examine which domains had their resource requests blocked, giving insight into the effectiveness of content blockers.
+</Step>
+<Step title="Correlate with Browsing Context">
+Use this data to decide if the allowed third parties are expected and if stealth/blocking behaviors align with your privacy goals.
+</Step>
+</Steps>
+
+---
+
+## 5. Common Scenarios and Interpretation Tips
+
+### Scenario 1: High Allowed Domain Count
+- Indicative of many third-party services loading successfully.
+- Could signal privacy risks if domains include trackers or ad servers.
+
+### Scenario 2: Presence of Stealth Domains
+- Suggests requests involve redirects or silent rerouting.
+- May reveal attempts to bypass blocking mechanisms.
+
+### Scenario 3: Blocked Domains Without Expected Stealth
+- Shows direct blocking by content blockers or network policies.
+- Confirm if expected based on your filter settings or blocking rules.
+
+### Scenario 4: No Domains Listed
+- Could mean no network activity detected on the tab yet.
+- Alternatively, a page with local or cached content only.
+
+<Note>
+If you see inconsistencies between observed outcomes and your expectations, ensure uBO Scope is enabled and your browser supports `webRequest` reporting fully.
+</Note>
+
+---
+
+## 6. Troubleshooting
+
+<AccordionGroup title="Troubleshooting Request Outcome Interpretation">
+<Accordion title="Popup Shows 'NO DATA' or Empty Lists">
+- Ensure the active tab has fully loaded network requests.
+- Check permissions and that `webRequest` API access is granted.
+- Reload the tab.
+- Confirm no browser or security extensions interfere with uBO Scope.
+</Accordion>
+<Accordion title="Toolbar Badge Does Not Update">
+- The badge reflects allowed domains for the active tab; switch tabs or reload.
+- Confirm background service worker is running (in browser extension management).
+- Restart browser to clear transient issues.
+</Accordion>
+<Accordion title="Unexpected Domain Classification">
+- Remember that stealth domains represent redirects, not failed blocks.
+- Check your content blockers’ settings for possible conflicts.
+- Use multiple page loads to verify persistent behaviors.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Best Practices
+
+- Regularly review the detail of allowed, stealth, and blocked domains per tab to maintain privacy awareness.
+- Use stealth domain insights to detect subtle tracking circumvention techniques.
+- Cross-reference with your content blocker’s block lists to understand domains’ status.
+- Use uBO Scope in combination with detailed audit workflows to get a full picture of network activity.
+
+---
+
+## 8. Additional Resources
+
+For a broader understanding and complementary workflows, refer to:
+
+- [Understanding the Popup UI](../getting-started/ui-overview) — Deep dive into the UI elements presenting domain data.
+- [Core Concepts & Terminology](../../overview/introduction-core-concepts/core-concepts-terminology) — Defines domain statuses and privacy implications.
+- [Conducting a Third-Party Tracker Audit](../real-world-usage/privacy-audits) — Apply request outcome knowledge to privacy investigations.
+- [Troubleshooting Common Installation and Usage Issues](../../getting-started/troubleshooting-support/common-issues) — Solve common operational problems.
+
+---
+
+<u>By mastering the interpretation of detailed request outcomes, you empower yourself to make informed decisions about your browsing privacy and the effectiveness of your content blockers.</u>
