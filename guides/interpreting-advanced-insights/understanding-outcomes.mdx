@@ -1,0 +1,155 @@
+---
+title: "What Do 'Allowed', 'Blocked', and 'Stealth' Mean?"
+description: "Delve into how uBO Scope records network request outcomes, what each status signals about your browser's filtering setup, and why some requests are stealthily blocked or allowed. Learn to critically interpret these results for privacy, content blocking, and troubleshooting."
+---
+
+# Understanding uBO Scope Outcomes: 'Allowed', 'Blocked', and 'Stealth'
+
+## Overview
+This guide explains how uBO Scope categorizes network requests as 'Allowed', 'Blocked', or 'Stealth'. You'll learn what each status means in terms of your browser's content filtering setup, why some third-party requests are stealthily blocked or allowed, and how to interpret these results effectively for privacy analysis, content blocker validation, and troubleshooting.
+
+---
+
+## 1. Outcome Categories Explained
+
+uBO Scope tracks the fate of network requests made by webpages, recording each under one of three outcomes:
+
+- **Allowed**: Requests that successfully reach their destination without being blocked.
+- **Blocked**: Requests that are actively prevented from completing by your browser or content blockers.
+- **Stealth**: Requests that are blocked quietly without typical error messages or visible failures.
+
+Understanding these distinctions is critical for interpreting the extension's reporting and making informed decisions about your privacy and content blocker effectiveness.
+
+### 1.1 Allowed Requests
+
+- **What it means:** The request succeeded and a connection to a third-party server was established.
+- **Implication:** These domains actively participate in delivering content or collecting data.
+- **uBO Scope's role:** Counts and lists successful domains in the 'not blocked' section of the popup panel.
+
+### 1.2 Blocked Requests
+
+- **What it means:** The browser or content blocker explicitly prevented the request from completing.
+- **Implication:** These domains tried to load content but were denied, protecting you from unwanted resources or tracking.
+- **uBO Scope's role:** Logs these domains in the 'blocked' category.
+
+### 1.3 Stealth-Blocked Requests
+
+- **What it means:** Requests blocked in a manner that avoids triggering standard browser error events or visible failures.
+- **Why stealth blocking matters:** It's used to silently block requests without alerting scripts or the browser to the blocking action, minimizing website breakage or detection.
+- **uBO Scope's role:** Identifies and categorizes these under 'stealth-blocked', giving you visibility into nuanced blocking behavior.
+
+<Note>
+The stealth category is unique to uBO Scope’s detailed monitoring and is essential for understanding how modern content blockers operate subtly.
+</Note>
+
+---
+
+## 2. How uBO Scope Determines Outcomes
+
+uBO Scope uses the browser's `webRequest` API to listen to key network events:
+
+- `onBeforeRedirect`
+- `onErrorOccurred`
+- `onResponseStarted`
+
+Based on these events, it classifies requests:
+
+- `success` events correspond to Allowed
+- `error` events correspond to Blocked
+- `redirect` events typically correspond to Stealth (silent blocking or redirects)
+
+### Example Flow
+
+1. A network request is initiated.
+2. If it completes successfully with no block, uBO Scope marks it as Allowed.
+3. If it triggers an error event due to blocking, it is marked as Blocked.
+4. If it redirects silently or is blocked without an error, it is marked as Stealth.
+
+<Tip>
+Requests outside the scope of the browser's `webRequest` API or domains not reachable are not counted.
+</Tip>
+
+---
+
+## 3. Interpreting the Popup Panel Outcomes
+
+When you open the uBO Scope popup:
+
+- **'Not Blocked' section:** Lists all distinct domains from which requests were allowed. This number reflects active third-party connections your browser made.
+- **'Stealth-Blocked' section:** Shows domains where connections were quietly blocked, often reflecting advanced stealthy content blocking.
+- **'Blocked' section:** Displays domains with network requests actively stopped by blockers.
+
+The badge on the toolbar icon reflects the count of distinct allowed third-party domains.
+
+### What to Watch For
+
+- A high number of allowed third parties may indicate many as-yet-unblocked trackers or content domains.
+- Presence of stealth-blocked domains suggests your blocker is silently intercepting requests, improving stealth against trackers.
+- Blocked domains confirm explicit blocking rules or browser actions are active.
+
+---
+
+## 4. Practical Tips for Users
+
+- **Focus on distinct allowed domains:** Fewer allowed third parties generally improve privacy.
+- **Consider stealth-blocked as a positive sign:** It means your blocker is operating subtly to prevent tracking.
+- **Use this page in conjunction with the popup panel:** For deeper insight into what each outcome means in context.
+- **Filter list maintainers:** Use the stealth and blocked categories to tune filters for minimal breakage while maximizing privacy.
+
+<Check>
+Remember that not all allowed third parties are harmful—CDNs and essential services often appear. Use uBO Scope to identify suspicious or unexpected connections.
+</Check>
+
+---
+
+## 5. Common Questions & Troubleshooting
+
+### Q1: Why do some requests show as allowed even though I use a blocker?
+- Some requests are necessary for website functionality or come from legitimate CDNs.
+- uBO Scope reveals all connections regardless of blockers; allowed means the request was not blocked by your current setup.
+
+### Q2: What does stealth blocking actually do?
+- It blocks requests quietly without triggering browser error events, hiding blocking activity from websites and scripts.
+
+### Q3: Why might stealth-blocked or blocked domains still seem active on websites?
+- Websites may fallback or use multiple domains.
+- Combining stealth and blocked insights helps refine understanding and debugging.
+
+<Warning>
+If you see a large number of allowed domains and experience privacy concerns, consider tightening your filter settings or using stricter content blocking.
+</Warning>
+
+---
+
+## 6. Summary
+
+This page clarifies the meaning of the 'Allowed', 'Blocked', and 'Stealth' outcomes recorded by uBO Scope, helping you interpret network connection data critically. By learning these distinctions, you can better audit your browsing privacy, evaluate content blocker effectiveness, and troubleshoot connection behaviors.
+
+For a strong privacy stance, aim to reduce allowed third-party domains and leverage the insights from stealth and blocked categories.
+
+---
+
+## 7. Next Steps & Related Documentation
+
+- [Reading the Popup Panel: Interpreting Connection Data](../getting-started-essentials/understanding-the-popup) - Learn how to navigate and understand the real-time popup UI.
+- [Basic Workflow: Analyzing Third-Party Connections](../getting-started-essentials/workflow-basic-analysis) - Practical step-by-step for analyzing connections.
+- [How uBO Scope Works (Architecture & Data Flow)](../../core-concepts-and-architecture/architecture-and-data-flow) - Explore the underlying data interception and processing.
+- [Troubleshooting Installation & Startup Issues](../../getting-started/first-use-and-setup/troubleshooting-startup) - Resolve common problems with tracking and data display.
+
+---
+
+## Appendix: Key Terms
+
+| Term              | Meaning                                                                                 |
+|-------------------|-----------------------------------------------------------------------------------------|
+| Allowed           | Requests that completed successfully, indicating open connections to domains.            |
+| Blocked           | Requests actively stopped by browser or content blockers, preventing connection.         |
+| Stealth-Blocked   | Requests blocked silently without browser error events, ensuring invisible blocking.     |
+| Third-Party       | Domains different from the current webpage's domain, often used for tracking or content. |
+| Public Suffix List| A list used to determine domain boundaries, enabling correct grouping of domains.         |
+
+<Tip>
+Understanding these terms empowers you to make the most of uBO Scope’s rich connectivity insights.
+</Tip>
+
+---
