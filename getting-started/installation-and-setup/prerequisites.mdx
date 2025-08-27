@@ -1,114 +1,149 @@
 ---
-title: "Prerequisites & Supported Browsers"
-description: "Understand which browsers and versions are supported and what permissions uBO Scope requires for proper operation. Learn about the compatibility notes and system requirements to ensure a smooth installation experience."
+title: "System Requirements & Prerequisites"
+description: "Review the minimum browser and operating system requirements for installing and running uBO Scope. Learn what permissions and APIs are necessary for the extension to function, and understand any limitations based on your chosen browser."
 ---
 
-# Prerequisites & Supported Browsers
+# System Requirements & Prerequisites for uBO Scope
 
-Ensure your environment meets the requirements to install and run uBO Scope smoothly. This page describes supported browsers, minimum versions, required permissions, and essential compatibility notes to prepare you for a hassle-free setup.
+uBO Scope is a lightweight browser extension designed to transparently reveal all network connections your browser makes to third-party servers. To leverage its capabilities fully, it requires a minimal set of system and browser features. This guide outlines the necessary requirements and permissions, ensuring you have a seamless installation and optimal operation experience.
 
 ---
 
-## 1. Supported Browsers and Minimum Versions
+## 1. Supported Browsers and Versions
 
-uBO Scope is designed as a browser extension compatible across major browsers, with specific minimum version requirements to guarantee full functionality:
+uBO Scope supports all major browsers with extensions manifest version 3 (MV3) compatibility and access to the `webRequest` API:
 
-- **Chromium-based browsers (e.g., Google Chrome, Microsoft Edge):**
-  - Requires **Chrome 122.0** or later.
-  - Uses a service worker in Manifest Version 3 background.
-- **Firefox (Desktop and Android):**
-  - Requires **Firefox 128.0** or later.
-- **Safari:**
-  - Requires **Safari 18.5** or later.
+- **Firefox** 
+  - Minimum version: **128.0**
+  - Installation available via [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/)
 
-These requirements ensure that uBO Scope can leverage the necessary browser APIs such as `webRequest` as intended.
+- **Chromium-based browsers (Chrome, Edge, etc.)**
+  - Minimum version: **122.0**
+  - Installation available via [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+
+- **Safari**
+  - Minimum version: **18.5**
+  - Support for Safari is present but limited to HTTP and HTTPS schemes.
+
 
 <Note>
-Older browser versions may lack required APIs or security frameworks needed by uBO Scope and will not operate correctly.
+ uBO Scope requires **Manifest Version 3** extensions support, which aligns with modern browser extension standards. Older browsers lacking MV3 are not supported.
 </Note>
 
-## 2. Permissions Required
+---
 
-For uBO Scope to monitor and report remote connections effectively, it requests these permissions during installation:
+## 2. Operating System Compatibility
 
-- **`webRequest`** – to observe network activity directly.
-- **`activeTab`** – to interact with the currently active tab for context.
-- **`storage`** – to locally store session and configuration data.
-- **Host Permissions** – to monitor network requests, uBO Scope requires access to all HTTP and HTTPS URLs:
-  - `http://*/*`
+As a browser extension, uBO Scope runs wherever the supported browsers run. It has been tested and verified on the following platforms:
+
+- **Windows 10 and later**
+- **macOS 11 and later**
+- **Linux distributions running compatible browser versions**
+- **Mobile OS for Firefox and Chromium-based browsers (Android), subject to browser extension support**
+
+<Info>
+Performance and UI behavior may vary slightly between desktop and mobile browsers due to differences in extension APIs.
+</Info>
+
+---
+
+## 3. Permissions and APIs Required
+
+For precise operation, uBO Scope requests the following permissions:
+
+- **`activeTab`**: Allows the extension to interact with the currently active browser tab to gather data.
+- **`webRequest`**: Core to monitoring all network requests made by web pages to remote servers, including those allowed, blocked, or stealth-blocked.
+- **`storage`**: Required for reading and writing session and configuration data persisting across browsing sessions.
+- **`host_permissions`** requesting access to all HTTP/S and WebSocket URL patterns:
   - `https://*/*`
-  - For Firefox and Chromium browsers, also includes WebSocket protocols:
-    - `ws://*/*`
-    - `wss://*/*`
+  - `http://*/*`
+  - `wss://*/*`
+  - `ws://*/*`
 
-These permissions are vital to capture both typical HTTP/S requests and WebSocket connections, ensuring comprehensive visibility.
+
+These permissions enable uBO Scope to monitor network requests effectively without interfering with normal browser operation.
 
 <Warning>
-During installation, carefully review permissions to understand network data access. uBO Scope only observes and reports — it does not modify or block requests.
+Because uBO Scope relies on the `webRequest` API, browsers must support it with full event details for HTTPS and WebSocket connections. If these APIs are limited or absent, uBO Scope cannot reliably report all connection outcomes.
 </Warning>
 
-## 3. Compatibility Notes
+---
 
-- **Integration with other blockers:**
-  uBO Scope works seamlessly alongside other content blockers like uBlock Origin or DNS-based blockers. It measures network activity regardless of whether those blockers allow or block requests.
+## 4. Network and Environment Considerations
 
-- **WebRequest API Boundaries:**
-  Network requests originating outside the browser context or bypassing the `webRequest` API (such as some WebSocket behaviors or browser internals) cannot be monitored by uBO Scope.
+- **Internet Connectivity**: Not strictly required for uBO Scope itself to function, but needed to access external resources and websites for monitoring.
 
-- **Platform-Specific Considerations:**
-  - On Safari, due to its extension model and API limitations, uBO Scope requires at least version 18.5.
-  - Firefox enforces extension signing and may prompt for additional permissions aligned with its policies.
+- **Firewall and Proxy Settings**: No special configuration is needed for uBO Scope, but existing network rules that block or modify browser web requests will affect results.
 
-## 4. System Requirements
+- **Content Blockers Compatibility**: uBO Scope operates independently and in passively observes network requests regardless of other content blockers or DNS-level filtering tools.
 
-uBO Scope itself is lightweight, but your device should meet these general criteria:
+---
 
-- A modern operating system supporting the aforementioned browser versions.
-- Stable internet connection to fetch the extension and support data synchronization.
-- Sufficient storage to hold session data, though it is minimal.
+## 5. Limitations & Known Constraints
 
-## 5. Preparation Checklist Before Installation
+- **Network Requests Outside `webRequest` API Scope**: 
+  - Requests initiated by browser components outside of the webRequest API (e.g., browser extensions running separately, system-level requests) cannot be tracked.
 
-Follow these sequential steps for readiness:
+- **Safari Limitations**:
+  - Currently, the extension only requests HTTP/S host permissions (no WebSocket permissions) due to platform restrictions.
+
+- **Browser Beta and Dev Versions**:
+  - Using cutting-edge browser versions may cause unexpected issues; stable releases are recommended.
+
+---
+
+## 6. Summary Checklist Before Installation
 
 <Steps>
-<Step title="Confirm Browser Version">
-Check your browser version by navigating to `chrome://settings/help` for Chrome, `about:support` for Firefox, or Safari's About menu.
+<Step title="Check Browser Compatibility">
+Confirm your browser meets the minimum supported version and supports MV3 extensions with the webRequest API.
 </Step>
-<Step title="Review Required Permissions">
-Understand and accept permissions for network monitoring and tab access.
+<Step title="Verify Permissions">
+Ensure you accept the required permissions (`activeTab`, `webRequest`, `storage`) during installation.
 </Step>
-<Step title="Ensure Compatibility with Other Extensions">
-If running other content blockers, no action is needed for compatibility; uBO Scope will integrate smoothly.
+<Step title="Ensure Network Access">
+No restrictive firewall or proxy setup is interfering with your browser's network requests.
 </Step>
-<Step title="Disable Conflicting Extensions (if any)" hidden>
-Rarely needed, but if you suspect conflicts, disable suspect extensions temporarily.
+<Step title="Use Supported Platforms">
+Install and run uBO Scope on Windows, macOS, Linux, or compatible mobile browsers.
 </Step>
 </Steps>
 
-## 6. Troubleshooting Common Compatibility Issues
+---
 
-<AccordionGroup title="Troubleshooting Compatibility and Permissions">
-<Accordion title="My browser version is lower than the minimum required. What can I do?">
-Upgrade to the latest browser release to ensure compatibility. Using outdated browsers may expose you to security risks and cause uBO Scope to malfunction.
-</Accordion>
-<Accordion title="I am not prompted to grant permissions during install. Is this expected?">
-Yes. Browser stores prior permissions for re-installations. On first installs, you must grant the permissions. If permissions seem blocked, check your browser settings or policy restrictions.
-</Accordion>
-<Accordion title="Why does uBO Scope require such broad host permissions?">
-This access is necessary to observe network requests across all sites you visit to provide complete visibility. The extension does not alter any traffic.
-</Accordion>
-<Accordion title="uBO Scope does not show any network activity after installation.">
-Ensure your browser is supported and meets the minimum version. Also, verify background scripts are running (browser extension icon should appear). Check for error messages in Developer Tools under Extensions.
-</Accordion>
-</AccordionGroup>
+## 7. Next Steps
 
-## 7. Related Documentation
+Once your system meets these requirements, proceed to the [Installing uBO Scope](../installation-and-setup/installation) page for detailed installation guidance. After installation, learn how to configure essential settings in [Initial Configuration](../installation-and-setup/first-configuration), then move on to [Your First Session: Checking Connections](../../first-use-and-validation/first-use) to explore your first network insights.
 
-- [Installing uBO Scope](/getting-started/installation-and-setup/installation) — For step-by-step installation guidance.
-- [Integration & Compatibility Overview](/overview/architecture-concepts/integration-context) — See detailed compatibility context and how uBO Scope interacts with other blockers.
-- [System Architecture Overview](/overview/architecture-concepts/system-architecture) — Understand underlying data flow and permissions usage.
 
 ---
 
-By confirming your browser environment, permissions, and compatibility as outlined here, you ensure a seamless installation and ready your system to benefit from uBO Scope’s powerful network visibility capabilities.
+## References & Related Documentation
+
+- [Installing uBO Scope](../installation-and-setup/installation)
+- [Initial Configuration](../installation-and-setup/first-configuration)
+- [Your First Session: Checking Connections](../../first-use-and-validation/first-use)
+- Browser extension manifest for Firefox, Chromium, Safari (see `manifest.json` files)
+
+---
+
+## Frequently Asked Questions
+
+<AccordionGroup title="Common Questions on Requirements">
+<Accordion title="Does uBO Scope work with all versions of Chrome?">
+It requires Chrome 122 or newer due to Manifest V3 and webRequest API requirements.
+</Accordion>
+<Accordion title="Can I use uBO Scope on mobile browsers?">
+Mobile support is limited. Firefox for Android may work if extensions are enabled and meet version requirements; Chromium mobile variants typically lack sufficient MV3 support.
+</Accordion>
+<Accordion title="Are there performance considerations?">
+uBO Scope is lightweight and passive, but monitoring numerous tabs with heavy traffic can slightly impact browser responsiveness.
+</Accordion>
+</AccordionGroup>
+
+<Tip>
+Ensure you keep your browser updated to maintain compatibility and take advantage of security improvements impacting extensions.
+</Tip>
+
+
+---
