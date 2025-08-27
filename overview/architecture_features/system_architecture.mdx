@@ -1,0 +1,124 @@
+---
+title: "System Architecture Overview"
+description: "Illustrates uBO Scope’s architecture using a visual mermaid diagram—showing the main browser extension components (background script, popup UI), how webRequest listeners collect network data, how that data is processed and displayed, and where persistent storage and badge updates fit into the flow."
+---
+
+# System Architecture Overview
+
+Dive into the inner workings of uBO Scope through this visual and user-centered explanation of its system architecture. This page presents a clear and detailed diagram alongside a narrative to help you understand how the browser extension components collaborate to collect, process, and display network connection data effectively.
+
+---
+
+## Understanding the Architecture: How uBO Scope Monitors Network Connections
+
+At the heart of uBO Scope lies a well-orchestrated architecture designed to give you transparency into your browser's third-party network connections. The extension combines browser background processes with a user-facing popup, leveraging browser APIs to track web requests, process outcomes, and provide meaningful insights—all while maintaining persistent state and updating the UI badge.
+
+### Core Components Explained
+
+- **Background Script (Service Worker / Module):** Runs in the background to listen for and record network events using the browser's `webRequest` API.
+- **Popup UI:** A dynamic interface that presents the collected data in a readable form when you click the extension icon.
+- **webRequest Listeners:** Specialized event listeners detecting network request status such as redirects, errors, or success.
+- **Persistent Storage:** Uses browser local and session storage to maintain session data and the public suffix list, supporting domain parsing and state across browser restarts.
+- **Badge Text Updater:** Shows a real-time count of distinct third-party domains connected to on the browser toolbar icon.
+
+### How It All Fits Together
+
+Imagine opening a new tab and navigating to your favorite website. Behind the scenes, uBO Scope kicks into action:
+
+1. The **background script** registers listeners for web requests matching permitted URLs (e.g., HTTP, HTTPS, WS, WSS).
+2. Every network event—such as redirects, successful responses, or errors—is captured and queued.
+3. The extension batch-processes these events shortly after to update the connection database.
+4. Domains accessed are normalized and categorized as allowed, blocked, or stealth-blocked based on the outcome.
+5. These results are saved persistently using browser storage APIs, ensuring session continuity.
+6. A badge number on the extension icon updates to reflect the count of distinct third-party domains detected.
+7. When you open the **popup UI**, it queries the background script for the current tab's network data.
+8. The UI then renders a categorized summary, allowing you to inspect the connections clearly.
+
+---
+
+## Visual Diagram: uBO Scope System Flow
+
+```mermaid
+flowchart TD
+  subgraph Browser Extension Components
+    BGScript["Background Script\n(js/background.js)"]
+    PopupUI["Popup UI\n(popup.html + js/popup.js)"]
+  end
+
+  subgraph BrowserAPIs
+    WebRequestAPI["webRequest Listeners"]
+    StorageAPI["Persistent Storage\n(browser.storage.local & session)"]
+    BadgeAPI["Toolbar Badge Updater"]
+  end
+
+  subgraph Data Processing Flow
+    NetworkEvents["Network Request Events (redirect, error, success)"]
+    Queue["Event Queue (networkRequestJournal)"]
+    Processor["Process & Categorize Outcomes"]
+    SessionData["Session Data (Tab details map)"]
+  end
+
+  PopupQuery["Popup requests tab data"]
+  PopupRender["Render categorized connection summary"]
+
+  BGScript --> WebRequestAPI
+  WebRequestAPI --> NetworkEvents
+  NetworkEvents --> Queue
+  Queue --> Processor
+  Processor --> SessionData
+  Processor --> StorageAPI
+  Processor --> BadgeAPI
+  StorageAPI --> BGScript
+
+  PopupUI --> PopupQuery
+  PopupQuery --> BGScript
+  BGScript --> PopupRender
+  PopupRender --> PopupUI
+
+  classDef extComp fill:#dceefa,stroke:#1d4ed8,stroke-width:2px,color:#1e40af
+  class Browser Extension Components extComp
+  class BrowserAPIs fill:#e0f2fe,stroke:#0284c7,stroke-width:1px,color:#0369a1
+  class Data Processing Flow fill:#bbdefb,stroke:#0ea5e9,stroke-width:1px,color:#075985
+```
+
+---
+
+## Key Points to Remember
+
+- The **background script** is the central data collector, living separately from the UI to continuously monitor network activity.
+- **webRequest listeners** capture real-time information about requests, including whether they succeeded, failed, or redirected.
+- Requests are batched in a queue to optimize processing, reducing overhead and ensuring timely updates.
+- The **public suffix list** helps determine meaningful domain boundaries, allowing accurate identification of unique third-party origins.
+- **Session data management** preserves per-tab network interaction states for both current and future sessions.
+- The **badge updater** provides immediate visual feedback about the number of unique third-party domains connected.
+- Information displayed in the **popup UI** empowers you to analyze and make informed decisions about third-party connections.
+
+## Practical Tip
+
+When using uBO Scope, remember that a lower badge count on the toolbar icon typically indicates fewer distinct third-party connections, which is preferable from a privacy perspective. The architecture and data flow described here guarantee that count is accurate and up-to-date, reflecting true network behavior rather than raw block counts.
+
+## Troubleshooting Common Scenarios
+
+<AccordionGroup title="Troubleshooting Architecture-Related Issues">
+<Accordion title="Why am I not seeing any data in the popup?">
+If the popup UI shows no data, ensure that the background script is running correctly and that the webRequest API permissions are granted. Also, check that your current tab has made network requests since opening.
+</Accordion>
+<Accordion title="Why does the badge count not update in real-time?">
+Badge updates are synced after batched processing of network events (approximately every 1 second). Rapidly changing network activity might cause a slight delay before the badge reflects the latest count.
+</Accordion>
+<Accordion title="Are all network requests monitored?">
+uBO Scope monitors network requests routed through browser's webRequest API including HTTP, HTTPS, WS, and WSS schemes as permitted. Non-browser or VPN-level network requests are outside its scope.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+To deepen your understanding and start exploring uBO Scope practically, proceed to the [Core Concepts and Key Terminology](/overview/architecture_features/core_concepts) page. For using the popup effectively, visit [Understanding the Popup Dashboard](/guides/getting-started/first-look-popup).
+
+Explore the full source code and contribute on GitHub:
+
+[uBO Scope Repository](https://github.com/gorhill/uBO-Scope)
+
+---
