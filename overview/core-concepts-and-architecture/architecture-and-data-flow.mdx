@@ -1,0 +1,179 @@
+---
+title: "How uBO Scope Works (Architecture & Data Flow)"
+description: "Illustrates the high-level workflow of the extension using a mermaid diagram: from intercepting web requests via webRequest listeners in the background script, to tab-specific data aggregation, badge updates, and rendering in the popup UI. Articulates how core files interact and the product’s modular design approach."
+---
+
+# How uBO Scope Works (Architecture & Data Flow)
+
+Understanding how uBO Scope operates behind the scenes sheds light on its precision and efficiency in tracking and reporting network connections within each browser tab. This page unpacks the high-level workflow of the extension, illustrating data interception, aggregation, badge updating, and UI rendering—the complete journey from web request to user insight.
+
+---
+
+## Introduction
+
+uBO Scope is designed to provide users with detailed, tab-specific visibility into network activity. To do this, it leverages the browser's `webRequest` API via background scripts, capturing all relevant network requests and categorizing their outcomes. The core files work together in a modular fashion to ensure performance, data accuracy, and user-friendly presentation.
+
+This documentation explains how uBO Scope’s core components interact, how data flows between them, and how users ultimately receive accurate, actionable information.
+
+---
+
+## Key Concepts in Architecture and Data Flow
+
+- **Background Script (Service Worker / Module)**: Acts as the engine of uBO Scope, continuously listening to all network requests made by browser tabs using `webRequest` listeners. It classifies requests as allowed, stealth-blocked, or blocked.
+
+- **Session Data Management**: Tab-specific connection details are aggregated and maintained in memory and persisted using session storage APIs for continuity.
+
+- **Public Suffix List Integration**: uBO Scope uses a parsed public suffix list to accurately extract registrable domains from hostnames, ensuring aggregation and display align with real-world domain boundaries.
+
+- **Badge Update Mechanism**: The extension updates the toolbar icon badge count, reflecting the number of distinct allowed third-party domains per active tab, giving users at-a-glance context.
+
+- **Popup UI**: On user interaction, the popup panel renders detailed information fetched from the background script for the current tab, showing domains grouped by their connection outcomes.
+
+---
+
+## High-Level Workflow Illustrated
+
+Below is a Mermaid.js flowchart illustrating the flow of data and control within uBO Scope starting from the interception of network requests through to the user interface display:
+
+```mermaid
+flowchart TD
+
+  %% Network events come in
+  WRListeners["webRequest Listeners (background.js)"]
+  WRListeners -->|Intercept Requests| ProcessNetwork["Process Network Request Journal"]
+
+  ProcessNetwork --> SessionData["Session Data: tabIdToDetailsMap"]
+
+  SessionData --> UpdateBadge["Update Badge Text (allowed domains per tab)"]
+
+  %% User Popup Interaction
+  UserClicks["User Clicks Extension Icon"]
+  UserClicks --> PopupScript["Popup Script (popup.js)"]
+
+  PopupScript -->|SendMessage: getTabData| BackgroundMsg["Background Message Handler (background.js)"]
+  BackgroundMsg -->|Reads Session Data| SessionData
+  SessionData -->|Serialize & Return| PopupScript
+  PopupScript -->|Render Data| PopupUI["Popup UI (popup.html)"]
+
+  %% Supporting components
+  subgraph "Public Suffix List"
+    PslFetch["Fetch & Parse PSL"]
+    PslFetch --> SessionData
+  end
+
+  %% External Browser APIs
+  BrowserAPI["Browser APIs"]
+  WRListeners --> BrowserAPI
+  UpdateBadge --> BrowserAPI
+  UserClicks --> BrowserAPI
+
+  %% Styling and Scripts
+  PopupUI --- PopupScript
+
+  %% Notes
+  classDef bgScript fill:#f9f,stroke:#333,stroke-width:2px;
+  class WRListeners,ProcessNetwork,BackgroundMsg,SessionData bgScript;
+
+  classDef popup fill:#bbf,stroke:#333,stroke-width:2px;
+  class PopupScript,PopupUI popup;
+
+  class def external fill:#efe,stroke:#333,stroke-width:2px;
+  class BrowserAPI external;
+
+  classDef psl fill:#fee,stroke:#333,stroke-width:2px;
+  class PslFetch psl;
+```
+
+---
+
+## Detailed Explanation of Components
+
+### 1. WebRequest Listeners (background.js)
+
+- Listens for three types of network events: redirects, errors, and successful responses.
+- Each intercepted event is queued and periodically processed in batches for efficiency.
+- Uses the URLs and network metadata to identify the hostname and domain.
+
+### 2. Session Data (tabIdToDetailsMap)
+
+- Maintains detailed, tab-specific statistics including:
+  - Allowed connections
+  - Stealth-blocked connections (e.g., redirects)
+  - Blocked connections (network errors)
+- Uses JavaScript `Map` objects keyed by domains and hostnames for fast lookup and aggregation.
+- Persisted using the browser's session storage mechanism via serialization/deserialization to restore state across extension reloads.
+
+### 3. Public Suffix List
+
+- Provides domain parsing logic to correctly identify the effective registrable domain from a hostname.
+- Loaded asynchronously on extension startup and cached in session data.
+- Essential to prevent incorrect domain groupings which could mislead analysis.
+
+### 4. Badge Updates
+
+- After network request processing, the allowed domains count for each tab is updated.
+- The extension toolbar icon badge shows this count as a numeric indicator.
+- A zero count hides the badge, emphasizing a cleaner browsing environment.
+
+### 5. Popup Interface (popup.html + popup.js)
+
+- When the user clicks the extension icon, the popup UI loads.
+- The popup.js script sends a message to the background script requesting tab-specific data.
+- Upon response, the popup renders domain lists by outcome (allowed, stealth, blocked).
+- Domains are displayed with counts, using Unicode decoding for internationalized domain names.
+
+---
+
+## Practical Flow Example: A User Navigates a Webpage
+
+1. The user loads a new tab to a website.
+2. The background script’s webRequest listeners capture every network request initiated.
+3. The requests are classified into allowed, blocked, or stealth-blocked categories.
+4. For each request, domain and hostname statistics update for that tab in session data.
+5. The badge on the toolbar icon reflects the current number of distinct allowed third-party domains.
+6. When the user clicks the toolbar icon, the popup queries the background script for the latest tab data.
+7. The popup presents a clear breakdown of connection outcomes, empowering the user to understand third-party activity.
+
+---
+
+## Best Practices and Tips
+
+- **Browser Compatibility**: uBO Scope supports Manifest V3 with service worker methodology for Chromium, Firefox, and Safari (as per respective manifests).
+- **Extension Persistence**: The use of session storage ensures temporary data persistence within browser sessions; however, closing the browser clears data.
+- **Public Suffix List Updates**: The PSL is fetched and cached on startup to guarantee domain parsing accuracy.
+- **Interpreting Badge Counts**: A lower badge count generally indicates fewer third-party connections — desirable for privacy.
+
+---
+
+## Common Pitfalls and Troubleshooting
+
+- **Missing Network Data**: If badge counts remain empty or data seems stale, ensure the extension has proper permissions and the browser exposes `webRequest` events.
+- **Popup Shows No Data**: Verify the active tab has network activity and the extension background script is functioning correctly.
+- **Extensions Interference**: Other content blockers or privacy tools might impact network requests visible to uBO Scope; check conflicts if unexpected data appears.
+
+---
+
+## Next Steps
+
+- For hands-on instructions on installation and first use, see [Installing and Setting Up uBO Scope](https://github.com/gorhill/uBO-Scope).
+- To understand detailed terminology, visit [Core Concepts & Terminology](../core-concepts-and-architecture/core-concepts-terminology).
+- Explore the [Feature Overview](../core-concepts-and-architecture/feature-overview) to learn about the extension’s capabilities.
+- For practical workflows, go to [Basic Workflow: Analyzing Third-Party Connections](../../guides/getting-started-essentials/workflow-basic-analysis).
+
+---
+
+## Source Code Reference
+
+Explore the core logic in the background script where interception, aggregation, and messaging happen: [`js/background.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js) 
+
+The popup rendering logic is located in: [`js/popup.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+
+The manifest files define permissions and background execution across browsers:
+- Chromium: [`platform/chromium/manifest.json`](https://github.com/gorhill/uBO-Scope/blob/main/platform/chromium/manifest.json)
+- Firefox: [`platform/firefox/manifest.json`](https://github.com/gorhill/uBO-Scope/blob/main/platform/firefox/manifest.json)
+- Safari: [`platform/safari/manifest.json`](https://github.com/gorhill/uBO-Scope/blob/main/platform/safari/manifest.json)
+
+
+---
+
+By grasping this architecture and data flow, users gain confidence in uBO Scope’s ability to deliver accurate, up-to-date real-time insights for privacy and research.
