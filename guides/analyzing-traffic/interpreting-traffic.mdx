@@ -1,0 +1,175 @@
+---
+title: "Interpreting Connection Results"
+description: "Deep dive into the meaning of allowed, blocked, and stealth domains as shown in the popup. Shows how uBO Scope distinguishes between direct connections, failed attempts, and stealthy blocks. Includes sample real-world use cases, such as identifying which trackers are active on a website."
+---
+
+# Interpreting Connection Results
+
+## Overview
+Welcome to the guide on interpreting the connection results displayed in the uBO Scope popup. This page helps you understand the meaning behind the categories of domains shown — **allowed**, **blocked**, and **stealth-blocked** — and how they relate to actual network connections made by your browser during web browsing.
+
+Understanding these distinctions empowers you to evaluate your privacy stance, identify active trackers on websites, and gain insight into how content blocking is functioning, regardless of your content blocker or DNS configuration.
+
+---
+
+## What You Will Learn in This Guide
+- How uBO Scope categorizes network connections into allowed, blocked, and stealth-blocked domains
+- The significance of these categories for understanding web tracking and content delivery
+- How uBO Scope distinguishes between direct connections, connection failures, and stealthy blocking
+- Practical examples of interpreting the popup output during real browsing sessions
+
+## Prerequisites
+- uBO Scope installed and active in your browser
+- Basic understanding of browsing sessions and web requests
+- Familiarity with the uBO Scope popup interface and badge count (refer to [Your First Session: Checking Connections](../../getting-started/first-use-and-validation/first-use))
+
+---
+
+## Understanding the Connection Categories
+
+### 1. Allowed Domains
+These domains represent third-party servers your browser **successfully connected to** while loading a webpage. These connections were allowed through any content blocking or DNS filtering you have in place.
+
+- **What it means:** Resources such as scripts, images, or API calls from these domains have been fetched.
+- **Why it matters:** A high number of allowed third-party domains usually indicates connections made to content delivery networks (CDNs), analytics providers, advertising networks, or trackers.
+
+### 2. Blocked Domains
+These are domains where connection attempts were **actively blocked** and the browser received explicit errors, such as from the content blocker or network filters.
+
+- **What it means:** The request to these domains was denied, and no content was loaded.
+- **Why it matters:** These domains often include known trackers, ad servers, or malicious sites you chose or were pre-configured to block.
+
+### 3. Stealth-Blocked Domains
+Stealth blocking refers to domains where connection attempts were **stealthily prevented**, often through redirections or subtle blocking techniques that make the blocking less detectable by the webpage.
+
+- **What it means:** The connection did not complete normally but was intercepted or redirected silently.
+- **Why it matters:** This helps prevent websites from detecting your content blocker and can stop tracking methods that try to bypass explicit blocking.
+
+---
+
+## What Does the Popup Show?
+The popup interface of uBO Scope breaks down third-party connection outcomes by these categories:
+
+- The **summary count** shows the number of distinct third-party domains successfully connected (Allowed).
+- Under each category (`not blocked`, `stealth-blocked`, `blocked`), domains are listed along with the number of connection events recorded for each.
+
+This detailed breakdown helps you:
+- Spot active trackers or suspicious domains at a glance
+- Assess how effective your blocking setup is
+- Identify stealthy blocking that isn't obvious
+
+---
+
+## How uBO Scope Detects These Outcomes
+
+uBO Scope listens to the browser's network request events through the WebRequest API and records outcomes:
+
+- **Success:** Connections that completed without error are counted as allowed.
+- **Error:** Connections failing with errors due to blocking are recorded as blocked.
+- **Redirect:** Redirected requests interpreted as stealth-blocked if they don’t result in a direct fetch.
+
+The extension maps connection outcomes per browser tab to provide context-specific insights.
+
+
+<Tip>
+The badge on the browser toolbar shows the number of distinct allowed third-party domains detected for the active tab.
+</Tip>
+
+---
+
+## Step-by-Step: Using uBO Scope Popup to Interpret Connection Results
+
+<Steps>
+<Step title="Open the uBO Scope Popup">
+Click the uBO Scope extension icon in your browser toolbar to open the popup window displaying connection details for the current active tab.
+</Step>
+<Step title="Review the Summary Section">
+Observe the 'domains connected' count at the top; this number summarizes how many unique third-party domains had allowed connections during the webpage load.
+</Step>
+<Step title="Examine Allowed Domains">
+Under the "not blocked" section, see the list of domains with connection counts. These are the domains your browser successfully reached.
+</Step>
+<Step title="Check Stealth-Blocked Domains">
+Look at "stealth-blocked" domains to see connections that were prevented by stealth techniques, e.g., silently redirected or intercepted.
+</Step>
+<Step title="Review Blocked Domains">
+The "blocked" section lists domains where connections failed explicitly due to content or network blocking.
+</Step>
+<Step title="Interpret Counts">
+The number next to each domain shows how many requests were made to that domain. Higher counts usually indicate heavier use of resources or trackers from that domain.
+</Step>
+</Steps>
+
+---
+
+## Real-World Use Case: Identifying Active Trackers on a Website
+
+Suppose you load a news website. By opening the uBO Scope popup:
+
+- You notice 5 domains listed under "not blocked" including `cdn.news-site.com` (a CDN) and `tracker.ads.net` (an ad/tracking domain).
+- Several more domains appear under "blocked", like `ads.trackerXYZ.com` indicating your blocker prevented trackers.
+- A few domains under "stealth-blocked" show subtle redirects, blocking tracking scripts silently.
+
+This analysis confirms which third-party domains are actively allowed, which your blocker blocks explicitly, and which it blocks stealthily,
+helping you fine-tune filtering rules or validate privacy settings.
+
+---
+
+## Best Practices & Tips
+
+- **Focus on unique domains, not request counts:** Many requests to the same domain count as one unique domain for the badge and overall privacy footprint.
+- **Regularly check stealth-blocked domains:** They provide insights into stealth techniques at play.
+- **Use the popup while browsing real websites:** It reflects true behavior, unlike synthetic 'ad blocker test' pages.
+- **Remember not all third parties are malicious:** CDNs or essential service domains also appear as allowed.
+
+---
+
+## Troubleshooting Common Confusions
+
+<AccordionGroup title="Troubleshooting Connection Results Interpretation">
+<Accordion title="Why do I see allowed domains despite having content blockers?">
+Not all third-party connections are blocked—allowed domains usually represent legitimate services or CDNs required by the site or your browser.
+</Accordion>
+<Accordion title="What does it mean if stealth-blocked domains show no corresponding blocked domains?">
+Stealth blocking uses indirect methods (like redirects) that don't appear as explicit failures but still prevent resource loading.
+</Accordion>
+<Accordion title="Why does the badge count sometimes differ from the popup domains?">
+The badge summarizes distinct allowed domains only; the popup shows allowed, blocked, and stealth domains with counts hence numbers differ.
+</Accordion>
+<Accordion title="How reliable is this data if I use different content blockers or DNS filters?">
+uBO Scope listens directly to low-level network requests reported by the browser and reflects connection outcomes regardless of blocking method.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps & Related Documentation
+
+- Explore [Your First Session: Checking Connections](../../getting-started/first-use-and-validation/first-use) to familiarize with the popup UI.
+- Review [Essential Concepts & Terminology](../architecture-core-concepts/core-concepts-terminology) for precise definitions.
+- For troubleshooting, see [Troubleshooting Common Issues](../../getting-started/first-use-and-validation/troubleshooting).
+- Deepen understanding with [How uBO Scope Works: System Overview](../architecture-core-concepts/system-overview-architecture).
+
+---
+
+## Additional Resources
+- Official GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- uBO Scope Manifest and Source Code for technical insights
+
+---
+
+By mastering how to read the connection results popup, you unlock clear, actionable insights into your browsing privacy and browser network activity with uBO Scope.
+
+---
+
+<CardGroup cols={3}>
+<Card title="Your First Session: Checking Connections">
+Learn to open and interpret your initial uBO Scope network session.
+</Card>
+<Card title="Core Terminology">
+Understand key terms behind connection results and filtering categories.
+</Card>
+<Card title="Troubleshooting Common Issues">
+Resolve issues related to incorrect or missing popup data.
+</Card>
+</CardGroup>
