@@ -1,0 +1,158 @@
+---
+title: "Understanding Domain Categories in the Popup"
+description: "A guide to the meaning of allowed, blocked, and stealth-blocked domains as shown in the popup UI. Learn how uBO Scope visualizes connection statuses, the difference between category types, and how to use these insights for decision making."
+---
+
+# Understanding Domain Categories in the Popup
+
+Discover how uBO Scope categorizes third-party domain connections within its popup interface. This guide explains what the allowed, blocked, and stealth-blocked domain categories mean, how these are represented visually, and how you can leverage this information to better understand your browsing privacy.
+
+---
+
+## 1. Purpose and Overview
+
+When you click the uBO Scope toolbar icon, the popup UI displays domains that your current tab has connected to or attempted connection with. These domains are grouped into three distinct categories:
+
+- **Allowed**: Domains where network connections succeeded or were not blocked.
+- **Stealth-Blocked**: Domains where connections were redirected or suppressed in a way that is stealthy and might not be obvious to web pages.
+- **Blocked**: Domains where connection attempts failed due to active blocking, such as by a content blocker.
+
+These categories reflect the real status of network requests, providing a clear window into what third-party services your browser communicates with.
+
+---
+
+## 2. Domain Category Definitions
+
+### Allowed Domains (Not Blocked)
+- These are domains that your browser successfully contacted during page loading.
+- Such connections were allowed through all content blockers and network layers.
+- Typical examples include content delivery networks (CDNs) or services essential for website functionality.
+- Displayed in the popup under the 'not blocked' section.
+- Each domain shows a count of distinct network requests made to that domain.
+
+### Stealth-Blocked Domains
+- Domains that encountered redirects or stealth blocking techniques.
+- These outcomes represent connection attempts intercepted or modified in a way that local page logic might not detect.
+- These may be caused by stealthy blocking features of uBlock Origin or related blockers that redirect or suppress requests without outright failures.
+- Shown separately in the 'stealth-blocked' section.
+- Useful for understanding hidden blockages and subtle privacy protections.
+
+### Blocked Domains
+- Domains for which connection attempts failed explicitly due to blocking.
+- These failures occur when network requests were actively denied or errored out.
+- Shown under the 'blocked' section in the popup.
+- Important to identify domains that were stopped by security or privacy filters.
+
+---
+
+## 3. How the Popup Visualizes Domains
+
+- Each category (allowed, stealth-blocked, blocked) has its own section with a header.
+- Domains are listed with their Unicode representation for readability.
+- Each domain entry includes a badge showing the number of connection instances for that domain.
+- The total number of distinct allowed domains is summarized at the top.
+
+### Example Structure from the Popup Interface
+```html
+<section class="outcome allowed">
+  <h3>not blocked</h3>
+  <div class="domains">
+    <div class="row"><span class="domain">cdn.example.com</span><span class="count badge">15</span></div>
+    <div class="row"><span class="domain">services.example.org</span><span class="count badge">8</span></div>
+  </div>
+</section>
+```
+
+---
+
+## 4. Using Domain Categories for Privacy Insights
+
+### Analyze Allowed Domains
+- A lower count generally indicates fewer third-party connections, which tends to be better for privacy.
+- You can identify legitimate third-party services (e.g., CDN providers, essential APIs) by inspecting allowed domains.
+
+### Investigate Stealth-Blocked Domains
+- These show where blocking happens subtly, helping you understand which domains are being shielded without outright breaking connections.
+- Useful for diagnosing advanced blocking strategies or stealth techniques.
+
+### Review Blocked Domains
+- These domains reflect the explicit blocking actions of content blockers or privacy tools.
+- Revisiting this list helps you ensure critical unwanted domains are blocked as intended.
+
+---
+
+## 5. Step-by-Step Workflow to Understand Domain Categories
+
+<Steps>
+<Step title="Open the uBO Scope Popup">
+Click the toolbar icon in your browser to open the uBO Scope popup interface.
+</Step>
+<Step title="Identify Domain Categories">
+Review the three main sections: 'not blocked' (allowed), 'stealth-blocked', and 'blocked'. Observe the domain names and their associated counts.
+</Step>
+<Step title="Interpret the Counts">
+The badges next to each domain show how many network requests were made. Higher counts may indicate domains heavily accessed by the page.
+</Step>
+<Step title="Use Insights to Inform Decisions">
+Use this data to assess your privacy exposure or verify that your content blockers behave as expected.
+</Step>
+</Steps>
+
+---
+
+## 6. Practical Tips and Common Considerations
+
+- **Legitimate Third-Parties**: Not all allowed domains are harmful. Content providers often rely on well-known third-party CDNs and services.
+- **Stealth Blockers**: Domains in stealth-blocked can be harder to detect by websites; they usually don't break site functionality.
+- **Refresh the Popup**: Data in the popup corresponds to the active tab and updates as network requests occur in real time.
+- **Unicode Domains**: Internationalized domain names are shown in Unicode for readability but are stored in punycode internally.
+
+<Note>
+Understanding the distinctions among these categories empowers you to judge privacy risks accurately without confusing allowed connections with blocked ones.
+</Note>
+
+---
+
+## 7. Troubleshooting
+
+### Popup Shows 'NO DATA'
+- This happens if the current tab has no network monitoring data yet.
+- Ensure uBO Scope is installed and enabled.
+- Try refreshing the tab or navigating to a different page.
+
+### Unexpected Domains in Allowed
+- Verify if these are essential third parties or potentially unwanted.
+- Use additional privacy tools or manual domain lookups if uncertain.
+
+### Stealth-Blocked or Blocked Domains Not Expected
+- Confirm your content blocker settings.
+- Some requests might be redirected or blocked by other layers, like network DNS filters.
+
+---
+
+## 8. Related Documentation
+
+- [Monitoring Third-Party Connections Guide](../core-workflow/monitor-connections) — Learn how to monitor connection activities across browsing sessions.
+- [Key Concepts and Terminology](../../overview/core-introduction/key-concepts-and-terminology) — Understand technical terms related to uBO Scope.
+- [Value for Users and List Maintainers](../../overview/core-introduction/value-for-users-and-list-maintainers) — See how this data benefits users and filter list maintainers.
+- [Your First Successful Run](../../getting-started/first-run-and-validation/getting-started-extension) — Getting started with the popup for the first time.
+
+---
+
+## 9. Source and Implementation Notes
+
+The popup fetches domain data for the active tab from the background script, which tracks network request outcomes for each tab. Domains are grouped in sets for allowed, stealth, and blocked connections and are displayed with counts showing the number of times each domain was contacted or blocked.
+
+For technical reference, see the following source files:
+- Background script: [`js/background.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js)
+- Popup script: [`js/popup.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+- Popup UI: [`popup.html`](https://github.com/gorhill/uBO-Scope/blob/main/popup.html)
+
+---
+
+## Summary
+This guide helps you understand the application and meaning of the domain categories shown in the uBO Scope popup interface. By learning to distinguish allowed, stealth-blocked, and blocked domains, you gain actionable insights into your browser’s third-party network connections and can make informed decisions related to your privacy and content filtering.
+
+---
+
+*Empower your privacy awareness by mastering the interpretation of domain categories in uBO Scope today.*
