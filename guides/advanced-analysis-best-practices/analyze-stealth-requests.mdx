@@ -1,0 +1,178 @@
+---
+title: "Analyzing Stealth and Blocked Requests"
+description: "Guides users on surfacing stealthy or blocked third-party connections not typically visible via page scripts, and what these findings reveal about content blockers or DNS filtering in place."
+---
+
+# Analyzing Stealth and Blocked Requests
+
+## Overview
+
+The 'Analyzing Stealth and Blocked Requests' page guides you through identifying third-party network connections your browser attempts or blocks, but which are not always apparent through conventional page scripts. These stealthy or blocked requests provide crucial insight into how content blockers or DNS filtering mechanisms are operating behind the scenes.
+
+Understanding these hidden or blocked connections equips privacy-conscious users and filter list maintainers with the tools to evaluate the effectiveness of their browsing environment’s protection measures. This guide helps you surface these connections, interpret their significance, and apply this knowledge to improve your browsing privacy and security.
+
+---
+
+## 1. Workflow Overview
+
+### Task Description
+
+This guide helps you uncover and interpret stealth-blocked and blocked third-party domains detected by uBO Scope that are typically invisible to page scripts. You will learn how these requests indicate active content blocking, DNS-level filtering, or network interference, and what patterns they reveal about your browser’s privacy state.
+
+### Prerequisites
+
+- You must have uBO Scope installed and activated in your supported browser (Chrome, Firefox, Safari).
+- The extension must have the required permissions to monitor webRequest events.
+- Familiarity with the extension’s popup panel showing allowed, stealth, and blocked connections (see [Reviewing Third-Party Connections with the Popup](../guides/getting-started-essentials/review-connections-popup)).
+
+### Expected Outcome
+
+- You will identify stealthy or blocked third-party connection attempts clearly grouped in the popup.
+- You will understand what these hidden connections reveal about your content blockers, DNS filtering, and network conditions.
+- You will develop a practical workflow for evaluating stealth and blocked requests to validate your blocking strategy.
+
+### Time Estimate
+
+Approximately 10–15 minutes to explore the popup data and interpret results.
+
+### Difficulty Level
+
+Intermediate – requires understanding of network request outcomes and content blocking concepts.
+
+---
+
+## 2. Step-by-Step Instructions
+
+### Step 1: Open uBO Scope Popup for Active Tab
+
+1. Click the uBO Scope toolbar icon in your browser.
+2. Observe the popup displaying data for the currently active tab.
+
+**Expected Result:**
+You will see three key sections:
+- **Not Blocked:** Domains where connections were allowed.
+- **Stealth-blocked:** Domains where requests were attempted but silently blocked or redirected (not visibly visible to page scripts).
+- **Blocked:** Domains where connections were actively blocked and visible as errors.
+
+### Step 2: Examine the "Stealth-blocked" Section
+
+1. Review the domains listed under stealth-blocked.
+2. Note that requests here failed or were redirected in ways that avoid detection by page scripts.
+
+**What this means:**
+- These stealth-blocked requests are evidence that your content blocker or DNS filter is intercepting calls invisibly.
+- This category typically represents blocking that does not trigger error events visible to scripts, improving stealth against trackers.
+
+**Decision Point:**
+Assess if stealth-blocked domains align with known trackers or unwanted third parties you want blocked.
+
+### Step 3: Review the "Blocked" Section
+
+1. Look at domains in the blocked section, representing requests refused with errors.
+
+**What this means:**
+- These requests were actively terminated or failed.
+- If unexpected legitimate domains appear here, it may indicate overblocking or misconfiguration.
+
+**Decision Point:**
+Decide if blocked domains are appropriate or if you need to whitelist any legitimate services.
+
+### Step 4: Compare With Allowed Connections
+
+1. Review the allowed (not blocked) domains to see which third-party servers your browser successfully connected to.
+2. Note the count of allowed domains in the summary.
+
+**What this means:**
+- Lower allowed counts generally indicate stronger blocking but verify that critical services aren’t unintentionally blocked.
+
+### Step 5: Interpreting What These Findings Reveal
+
+- **Stealthing and silent blocking** often indicate advanced content blocker techniques or DNS filtering that maintain website functionality and prevent block detection.
+- **Blocked domains** represent outright rejections due to blocking rules or network failures.
+- Unexpected stealth or blocked domains can indicate either new trackers or misbehaving networks.
+
+### Step 6: Use the Information to Adjust Your Setup
+
+- Adjust or refine your content blocker or DNS filter settings based on unexpected stealth or blocked connections.
+- Validate how different filters affect stealth requests by toggling them and observing changes in the popup.
+
+### Step 7: Verify Your Analysis
+
+- Refresh the active tab or load a known privacy-sensitive site.
+- Open the popup again to verify consistency in stealth and blocked domain listings.
+
+**Verification:**
+See stable and predictable stealth or blocked domains matching your content blocker’s intended filtering.
+
+---
+
+## 3. Examples & Scenarios
+
+### Example: Detecting DNS-Level Blocking
+
+You visit a news website and see certain advertising-related domains in the stealth-blocked section but not in blocked or allowed lists.
+
+**Interpretation:** Your DNS-based content blocker is silently dropping ad server requests before the browser fully triggers errors or responses.
+
+### Example: Identifying Overblocking
+
+A payment processor domain appears in the blocked section unexpectedly.
+
+**Action:** Consider whitelisting this domain in your content blocker to prevent broken website functionality.
+
+### Example: Comparing Filter Lists
+
+By installing a stricter filter list and using uBO Scope, you observe more domains listed as stealth-blocked, indicating deeper filtering that remains invisible to scripts.
+
+**Benefit:** You can validate the real-world impact of filter changes beyond surface-level block counts.
+
+---
+
+## 4. Troubleshooting & Tips
+
+### Common Issues
+
+- **Empty Stealth or Blocked Sections:** May indicate your browser or content blocker does not support reporting these outcomes via the `webRequest` API.
+  - Check browser compatibility: certain browsers or versions limit webRequest visibility (see browser support [Integration & Compatibility](/overview/product-tour/integration-compatibility)).
+  - Verify that uBO Scope has all required permissions.
+
+- **Inconsistent or No Updates After Reload:** Restart the browser or reload the extension to ensure it captures fresh data.
+
+- **Incorrect Domain Names:** Unicode or punycode-encoded domains might appear. uBO Scope handles conversion to help readability.
+
+### Best Practices
+
+- Always use uBO Scope in conjunction with a reputable content blocker for comprehensive privacy.
+- Regularly review stealth and blocked sections to spot newly emerging trackers or unwanted connections.
+- Use the data to fine-tune your DNS or filter list settings for optimal balance between privacy and usability.
+
+### Performance Considerations
+
+- uBO Scope processes data asynchronously and batches network event processing to reduce performance impact.
+- Extensive network activity on some pages may delay updating stealth or blocked domains in the popup by a few seconds.
+
+---
+
+## 5. Next Steps & Related Documentation
+
+- To understand how to install and activate uBO Scope, visit [Installing and Activating uBO Scope](../guides/getting-started-essentials/install-activate-extension).
+- For guidance on interpreting third-party connections seen in the popup, refer to [Reviewing Third-Party Connections with the Popup](../guides/getting-started-essentials/review-connections-popup).
+- Learn how to interpret the badge count representing allowed connections in [Understanding and Interpreting the Toolbar Badge Count](../guides/getting-started-essentials/understanding-badge-count).
+- Explore detailed technical architecture behind request monitoring in [How uBO Scope Works: Technical Overview](/overview/core-concepts/technical-architecture).
+- For advanced topics debunking content blocker metrics, consult [Mythbusting Content Blocking Metrics](../guides/advanced-analysis-best-practices/mythbusting-content-blocking).
+
+---
+
+## Additional Insights
+
+This page complements core onboarding by helping you interpret the more subtle and technical aspects of network request outcomes. It empowers you to:
+
+- Recognize how stealth blocking hides blocking activity nicely from page JavaScript.
+- Understand why certain network errors show blocked requests and how these differ from stealth blocking.
+- Use uBO Scope as a transparency tool assisting filter list tuning and privacy analysis beyond the typical surface-level indicators.
+
+Mastering analysis of stealth and blocked requests solidifies your control and understanding of third-party network exposure during browsing.
+
+---
+
+For source, discussions, or issues, see the official repository: [uBO Scope GitHub](https://github.com/gorhill/uBO-Scope).

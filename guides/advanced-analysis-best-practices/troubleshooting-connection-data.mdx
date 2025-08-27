@@ -1,0 +1,147 @@
+---
+title: "Troubleshooting Connection Data and Edge Cases"
+description: "Outlines common scenarios where uBO Scope’s counts may not match user expectations—such as content blocked at network or DNS level—and tips to diagnose and resolve data discrepancies."
+---
+
+# Troubleshooting Connection Data and Edge Cases
+
+This page helps you understand common scenarios where uBO Scope’s domain connection counts and outcomes may not align with your expectations. It emphasizes the reasons behind discrepancies such as network-level blocking and DNS-level filtering, and provides practical tips to diagnose and resolve those differences.
+
+---
+
+## Understanding uBO Scope’s Counting
+
+uBO Scope uses the browser’s `webRequest` API to monitor real network requests made by webpages and reports outcomes categorized as:
+
+- **Allowed:** Successful connections observed by the browser.
+- **Stealth-blocked:** Requests blocked or redirected invisibly without page script detection.
+- **Blocked:** Explicitly blocked requests observed by the browser.
+
+These counts reflect unique third-party domains contacted, not individual resource requests. However, some network or DNS-level blocking may occur outside the scope of what the browser reports.
+
+---
+
+## Common Sources of Count Discrepancies
+
+### 1. **Network Blocking Outside the Browser**
+
+- **What Happens:** Some requests are blocked by external tools such as firewall rules, router-based filters, or network-level content blockers.
+- **Effect:** uBO Scope relies on browser-supplied data. Out-of-band network blocking may prevent the browser from reporting these requests, resulting in counts that do not show those blocked connections.
+
+**How to diagnose:**
+- Use browser developer tools’ `Network` panel alongside uBO Scope to see what the browser actually attempts.
+- Confirm if a system-level or ISP-level blocking exists by testing with a different network or disabling firewall settings temporarily.
+
+### 2. **DNS-Level Blocking and Filtering**
+
+- **What Happens:** DNS-based blockers or DNS servers configured to block or redirect certain domain names before the browser makes any network request.
+- **Effect:** If the DNS server resolves a blocked domain to an invalid or local IP address, the browser might never attempt a real connection, or the request results in errors that uBO Scope might classify as blocked or stealth. However, some DNS blocks might silently drop queries, resulting in no browser event.
+
+**How to diagnose:**
+- Compare DNS responses using command-line tools (e.g., `nslookup`, `dig`) against expectation.
+- Switch to a standard DNS server temporarily and observe changes in uBO Scope counts.
+
+### 3. **Requests Outside `webRequest` API Visibility**
+
+- **What Happens:** Some browser features or extensions may generate network activity that is not visible to the `webRequest` API.
+- **Effect:** uBO Scope cannot track such requests, leading to potential under-reporting.
+
+**Resolution:**
+- Confirm that browser version supports full `webRequest` API.
+- Verify extension permissions (`webRequest` and `host_permissions`) are granted fully.
+
+### 4. **Redirects and Stealth Blocking
+**
+- Some network requests are redirected or stealth-blocked by content blockers or browser privacy features, causing them to not fully appear as blocked but still not counted among allowed.
+- uBO Scope labels such cases explicitly, but understanding their nature helps clarify why counts may differ from other blockers or page script observations.
+
+---
+
+## Practical Tips for Troubleshooting
+
+1. **Verify Extension Permissions:**
+   - Ensure uBO Scope has all needed permissions to monitor all network requests for all sites and schemes, including WebSocket connections.
+
+2. **Check Browser Developer Tools:**
+   - Use the Network panel to correlate uBO Scope’s reported data against raw network activity.
+
+3. **Test with Different Network Environments:**
+   - Changing your network (e.g. from home Wi-Fi to mobile tethering) can reveal network/DNS level blocking.
+
+4. **Refresh Data and Restart Browser:**
+   - In case of stale or incomplete session data, restart the browser or reload uBO Scope to refresh session tracking.
+
+5. **Consider Known Limitations of Browser APIs:**
+   - Recognize that some network events simply are not surfaced due to browser restrictions or API scope.
+
+---
+
+## Diagnosing Specific Edge Cases
+
+### Situation: Toolbar Badge Shows Lower Count Than Expected
+- Likely due to network or DNS blocking outside the browser.
+- Confirm with Network panel if requests are sent.
+- Confirm DNS resolution for third-party domains.
+
+### Situation: Requests Not Appearing in Allowed
+- These may be stealth-blocked or explicitly blocked; check uBO Scope popup’s stealth and blocked lists.
+- If missing there, the browser might not be aware of the request due to network filters or partial DNS blocking.
+
+### Situation: High Block Count but More Connections Observed Elsewhere
+- A high block count on the badge may mean many requests were blocked, but might hide that allowed connections are still coming from many domains.
+- Consult related documentation on understanding the badge count and meaning.
+
+---
+
+## Summary
+
+uBO Scope is a precise tool reporting network request outcomes based strictly on browser-level visibility. External blocking systems or DNS filtering can cause discrepancies where some connections simply do not reach or are not recognized by the browser. Understanding these external factors and browser API limitations is key to interpreting uBO Scope connection counts correctly.
+
+---
+
+## Related Documentation
+
+For more detailed instructions, concepts, and troubleshooting, refer to:
+
+- [Understanding and Interpreting the Toolbar Badge Count](/guides/getting-started-essentials/understanding-badge-count)
+- [Reviewing Third-Party Connections with the Popup](/guides/getting-started-essentials/review-connections-popup)
+- [Analyzing Stealth and Blocked Requests](/guides/advanced-analysis-best-practices/analyze-stealth-requests)
+- [Troubleshooting Installation & Setup Issues](/getting-started/first-steps-and-validation/troubleshooting-setup)
+- [Technical Overview](/overview/core-concepts/technical-architecture)
+
+---
+
+## Troubleshooting Checklist
+
+<AccordionGroup title="Troubleshooting Checklist">
+<Accordion title="Check Extension Permissions">
+Make sure uBO Scope has the `webRequest` and relevant `host_permissions` granted in your browser extension settings to capture all network requests.
+</Accordion>
+<Accordion title="Compare with Developer Tools Network Panel">
+Use the browser's developer tools to view raw network activity and compare it with what uBO Scope reports to identify potential discrepancies.
+</Accordion>
+<Accordion title="Test Network and DNS Filtering Effects">
+Try switching networks or DNS servers to see if network-level or DNS filtering is causing requests to be hidden from the browser.
+</Accordion>
+<Accordion title="Reload or Restart">
+If counts look stale or inconsistent, try restarting the browser and reloading the extension to reset session data.
+</Accordion>
+<Accordion title="Understand Stealth vs Blocked Requests">
+Recognize that stealth blocked requests are different from explicitly blocked ones and may affect how counts appear in the UI and badge.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Additional Notes
+
+- uBO Scope uses the Public Suffix List to normalize hostnames to effective domains, ensuring counts reflect meaningful third-party entities.
+- Network requests made outside the `webRequest` API’s scope (some internal browser operations) cannot be measured by uBO Scope.
+
+For more details about the Public Suffix List usage and domain parsing, see the [Technical Overview](/overview/core-concepts/technical-architecture).
+
+---
+
+Thank you for using uBO Scope. Your understanding of underlying network factors enhances effective privacy and security monitoring.
+
+
