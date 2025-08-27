@@ -1,0 +1,140 @@
+---
+title: "Ensuring Performance and Data Accuracy"
+description: "Best practices for maintaining extension accuracy and minimizing performance impact, including how uBO Scope collects, stores, and displays network data. Covers caveats around webRequest API, supported browsers, and tips to avoid false positives in network measurement."
+---
+
+# Ensuring Performance and Data Accuracy
+
+## Overview
+
+This guide provides essential best practices for maintaining the accuracy of uBO Scope's network connection measurements while minimizing any performance impact on your browser. It explains how uBO Scope collects, processes, and displays network data, highlights the limitations imposed by browser APIs, and offers guidance to avoid misleading results and false positives.
+
+## Why Performance and Accuracy Matter
+
+uBO Scope captures detailed network activity for each browser tab by listening to network request lifecycles through the `webRequest` API. Accurate data helps you understand the true extent of third-party connections, providing reliable insights for privacy auditing and content blocker evaluation.
+
+However, this monitoring can add overhead, and some browser behaviors or limitations can affect data coverage or lead to inaccuracies if not properly understood and managed.
+
+## Prerequisites
+
+Before proceeding, ensure:
+
+- You have uBO Scope installed on a supported browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+- The extension has the necessary permissions (`webRequest`, `activeTab`, and `storage`).
+- You have basic familiarity with how uBO Scope reports domain connections.
+
+## How uBO Scope Collects Network Data
+
+1. **Network Event Monitoring**: uBO Scope listens to three key network events triggered by the browser:
+   - `onBeforeRedirect`
+   - `onErrorOccurred`
+   - `onResponseStarted`
+
+2. **Request Categorization**: Each request is classified into one of three outcomes:
+   - **Allowed (success)**: Requests that successfully fetched data.
+   - **Blocked (error)**: Requests that failed due to blocking or network errors.
+   - **Stealth-blocked (redirect)**: Redirected requests typically associated with stealth blocking.
+
+3. **Domain Grouping**: Hostnames extracted from URLs are grouped into registered domains using the Public Suffix List (PSL) to aggregate related subdomains properly.
+
+4. **Aggregation By Tab**: Data is stored and updated in session memory, keyed by tab ID, showing distinct domains encountered per tab.
+
+5. **Badge Update**: The browser toolbar badge displays the count of distinct allowed third-party domains.
+
+## Best Practices for Maintaining Accuracy and Performance
+
+### 1. Keep the Extension Permissions Intact
+
+- Ensure uBO Scope retains its permissions (`webRequest`, `activeTab`, and `storage`) to monitor all requests as intended.
+- Any changes to permissions or browser security settings may result in partial or no data capture.
+
+### 2. Understand API Limitations
+
+- The `webRequest` API can only report network requests the browser is aware of; some WebSocket and DNS-prefetched requests may not be captured completely.
+- Requests initiated outside tab contexts (e.g., background service workers, some browser-initiated DNS prefetches) may not be reported.
+
+### 3. Use Supported Browsers and Versions
+
+- Newer browser versions have improved `webRequest` support and performance optimizations.
+- Using unsupported or older browsers may result in missing or incomplete data.
+
+### 4. Avoid Excessive Concurrent Tabs
+
+- While uBO Scope efficiently manages data, having an excessive number of tabs open simultaneously increases resource usage.
+- Close unused tabs to help maintain performance.
+
+### 5. Regularly Restart the Browser
+
+- Periodic restarts prevent memory buildup and ensure session data remains fresh and accurate.
+
+### 6. Practice Responsible Auditing
+
+- When analyzing network connections, focus on distinct domains, avoiding over-interpretation of high counts caused by transient redirects or error retries.
+- Recognize that not all third-party connections are negative or suspicious.
+
+### 7. Handle Unicode and Punycode Domains Properly
+
+- uBO Scope translates punycode domains to Unicode for display but always normalizes and uses punycode for domain processing.
+
+### 8. Rely on the Public Suffix List (PSL) for Domain Grouping
+
+- The PSL accurately determines registrable domains, reducing false positives caused by improper domain aggregation.
+- uBO Scope fetches and caches the latest PSL for reliable domain handling.
+
+## Common Pitfalls to Avoid
+
+- **Expecting 100% Coverage on All Requests:** Some browser-internal or special network requests will not be visible.
+
+- **Confusing Redirects for Allowed Domains:** Stealth blocking uses redirects which uBO Scope categorizes distinctly; don’t count them as allowed.
+
+- **Ignoring Browser Updates:** Updates may fix or introduce issues affecting extension API behavior. Keep your browser up to date.
+
+- **Over-relying on Badge Counts Alone:** The badge counts allowed domains but diving into the popup panel reveals the full picture.
+
+## Monitoring and Troubleshooting Tips
+
+- If you notice no activity or stale data in the popup:
+  - Verify extension permissions in the browser settings.
+  - Reload or restart your browser.
+  - Clear stored session data if corruption is suspected.
+
+- If performance slows:
+  - Limit the number of open tabs.
+  - Close other heavy extensions or processes.
+
+- Consult related troubleshooting documentation for resolving installation or runtime issues.
+
+## How to Validate Performance and Accuracy
+
+1. Open a new browser tab with a known website.
+2. Observe the uBO Scope toolbar badge showing the number of distinct third-party domains.
+3. Open the popup panel to review detailed allowed, blocked, and stealth-blocked domains.
+4. Cross-validate by manually inspecting browser developer tools if necessary.
+
+## Summary
+
+By following these best practices, you ensure uBO Scope remains an accurate and efficient tool for auditing network connections, without impacting browser performance significantly.
+
+## Next Steps & Related Documentation
+
+- [Reveal and Review Remote Connections](/guides/getting-started-workflows/reveal-remote-connections): Learn to use the popup panel effectively.
+- [Interpreting the Badge Count and Results](/guides/getting-started-workflows/interpreting-badge-count): Understand badge meanings.
+- [Troubleshooting Content Blockers and Myths](/guides/advanced-analysis-use-cases/troubleshoot-content-blockers): Deep dive into blocker behavior.
+- [Prerequisites & System Requirements](/getting-started/installation-and-setup/prerequisites-system-requirements): Confirm your environment.
+- [Troubleshooting Common Installation Issues](/getting-started/getting-first-results/troubleshooting-common-issues): Resolve setup problems.
+
+---
+
+# Reference Implementation Details
+
+*uBO Scope employs the following core mechanisms to maintain performance and accuracy:*
+
+- Uses efficient session storage and serialization to handle tab-specific data without frequent disk I/O.
+- Aggregates domains via the Public Suffix List, loaded once per session and cached.
+- Debounces rapid network request events with a 1-second timer to batch process events for efficiency.
+- Handles DNS and hostname extraction robustly with built-in URL parsers.
+- Differentiates connection outcomes to provide clear user insights.
+
+This technical rigor ensures minimal performance impact alongside accurate real-time reporting.
+
+---
