@@ -1,0 +1,184 @@
+---
+title: "Troubleshooting Missing or Unexpected Network Requests"
+description: "Diagnose why certain network requests might not appear in uBO Scope, including browser API limitations and configuration tips for consistent data reporting."
+---
+
+# Troubleshooting Missing or Unexpected Network Requests
+
+When using uBO Scope, you rely on it to deliver a transparent and complete view of all network requests your browser makes to third-party servers. However, there are scenarios where network requests may appear missing, incomplete, or unexpected in the extension’s reports. This guide helps you diagnose such issues, explains the limitations inherent to browser APIs, and offers practical tips to ensure accurate and consistent data reporting.
+
+---
+
+## 1. Understanding the Scope and Limitations of uBO Scope
+
+uBO Scope operates by listening to network requests that the browser reports through its `webRequest` API. While this API provides extensive visibility, certain requests may be beyond its reach, which can cause the extension not to report them:
+
+- **Requests outside the browser's webRequest API scope:** Network activity initiated by apps or extensions outside tabs (e.g., embedded in browser internals, service workers, or other extensions) cannot be monitored.
+
+- **Requests affected by DNS-level or network-level content blocking:** If the DNS server or external filtering blocks a request, the browser itself sometimes never issues the network request, preventing `webRequest` from seeing it.
+
+- **Requests not using supported protocols:** uBO Scope monitors HTTP(S) and WebSocket(S) requests; requests over other protocols (e.g., FTP, file protocol) are not tracked.
+
+- **Browser-specific restrictions:** Some browsers limit or prevent extensions from monitoring all traffic fully due to security or privacy policies.
+
+
+<Warning>
+Missing requests often stem from these inherent technical limitations and are not a malfunction of uBO Scope.
+</Warning>
+
+## 2. Common Scenarios for Missing or Unexpected Requests
+
+### 2.1 Missing Requests in the Popup
+
+- **Cause:** The badge count or popup display might show fewer third-party domains than you expect.
+- **Diagnosis:** Open the uBO Scope popup on the active tab and observe the categorized lists:
+   - **Allowed (not blocked)** — requests successfully made.
+   - **Stealth-blocked** — requests silently redirected or blocked.
+   - **Blocked** — requests explicitly blocked with errors.
+
+If you see fewer domains or no domains at all, ensure:
+
+- You are on a webpage with active network connections.
+- The extension has appropriate permissions (`webRequest`, access to URLs).
+- The browser supports the `webRequest` API fully.
+
+### 2.2 Unexpected Extra Requests Showing
+
+- **Cause:** Sometimes you might see requests to domains you did not expect.
+- **Diagnosis:** These may be legitimate third parties (such as CDN providers or embedded trackers) or stealth redirects.
+
+Use the detailed domain lists in the popup to understand whether these requests were allowed, blocked, or stealth-blocked.
+
+### 2.3 No Badge Count Appearing
+
+- Could be caused by missing permissions or disabled `webRequest` API support in your browser.
+
+## 3. Step-by-Step Diagnostics Workflow
+
+<Steps>
+<Step title="Verify Extension Installation and Permissions">
+1. Confirm uBO Scope is installed and enabled in your browser.
+2. Check required permissions:
+   - Must include `webRequest` and access to all HTTP/HTTPS URLs.
+3. Reload the target webpage.
+4. Observe the extension icon; a badge count should update reflecting the number of distinct third-party domains contacted.
+</Step>
+<Step title="Open the Extension Popup and Review Detailed Data">
+1. Click the uBO Scope toolbar icon.
+2. View the categorized domains under 'not blocked', 'stealth-blocked', and 'blocked'.
+3. If the popup shows no data or unexpected entries, reload the current tab and retry.
+</Step>
+<Step title="Check Browser API Limitations and Compatibility">
+1. Review your browser version against the supported minimums:
+   - Chrome 122+
+   - Firefox 128+
+   - Safari 18.5+
+2. Confirm the browser supports the `webRequest` API in its current form.
+3. Understand that requests outside of this API scope will not be reported.
+</Step>
+<Step title="Clear Session Data to Avoid Stale or Corrupt Data">
+1. Open your browser’s extension storage (if available).
+2. Clear session storage related to uBO Scope.
+3. Reload your browser and the target page.
+4. Open the popup again to see refreshed data.
+</Step>
+</Steps>
+
+## 4. Best Practices for Consistent Network Request Reporting
+
+- **Always use real-world websites for testing.** Avoid synthetic or 'ad blocker test' pages as they can make unrealistic or atypical network requests.
+
+- **Reload the tab after installing or enabling the extension** to ensure all listeners are active.
+
+- **Verify content blockers or other privacy tools are not interfering** beyond what uBO Scope can observe.
+
+- **Regularly update your browser to maintain full API support.**
+
+## 5. Troubleshooting Common Issues
+
+<AccordionGroup title="Common Troubleshooting Scenarios">
+<Accordion title="Empty or Missing Popup Data">
+- Ensure the extension has the correct permissions granted.
+- Reload the current browser tab.
+- Check if network requests are actually happening (open Developer Tools Network tab for verification).
+- Confirm that webRequest API is not disabled by browser policies.
+</Accordion>
+<Accordion title="Badge Count Does Not Update">
+- The badge count reflects distinct third-party domains successfully connected.
+- Some requests may be stealth blocked or fail and thus not counted.
+- Try reloading the tab or restarting the browser.
+- Check for extension conflicts or other tools intercepting traffic.
+</Accordion>
+<Accordion title="Certain Requests Are Not Detected">
+- The browser may prevent monitoring of certain protocols or internal browser requests.
+- DNS blocking or firewall may prevent the request entirely.
+- These cases are inherent to browser or network environment and not fixable by the extension.
+</Accordion>
+<Accordion title="Unexpected Permission Prompts or Failures">
+- Confirm you installed uBO Scope from official sources for your browser.
+- Reinstall the extension if permissions become inconsistent.
+</Accordion>
+</AccordionGroup>
+
+## 6. How uBO Scope Identifies and Records Requests
+
+uBO Scope uses browser `webRequest` listeners to observe network requests at several key events:
+
+- `onBeforeRedirect` — to log redirects as stealth-blocked requests.
+- `onErrorOccurred` — to log blocked or failed requests.
+- `onResponseStarted` — to log successful network requests.
+
+These events are queued and processed asynchronously to consolidate request records per browser tab, updating the badge and popup data accordingly.
+
+## 7. Understanding Browser and Network Constraints
+
+- **Network requests performed outside page context:** Some browser internal requests, service worker fetches, or extensions’ own network activity may not pass through the `webRequest` API visible to uBO Scope.
+
+- **DNS and firewall level blocking:** If a network request is prevented before the browser issues it, uBO Scope cannot observe the attempt.
+
+- **Protocol limitations:** Currently, only HTTP, HTTPS, and WebSocket requests are reported.
+
+- **Browser implementation differences:** Some features of the `webRequest` API differ between Chromium, Firefox, and Safari. Ensure you use supported browser versions for maximum functionality.
+
+## 8. Additional Resources and Next Steps
+
+- Review the [Installing and Enabling uBO Scope](https://docs.example.com/guides/getting-started/installing-ubo-scope) guide for installation validation and permission checks.
+
+- Study [Auditing Third-Party and Remote Server Connections](https://docs.example.com/guides/core-workflows/auditing-third-party-connections) to learn how to interpret popup data in conjunction with request outcomes.
+
+- Consult [Interpreting Allowed, Blocked, and Stealth Domains](https://docs.example.com/guides/core-workflows/interpreting-domain-status) to understand the meaning of categorized network requests.
+
+- For advanced troubleshooting, see the [Troubleshooting Common Issues](https://docs.example.com/getting-started/first-use-and-troubleshooting/troubleshooting-common-issues) documentation.
+
+---
+
+## Appendix: Example Diagnostic Commands
+
+If you are familiar with browser developer tools, these steps help cross-verify network requests:
+
+- Open your browser’s DevTools (usually `F12` or `Ctrl+Shift+I`).
+- Navigate to the **Network** tab.
+- Reload the page.
+- Observe real-time requests to third-party domains.
+- Correlate these with uBO Scope's popup domain lists.
+
+
+<Tip>
+Using Developer Tools alongside uBO Scope provides deeper insight into why some requests are missing or blocked.
+</Tip>
+
+## Summary
+
+By understanding uBO Scope’s operational boundaries and leveraging this guide’s steps, you ensure you interpret the extension’s data accurately and troubleshoot visibility issues effectively. Remember, some network requests are inherently undetectable due to browser or network constraints.
+
+---
+
+## Reference
+
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- [Public Suffix List](https://publicsuffix.org/list/) used to correctly identify domain boundaries
+
+
+---
+
+
