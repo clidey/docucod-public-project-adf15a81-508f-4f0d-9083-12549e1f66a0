@@ -1,0 +1,179 @@
+---
+title: "How Does uBO Scope Work? (Architecture & Data Flow)"
+description: "Walk through the extension’s basic architecture: how background scripts capture network requests, categorize outcomes, store data for tabs, and push updates to the popup UI. Include a mermaid diagram illustrating this flow, emphasizing separation between monitoring, state, and user interface."
+---
+
+# How Does uBO Scope Work? (Architecture & Data Flow)
+
+uBO Scope is engineered with a clear separation of concerns across its architecture, designed to reliably capture, process, and present detailed information about every network connection that a webpage attempts. Understanding this architecture empowers you to grasp how data flows within the extension—from raw network events to the polished, actionable insights visible in the popup interface.
+
+---
+
+## Overview
+
+This page walks you through uBO Scope’s internal flow, specifically:
+
+- How background scripts listen for and categorize network request outcomes.
+- The way data is stored and organized per browser tab.
+- How state changes trigger UI updates in the popup.
+
+We include a detailed Mermaid diagram to visually represent this flow, highlighting how monitoring, state management, and user interface components interact cleanly and asynchronously.
+
+---
+
+## Core Components & Their Roles
+
+### 1. Background Scripts: The Monitoring Hub
+
+At the heart of uBO Scope lies the background script, which acts as the sentinel. It listens consistently for network events through browser APIs, capturing every web request that webpages initiate.
+
+#### What Happens?
+- The extension uses `webRequest` listeners to capture three main events:
+  - Redirects (`onBeforeRedirect`)
+  - Errors (`onErrorOccurred`)
+  - Responses (`onResponseStarted`)
+
+- Each event is queued briefly in a journal to batch process network activity efficiently, avoiding performance bottlenecks.
+
+- For every relevant event, the background script extracts details such as URL, type, initiator, and frame context.
+
+#### Data Categorization
+Each captured request is categorized into one of three outcome buckets:
+- **Allowed**: Successful connections.
+- **Stealth-blocked**: Redirected requests indicating stealth blocking.
+- **Blocked**: Requests that errored or were explicitly blocked.
+
+The background script ensures the counts and domain/hostname mappings for these categories are tracked per tab.
+
+### 2. Tab-Scoped Data Store: State Management
+
+Every browser tab has a dedicated data structure in memory, managing its own sets of connection counts and domains associated with each outcome category.
+
+- This state persists in session storage, enabling recovery on extension or browser restarts.
+- Updates to this data trigger badge count refreshes on the browser toolbar, reflecting the number of distinct allowed third-party connections.
+
+### 3. Popup UI: The User Interface
+
+The popup interface queries the current tab’s data to present a categorized, human-readable summary of network activity.
+
+- It displays the fully qualified host and domain name of the active tab.
+- It shows clearly separated sections for allowed, stealth-blocked, and blocked connections, including counts by domain.
+- The UI updates whenever the background script saves new tab state, ensuring you’re always looking at fresh data.
+
+---
+
+## Typical User Flow
+
+1. You navigate to a webpage.
+2. Background scripts capture every network request your browser makes for that tab.
+3. Each request is classified as allowed, stealth-blocked, or blocked.
+4. The tab-specific data store aggregates counts and host/domain info accordingly.
+5. The extension updates the badge on the toolbar with the count of allowed connections.
+6. When you open the uBO Scope popup, it retrieves and displays the categorized connection details.
+
+This flow guarantees you get an accurate, timely snapshot of all third-party connections your browser encounters on any page.
+
+---
+
+## Architecture & Data Flow Diagram
+
+```mermaid
+flowchart TD
+
+  %% Background Listeners
+  BackgroundListener["Background Script: webRequest Listeners"]
+
+  %% Event Queue and Timer
+  NetworkRequestJournal[["Network Request Journal (Queue)"]]
+  NetworkRequestTimer(("Timer: Batch Processing (1000ms)"))
+
+  %% Data Store
+  TabDataStore(("Tab-Scoped Data Stores"))
+
+  %% Badge Update
+  BadgeController["Toolbar Badge Updater"]
+
+  %% Message Passing
+  PopupUI["Popup UI (Popup Script)"]
+
+  %% Initial Data Load
+  PublicSuffixList["Public Suffix List Loader"]
+  SessionStorage["Session Storage (Session Data)" (persistent)]
+
+  %% Relationships
+  BackgroundListener -- "Queue Network Events" --> NetworkRequestJournal
+  NetworkRequestTimer --> NetworkRequestJournal
+  NetworkRequestJournal -->|Batch Process Each Event| TabDataStore
+  TabDataStore --> BadgeController
+  TabDataStore --> SessionStorage
+  SessionStorage --> TabDataStore
+  PopupUI -- "Request Current Tab Data" --> BackgroundListener
+  BackgroundListener -- "Respond with Serialized Tab Data" --> PopupUI
+  BackgroundListener -- "Load Public Suffix List Once" --> PublicSuffixList
+
+  %% Notes
+  classDef component fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#0d47a1;
+  class BackgroundListener,PopupUI,BadgeController component;
+  class NetworkRequestJournal,TabDataStore,SessionStorage component;
+  class PublicSuffixList component;
+
+```
+
+---
+
+## Practical Tips & Common Scenarios
+
+- **Fast Browsing Sessions:** The batching mechanism reduces performance hits by grouping network events instead of processing them immediately.
+
+- **Multiple Tabs Open:** Each tab’s network activity is isolated, ensuring accurate per-tab connection reporting.
+
+- **Extension Updates/Reloads:** Session storage preserves your connection data, preventing data loss during restarts.
+
+- **Tab Closure:** Data for closed tabs is automatically cleared, keeping memory usage efficient.
+
+- **Badge Count:** The toolbar badge reflects the number of distinct allowed third-party domains connected by the current tab, giving you an instant privacy metric.
+
+---
+
+## Troubleshooting
+
+### Popup Shows "NO DATA"
+
+- Occurs when the popup cannot retrieve network connection data for the active tab.
+- Verify the extension is fully loaded and the tab has active network requests.
+- Ensure the browser supports the required `webRequest` APIs.
+
+### Badge Does Not Update
+
+- Confirm the tab is not ignored or restricted by browser privacy settings.
+- Try refreshing the tab or restarting the browser.
+
+### Unexpected Counts or Missing Connections
+
+- Some network requests outside browser control (e.g., certain WebSocket or UDP-based protocols) may not be reported.
+- Content blockers operating below the `webRequest` API level can cause discrepancies.
+
+---
+
+## Summary
+
+This page explained how uBO Scope’s architecture streams raw network events captured by background scripts into meaningful, tab-isolated connection data, persisted in session storage, and surfaced clearly in the popup UI. The modular approach maintains robustness, real-time responsiveness, and accuracy, giving you unparalleled visibility into your browsing network activity.
+
+For the first time user or those curious about reported counts and categories, consider consulting the [What is uBO Scope?](/overview/introduction-and-core-concepts/what-is-ubo-scope) and [Core Concepts & Terminology](/overview/introduction-and-core-concepts/core-product-concepts) pages.
+
+---
+
+## Next Steps
+
+- Explore the [Quick Overview of Features](/overview/system-overview-and-features/feature-quick-overview) page to see capabilities enabled by this architecture.
+- For hands-on use, visit [Viewing Your First Connection Report](/guides/getting-started/first-connection-report) to learn how to interpret your connection data.
+
+---
+
+## References
+
+- Browser APIs: [webRequest - MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest)
+- Public Suffix List: Critical for domain parsing and grouping
+- uBO Scope GitHub Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+
+---
