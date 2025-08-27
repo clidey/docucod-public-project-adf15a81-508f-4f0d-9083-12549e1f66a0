@@ -1,0 +1,171 @@
+---
+title: "Accessing Detailed Network Request Information"
+description: "Explore techniques for viewing more granular data about observed requests, including tracking stealth-blocked connections and understanding how network events are recorded per tab."
+---
+
+# Accessing Detailed Network Request Information
+
+## Overview
+
+This guide helps you delve deeper into the network connections reported by uBO Scope. While the extension surfaces a high-level summary in its popup interface, you can explore more granular details such as specific network request outcomes, stealth-blocked connections, and how network events are recorded and categorized per browser tab.
+
+Understanding these details enables advanced users, filter list maintainers, and auditors to gain precise insights into how webpages interact with remote third-party servers.
+
+---
+
+## Prerequisites
+
+- uBO Scope installed and actively monitoring in a supported browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+- Basic familiarity with uBO Scope's popup interface and domain connection categories: allowed, stealth-blocked, and blocked.
+- Access to browser developer tools is helpful for advanced inspection.
+
+---
+
+## Expected Outcome
+
+By following this guide, you will:
+
+- Know how uBO Scope records and categorizes network requests behind the scenes.
+- Understand how to access and interpret stealth-blocked connection data.
+- Gain insight into the network events that populate the popup interface.
+- Be equipped to analyze network request patterns per active tab with precision.
+
+
+---
+
+## Understanding How Network Requests Are Recorded
+
+uBO Scope captures network activity using browser `webRequest` APIs, listening for three key network events:
+
+- **onBeforeRedirect**: Indicates a network request that is being redirected.
+- **onErrorOccurred**: Indicates a network request that failed or was blocked.
+- **onResponseStarted**: Indicates a network request that succeeded or began receiving a response.
+
+These events are queued in a journal and processed periodically (every second) to update per-tab details.
+
+### Data Categorization Per Tab
+
+For each browser tab, network requests are organized into three outcome categories:
+
+- **Allowed**: Network connections that succeeded (resources successfully fetched).
+- **Stealth-blocked**: Connections that were redirected stealthily, often by content blockers that mask their activity.
+- **Blocked**: Connections that were explicitly blocked or failed.
+
+Each category holds:
+
+- A map of domains with counts of occurrences.
+- A map of hostnames with counts of occurrences.
+
+This categorization drives the summary and detailed domain lists shown in the popup interface.
+
+---
+
+## Accessing Stealth-Blocked Connections
+
+Stealth-blocked connections represent network requests that were intercepted and redirected in a subtle way, not visibly blocked by traditional means. Recognizing these is crucial for understanding how some content blockers operate stealthily.
+
+You can view these connections directly in the uBO Scope popup under the “stealth-blocked” section. Here are practical tips:
+
+1. Open the popup interface while visiting the tab you want to analyze.
+2. Locate the "stealth-blocked" section, which lists domains that uBO Scope detected as stealth-blocked.
+3. Use this list to evaluate potential hidden redirects or subtle filtering by other content blockers.
+
+
+---
+
+## Exploring Network Request Outcome Recording Process
+
+The extension maintains detailed per-tab maps of remote server connections by tracking the outcomes of all network requests:
+
+- When a webpage loads or a top-level navigation occurs (main frame), uBO Scope resets tab tracking details, recording the initial URL's hostname and domain.
+- Each network request for subresources is then processed:
+  - Redirect events add the hostname to stealth-blocked collections.
+  - Error events add the hostname to blocked collections.
+  - Successful responses add the hostname to allowed collections.
+
+The extension extracts hostnames and domains using the public suffix list for accuracy, grouping requests accordingly.
+
+---
+
+## Step-by-Step: Viewing Detailed Domain Connection Data
+
+<Steps>
+<Step title="Open uBO Scope Popup for the Active Tab">
+Open the extension by clicking its toolbar icon on the browser toolbar while on the tab you want to investigate.
+</Step>
+<Step title="Inspect Domain Categorization Sections">
+In the popup, you will find three domain lists: "not blocked," "stealth-blocked," and "blocked."
+These lists show how remote server connections are classified.
+</Step>
+<Step title="Review Connection Counts Per Domain">
+Each domain listed includes a count reflecting connection attempts observed during the active session in that tab.
+Higher counts indicate more frequent connections.
+</Step>
+<Step title="Analyze Stealth-Blocked Connections for Hidden Redirects">
+Pay particular attention to the stealth-blocked section to uncover subtle content blocker activity or network redirects.
+</Step>
+<Step title="Use Public Suffix Processing for Domain Accuracy">
+uBO Scope uses the public suffix list for precise domain extraction.
+Understanding this helps you interpret domain entries correctly.
+</Step>
+</Steps>
+
+---
+
+## Practical Tips & Best Practices
+
+- **Regularly observe the popup** after loading new sites to see updated network connection patterns.
+- Use **stealth-blocked data** to detect content blockers that redirect requests invisibly.
+- **Keep session data fresh**: uBO Scope resets information when a tab reloads or navigates.
+- Leverage the **domain count numbers** to prioritize which third-party servers to scrutinize.
+- Consider using **browser developer tools** network monitors alongside uBO Scope for cross-reference.
+
+---
+
+## Common Troubleshooting
+
+<AccordionGroup title="Troubleshooting Detailed Network Request Issues">
+<Accordion title="Popup Shows No Data or Static Counts">
+Ensure the tab is active and reloaded; uBO Scope only processes data for active tabs.
+Verify that required permissions (`activeTab`, `storage`, `webRequest`) are granted.
+Check the browser’s extension management page for possible errors.
+</Accordion>
+<Accordion title="Stealth-Blocked Section Is Empty
+">
+Not all sites have stealth-blocked connections. This section will be empty when no redirects or stealth blocking occurs.
+Consider visiting websites known for ad tracking to see this section in action.
+</Accordion>
+<Accordion title="Counts Appear Incorrect or Incomplete">
+Network events sometimes may not be reported if the browser does not forward requests through the `webRequest` API (e.g., some WebSocket or non-standard protocols).
+Make sure you are using a supported browser version.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Advanced Insights
+
+- uBO Scope periodically serializes session data to local storage to persist tab connection details.
+- It uses a public suffix list parser to extract registered domains accurately from hostnames, ensuring consistent grouping.
+- Understanding the extension’s internal model can help filter list maintainers tune blocklists for better control.
+- Request events like `redirect` are interpreted as stealth blocking rather than outright blocking to reflect realistic network behavior.
+
+---
+
+## Next Steps & Further Reading
+
+- [Analyzing Remote Connections on Active Tabs](/guides/using-ubo-scope/analyzing-tab-activity): Learn how to use the popup interface to monitor tabs effectively.
+- [Understanding and Interpreting the Badge Count](/guides/using-ubo-scope/interpreting-badge): Gain deep insight into the meaning behind the toolbar badge.
+- [Using uBO Scope to Debunk Content Blocker Myths](/guides/using-ubo-scope/debunking-content-blocker-myths): Clarify common misconceptions around network blocking metrics.
+- [Troubleshooting: Missing Connections or Unexpected Results](/guides/advanced-guides/troubleshooting-common-issues): Resolve common issues with connection recording.
+
+---
+
+## References
+
+- uBO Scope GitHub Repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List official site: [https://publicsuffix.org/](https://publicsuffix.org/)
+
+---
+
+<u>Mastering these advanced techniques empowers you to extract detailed network request insights with uBO Scope, enhancing your understanding of web privacy and network transparency.</u>
