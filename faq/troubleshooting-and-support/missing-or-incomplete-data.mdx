@@ -1,0 +1,123 @@
+---
+title: "Why are some connections not reported or data missing?"
+description: "Discusses technical boundaries, such as how webRequest API limitations or advanced content blocking mechanisms outside browser scope may prevent uBO Scope from seeing all network requests."
+---
+
+# Why Are Some Connections Not Reported or Data Missing?
+
+Understanding why uBO Scope may sometimes not report certain connections or appear to have missing data is crucial for making accurate assessments of your browser's network activity. This page sheds light on inherent technical limitations and external factors influencing connection visibility.
+
+---
+
+## 1. The Role and Limits of the webRequest API
+
+uBO Scope relies entirely on the browser's `webRequest` API to detect and capture all outgoing network requests made by browser tabs. While this API is powerful and provides comprehensive insight into network traffic for standard HTTP(S) and WebSocket connections, it has notable constraints:
+
+- **API Scope**: The `webRequest` API tracks requests initiated *inside* the browser environment. Calls made by extensions or outside the browser process are not captured.
+- **Protocol Compatibility**: Only requests using recognized network protocols such as `http:`, `https:`, `ws:`, and `wss:` are monitored.
+- **Permission Boundaries**: uBO Scope requests host permissions (`http://*/*`, `https://*/*`, and WebSocket equivalents) to track most requests, but connections to URLs outside these scopes will be invisible.
+
+These limitations mean certain network activities inherently remain unreported.
+
+
+## 2. Advanced Content Blocking and Stealth Blocking
+
+Many advanced privacy or content blockers use "stealth blocking" techniques that make blocked requests completely invisible or appear as if they never happened to the browsing context or extension APIs:
+
+- **Stealth Blocking Definition**: Stealth blocking prevents network requests from being made or returning any usable response, and also ensures such requests don’t show up in browser APIs like `webRequest`.
+- **Impact on uBO Scope**: Because uBO Scope depends on `webRequest`, stealth-blocked connections may be recorded only as "stealth-blocked" or may not appear at all.
+- **Connection Outcomes**: The extension explicitly categorizes connections as allowed, blocked, or stealth-blocked to help distinguish what is visible, what is stopped, and what possibly never reaches the network stack.
+
+Understanding this distinction is key to accurate interpretation.
+
+
+## 3. Network Requests Outside Browser Scope
+
+Connections initiated outside the browser, such as by system applications, other installed extensions, or native components, are **not** visible to uBO Scope. Examples include:
+
+- **External Applications**: Background software or native apps making network calls independent of the browser.
+- **Browser Features Not Exposed to Extensions**: Some browser internals or embedded components may make network requests invisible to extensions.
+
+This boundary ensures user privacy and system security but creates a blind spot for uBO Scope.
+
+
+## 4. Incomplete or Aggregated Domain Reporting
+
+Some domains aggregate connections internally or use techniques like CDN edge servers to obfuscate the full scope of network connections:
+
+- **Public Suffix List Use**: uBO Scope employs the Public Suffix List to resolve and group hostnames into domains effectively.
+- **CDN and Multiplexing**: Content delivery networks can route many resource requests through a single domain, causing perceived "missing" connections because multiple hosts map to one domain.
+
+While uBO Scope provides domain-level granularity, some details may be aggregated, affecting perceived completeness.
+
+
+## 5. Practical Tips for Users
+
+To navigate these limitations and extract the most value:
+
+- **Use the Toolbar Badge and Popup Together**: The badge shows the count of distinct allowed third-party domains, and the popup breaks down allowed, blocked, and stealth-blocked domains.
+- **Interpret "No Data" Cases**: If you see no data for a tab, it might be due to the limitations described here, such as the use of stealth blocking or connections outside API scope.
+- **Regularly Update and Reload**: Ensure uBO Scope and your browser are updated to maintain optimal API integration.
+
+
+## 6. Troubleshooting Missing Connection Data
+
+When you suspect data may be missing:
+
+<AccordionGroup title="Common Reasons and Actions">
+<Accordion title="Permissions Not Fully Granted">
+Sometimes needed host permissions might not be effectively granted or apply in some browsing contexts.
+
+**Action:** Verify uBO Scope permissions in your browser's extension settings.
+</Accordion>
+<Accordion title="Stealth Blocking by Other Extensions">
+Other privacy or content blockers may prevent uBO Scope from seeing or recording certain requests.
+
+**Action:** Temporarily disable conflicting extensions to test data visibility.
+</Accordion>
+<Accordion title="Non-Standard Network Protocols">
+Requests using protocols unsupported by `webRequest` (e.g., custom schemes) will not appear.
+
+**Action:** Recognize this is due to technical constraints, not malfunction.
+</Accordion>
+<Accordion title="Browser Internal Connections">
+Some browser-internal or embedded requests are not visible to extension APIs.
+
+**Action:** This is an unavoidable limitation; no direct action is needed.
+</Accordion>
+</AccordionGroup>
+
+
+## 7. Additional Resources
+
+For deeper understanding and practical workflows:
+
+- [How uBO Scope Detects and Reports Connections](https://github.com/gorhill/uBO-Scope/wiki/FAQ-how-connection-tracking-works) (FAQ)
+- [Troubleshooting Data Visibility & Understanding Limitations](/guides/advanced-tips/troubleshooting)
+- [Analyzing Page Connections and Third Parties](/guides/main-workflows/analyze-connections)
+- [Understanding Toolbar Badge Counts and Popup Data](/faq/getting-started-questions/badge-count-explanation)
+
+
+---
+
+## Summary
+
+This page clarifies why certain network connections may not be visible or fully reported by uBO Scope due to technical boundaries of the browser's `webRequest` API and the effect of stealth blocking by advanced content blockers. It helps users interpret connection outcomes accurately, troubleshoot common visibility issues, and navigate intrinsic limitations inherent to browser extension APIs.
+
+For a broader journey about connection tracking and UI exploration, consider the guides and FAQs detailing setup, workflows, and troubleshooting.
+
+---
+
+## Related Documentation
+
+- [Core Concepts & Terminology](/overview/how-it-works-architecture/core-concepts-and-terminology): Definitions crucial for interpreting connection statuses.
+- [How Connection Tracking Works](/faq/getting-started-questions/how-connection-tracking-works): Explains the underlying mechanism uBO Scope uses.
+- [Troubleshooting Data](/guides/advanced-tips/troubleshooting): For diagnosing issues with connection data.
+- [Navigating the Popup and Interface](/guides/getting-started/explore-popup): How to understand reported connection data interactively.
+
+
+---
+
+## For Further Contributions and Issues
+
+To contribute, report bugs, or learn more technical details, visit our [GitHub Repository](https://github.com/gorhill/uBO-Scope) and consult the source code and active discussions.
