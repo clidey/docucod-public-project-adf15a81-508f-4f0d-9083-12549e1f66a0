@@ -1,0 +1,166 @@
+---
+title: "Understanding the Popup: Domains and Connection Statuses"
+description: "Detailed explanation of the uBO Scope popup interface, decoding allowed, stealth-blocked, and blocked domains. Covers the meaning of domain categorization, iconography, and how to use this information to assess third-party activity."
+---
+
+# Understanding the Popup: Domains and Connection Statuses
+
+## Overview
+
+The uBO Scope popup interface is your gateway to understanding the third-party network connections made by the active browser tab. This page provides a detailed explanation of the popup UI elements, the categorization of domains, and how to leverage this information to assess third-party activity and privacy exposure on webpages.
+
+## What You Will Learn
+
+- The structure and components of the uBO Scope popup interface
+- The meaning and significance of Allowed, Stealth-Blocked, and Blocked domains
+- Understanding domain categorization with examples
+- How the popup supports informed decisions about network exposure
+- Tips for interpreting domain counts and connection data
+
+---
+
+## 1. The Popup Interface Structure
+
+When you click the uBO Scope toolbar icon, the popup opens, showing a snapshot of network activity related to the current tab. The popup contains the following key elements:
+
+### Current Page Identification
+
+At the top, the popup displays the hostname and domain of the active tab:
+
+- The full hostname is shown, often split into the subdomain and the main domain parts.
+- The domain shown uses the Public Suffix List to differentiate registrable domains from subdomains.
+
+> **Example:** For a tab's hostname like `ads.tracker.example.com`, the popup separates and displays `ads.tracker` as the subdomain part, and `example.com` as the main domain.
+
+### Summary Section
+
+- Shows the total **number of distinct domains** contacted by the page.
+- This count corresponds to the combined domains under all connection outcome categories.
+
+### Domain Outcome Sections
+
+The popup groups domains into three categories, each with its own section:
+
+| Outcome          | Description                                                            | UI Section Class          |
+|------------------|------------------------------------------------------------------------|--------------------------|
+| **Allowed**      | Domains from which network connections were allowed successfully.      | `.outcome.allowed`        |
+| **Stealth-Blocked** | Domains for which connection requests were redirected or otherwise stealth-blocked, making these requests invisible to the page. | `.outcome.stealth`        |
+| **Blocked**      | Domains where network connection attempts failed or were explicitly blocked. | `.outcome.blocked`        |
+
+Within each section, a list of domains contacted by the page in this outcome category is shown, each paired with the count of requests made.
+
+> The counts next to each domain represent how many connection attempts were made to that domain during the current page session.
+
+### Domain Entries
+
+- Each domain appears as a text label next to a numeric badge showing request count.
+- Domains are displayed in Unicode for readability, using Punycode decoding for internationalized domains.
+  
+---
+
+## 2. Domain Categorization Explained
+
+The categorization into Allowed, Stealth-Blocked, and Blocked domains reflects the outcome of network requests originating from the page:
+
+### Allowed Domains
+
+- These domains represent connections that successfully completed or were allowed by the browser or any installed content blocker.
+- Typically includes first-party domains and third-party domains legitimately loaded by the page.
+
+### Stealth-Blocked Domains
+
+- Requests redirected or blocked in a way that the webpage cannot detect the blocking.
+- These stealth mechanisms are commonly used by content blockers to prevent the webpage from detecting blocking activity.
+- This category helps reveal invisible network activity intended to be hidden from scripts running on the page.
+
+### Blocked Domains
+
+- Domains where the browser or a content blocker outright blocked or failed the connection attempt.
+- Can include ad servers, tracking domains, or other unwanted remote servers.
+
+> Understanding these categories allows you to know not just what connections happen, but also what the webpage attempts invisibly and what your blockers prevent.
+
+---
+
+## 3. Using Domain Counts and Connection Data
+
+- The toolbar badge reflects the **number of distinct allowed domains** contacted by the active tab.
+- Lower badge counts generally indicate fewer third-party exposures, which is desirable for privacy.
+- Domains listed under stealth-blocked and blocked sections reflect attempted connections that were suppressed or redirected.
+
+### Practical Example
+
+Suppose you visit a news website:
+
+- The **Allowed** section lists the news site’s CDN and essential third-party services for content delivery.
+- The **Stealth-Blocked** section might include analytics or ad platforms whose requests were hidden by your blocker.
+- The **Blocked** section shows explicit connections to known ad networks or trackers that were prevented.
+
+---
+
+## 4. Practical Tips and Best Practices
+
+- **Review domain entries regularly** to identify unintentional exposure to third parties.
+- Use the popup data to assess the effectiveness of your content blockers.
+- Remember, some third-party domains in Allowed may be critical for site functionality (e.g., CDN providers).
+- The separation into domains rather than individual URLs simplifies spotting the entities involved.
+
+## 5. Common Pitfalls to Avoid
+
+- Do not assume all listed domains are harmful; some legitimate services will always appear.
+- The absence of a domain in the popup does not guarantee no connection occurred—this only covers what the browser’s webRequest API reports.
+- The extension measures connections in real time; refreshing the popup is needed to see updated results.
+
+---
+
+## 6. Troubleshooting Popup Data Issues
+
+- **Popup shows "NO DATA" or empty lists:**
+  - Ensure you have actively loaded a webpage in the active tab.
+  - Confirm the extension has necessary permissions.
+  - Reload the tab to allow uBO Scope to capture network events.
+
+- **Badge count not updating:**
+  - Wait a moment after loading the tab, as data is processed asynchronously.
+  - Disable conflicting extensions that may interfere with webRequest API.
+
+- **Internationalized domains show Punycode:**
+  - The popup decodes these automatically; if you see encoded versions, try refreshing the popup.
+
+---
+
+## 7. Summary
+
+The uBO Scope popup interface provides a clear, categorized view of network domains contacted during the page load. Understanding allowed, stealth-blocked, and blocked domains gives you insights into third-party activity and the effectiveness of content blocking. Use this information to make privacy-conscious decisions and better understand your web exposure.
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](/overview/introduction-core-concepts/what-is-ubo-scope) — Introduction to the product and core concepts
+- [Core Use Cases & Target Audience](/overview/introduction-core-concepts/core-use-cases) — Who benefits from uBO Scope
+- [Key Concepts & Terminology](/overview/introduction-core-concepts/key-concepts-terminology) — Definitions for domains, hostnames, and network request classification
+- [Your First Connection Analysis](/guides/getting-started-ubo-scope/first-request-analysis) — Practical guide to starting your first analysis
+- [Validation & Troubleshooting](/getting-started/first-steps-usage-validation/validation-and-troubleshooting) — Tips to verify uBO Scope is working correctly
+
+---
+
+## Additional Resources
+
+- [Public Suffix List](https://publicsuffix.org/) — Source for domain parsing logic used by uBO Scope
+- uBO Scope GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+
+
+---
+
+<Tip>
+Always interpret the popup data contextually: a lower count of allowed domains suggests better privacy, but some allowed third parties may be required for proper website function.
+</Tip>
+
+<Note>
+The popup updates asynchronously after page load; giving it a few seconds ensures accurate network connection counts.
+</Note>
+
+<Warning>
+Do not rely solely on the block count or domain names to judge if a content blocker is effective. Focus on the distinct allowed third-party domains for a true picture.
+</Warning>
