@@ -1,0 +1,136 @@
+---
+title: "Prerequisites & System Requirements"
+description: "Understand what you need before installing uBO Scope, including compatible browsers, platform versions, and any permissions the extension requires. Covers support for Chromium, Firefox, and Safari, and ensures your environment meets the fundamental criteria for a smooth experience."
+---
+
+# Prerequisites & System Requirements for uBO Scope
+
+Before installing uBO Scope, ensure your environment meets the essential compatibility criteria. This will guarantee a smooth setup and reliable functionality across supported browsers.
+
+---
+
+## 1. Supported Browsers & Minimum Versions
+
+uBO Scope is designed to work as a browser extension that reports remote server connections by leveraging the native `webRequest` API. Compatibility and features vary slightly by platform:
+
+| Browser     | Minimum Version    | Notes                                  |
+|-------------|-------------------|----------------------------------------|
+| Chromium    | 122.0+            | Requires Manifest V3 support. Includes support for WebSocket URLs (wss/http). Requires service worker background script.
+| Firefox     | 128.0+            | Requires Manifest V3 style background scripts. Supports WebSocket URLs.
+| Safari      | 18.5+             | Uses Manifest V3 with module background script. Limited to HTTP(s) URLs only (no WebSocket). Requires macOS/iOS updated to Safari 18.5 or later.
+
+
+### Important Notes
+- The browser must expose network requests through the `webRequest` API for uBO Scope to report connection details accurately.
+- Network requests outside `webRequest` scope (e.g., some internal browser operations or extensions-blocked requests) will not be reported.
+
+---
+
+## 2. Required Permissions
+
+The extension requires the following permissions to capture and analyze network requests:
+
+- `webRequest`
+- `storage` (to save session and suffix list data locally)
+- `activeTab` (to interact contextually with active tabs)
+
+Additionally, uBO Scope requests access to all HTTP, HTTPS (and for Chromium/Firefox, WS/WSS) URLs to monitor network activity. This is expressed as host permissions:
+
+- HTTP and HTTPS:
+  - `http://*/*`
+  - `https://*/*`
+- WebSocket (Chromium and Firefox only):
+  - `ws://*/*`
+  - `wss://*/*`
+
+<Check>
+Make sure your browser permits these permissions during installation for full functionality.
+</Check>
+
+---
+
+## 3. System Requirements
+
+- **Operating System:** Compatible with any OS supported by the chosen browser version (Windows, macOS, Linux for Chromium/Firefox; macOS/iOS for Safari 18.5+).
+- **Disk Space:** Minimal disk usage; primarily stores session and public suffix list cache.
+- **Memory:** No specific requirements beyond normal expectation for running modern browser extensions.
+
+---
+
+## 4. Network & Environment Considerations
+
+- The extension needs internet access to fetch the latest Public Suffix List on first run or when the cache expires.
+- Ensure no firewall or proxy settings block requests from the extension to retrieve data.
+- The browser must not restrict or disable the `webRequest` API for extensions.
+
+---
+
+## 5. Compatibility Insights
+
+- **Manifest Version 3:** All platforms use Manifest V3, but background scripts differ (service worker for Chromium, module scripts for Safari, etc.). Ensure your browser supports MV3 extensions.
+- **Differences in WebSocket support:** Safari currently does not allow monitoring WebSocket URLs, unlike Chromium and Firefox.
+
+---
+
+## 6. Summary of Key Prerequisites
+
+- Install a supported browser version (Chromium 122+, Firefox 128+, Safari 18.5+).
+- Provide `webRequest`, `storage`, and `activeTab` permissions.
+- Allow host permissions for all HTTP(S) URLs and WS(WSS) URLs (where applicable).
+- Maintain internet connectivity for initial and periodic suffix list updates.
+
+<Warning>
+Attempting installation on unsupported browser versions or without required permissions will result in failed monitoring or reduced capabilities.
+</Warning>
+
+---
+
+## 7. Related Files and Code References
+
+- Platform-specific manifest files specify the permissions and platform compatibility:
+  - Chromium: `platform/chromium/manifest.json`
+  - Firefox: `platform/firefox/manifest.json`
+  - Safari: `platform/safari/manifest.json`
+
+- The background script (`js/background.js`) initializes the extension and depends on these prerequisites to function properly.
+
+---
+
+## 8. Troubleshooting Prerequisite Issues
+
+<AccordionGroup title="Common Prerequisite Issues">
+<Accordion title="Browser Version Too Low">
+Ensure your browser is updated to meet or exceed the minimum required version listed above. Extension installation may fail silently or exhibit incomplete features otherwise.
+</Accordion>
+<Accordion title="Missing Permissions">
+During installation, the extension must be granted all requested permissions. Missing any will prevent accurate monitoring. Review browser warnings and manually enable if possible.
+</Accordion>
+<Accordion title="Network Restrictions Preventing PSL Fetch">
+uBO Scope fetches the Public Suffix List on first load. If blocked by network proxies or firewall, this step will fail, impairing domain parsing. Make sure access is allowed.
+</Accordion>
+<Accordion title="`webRequest` API Disabled or Restricted">
+Some browsers have settings or policies restricting `webRequest` API usage by extensions. Verify that your browser settings or installed policies allow `webRequest` for uBO Scope.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 9. Next Steps
+
+After verifying you meet these prerequisites, proceed to [Installation Guide](../installation) to install and enable uBO Scope in your browser. Once installed, you can view connection data through the extension's popup and toolbar badge.
+
+For more on how uBO Scope interprets connections, see [Core Concepts & Terminology](../../overview/key-concepts-and-architecture/core-terms-concepts). To explore using the extension, visit [Using the Popup View](../../guides/getting-started/using-popup-view).
+
+---
+
+## References
+- [Chromium Manifest](platform/chromium/manifest.json)
+- [Firefox Manifest](platform/firefox/manifest.json)
+- [Safari Manifest](platform/safari/manifest.json)
+- [uBO Scope README](README.md) for a broader introduction and overview
+- [Public Suffix List Specification](https://publicsuffix.org/list/) utilized internally for domain parsing
+
+
+---
+
+<u>_This page is part of the Getting Started onboarding to prepare you for installing and using uBO Scope effectively._</u>
