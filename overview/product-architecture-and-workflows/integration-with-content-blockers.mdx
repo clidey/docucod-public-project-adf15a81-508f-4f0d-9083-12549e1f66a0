@@ -1,0 +1,165 @@
+---
+title: "Integration & Compatibility"
+description: "Describe how uBO Scope operates alongside and independently of other content blockers like uBlock Origin, as well as browser-level blockers and DNS-level protection. Explain integration boundaries—what uBO Scope reports, and what falls outside its detection."
+---
+
+# Integration & Compatibility
+
+## Seamless Operation Alongside Other Content Blockers
+
+uBO Scope is uniquely designed to operate independently while coexisting peacefully with popular content blockers such as uBlock Origin, browser-level blockers, and DNS-based protection services. It provides a transparent and unbiased view of all network connections initiated by webpages, regardless of which content blocking mechanisms are active.
+
+### Why Coexistence Matters
+
+Users often run multiple layers of privacy and content control tools to secure their browsing experience. While these tools block or filter content in different ways, understanding exactly which third-party remote servers a webpage connects to—or attempts to connect to—remains essential for privacy awareness and troubleshooting. uBO Scope fills this role without interfering.
+
+## What uBO Scope Does and How It Works With Other Blockers
+
+- **Independent Network Request Reporting:** uBO Scope uses the browser's `webRequest` API to monitor all network requests a tab issues, capturing **allowed**, **blocked**, and **stealth-blocked** connection attempts.
+
+- **Unbiased Visibility:** Unlike content blockers that actively block or modify network requests, uBO Scope only measures and reports. It never blocks or prevents connections.
+
+- **Comprehensive Capture Despite Blocking:** Even if content blockers like uBlock Origin or browser features block network requests, uBO Scope can still observe and categorize these events through the `webRequest` event lifecycle, labeling them as **blocked** or **stealth-blocked** based on the outcome.
+
+- **No Conflict or Interference:** uBO Scope is designed so that its operation does not conflict with or degrade the performance or blocking efficacy of other content blockers.
+
+
+## Supported Blocker Types and Their Interaction with uBO Scope
+
+| Blocker Type                  | Integration Behavior                                             | What uBO Scope Reports                             |
+|------------------------------|-----------------------------------------------------------------|--------------------------------------------------|
+| **Extension-based Content Blockers** (e.g., uBlock Origin) | Operate by intercepting, filtering, or blocking requests before or during network transmission. | Reports every network request outcome including those blocked by these extensions.
+| **Browser Native Blockers**   | Utilize built-in browser features (e.g., tracking prevention in Firefox, Enhanced Tracking Protection). | Requests blocked at this level are visible via the API and reported appropriately.
+| **DNS-based Blocking**        | Block or redirect domain requests at the DNS level before connection attempts.                | Requests blocked before reaching the network layer are typically reported as blocked or stealth-blocked if observable by the browser's API.
+
+## Integration Boundaries and Limitations
+
+While uBO Scope aims to provide a complete picture, some limitations inherent to how browsers expose network request information affect what can be observed:
+
+- **Dependent on `webRequest` API Exposure:** uBO Scope relies on the browser's API to capture network events. Any request or blocking that happens outside this API’s visibility, such as certain network-layer interceptions or sandboxed contexts that do not emit these events, will not be reported.
+
+- **Blocked Early by DNS or OS:** If DNS filtering or external system firewalls block a connection before the browser attempts it, uBO Scope may not see or report these events.
+
+- **Service Workers and Other Background Scripts:** Requests initiated by service workers or background tasks that do not propagate through the monitored tab session might not be fully captured.
+
+## What uBO Scope Specifically Reports
+
+- **Allowed Connections:** Network requests that complete successfully or are allowed through content blockers.
+
+- **Blocked Connections:** Requests that fail due to content blocker intervention, browser tracking protection, or network errors detected by the browser.
+
+- **Stealth-Blocked Connections:** More covert blocking actions where requests are redirected or replaced silently by blockers, often to protect against detection.
+
+- **Distinct Third-Party Domains:** The badge count and popup summarize the number of unique third-party remote servers contacted or attempted, providing a clear measure of external connections independent of blocking layers.
+
+## Practical Examples
+
+### Scenario 1: Using uBO Scope with uBlock Origin
+
+- You browse a website with uBlock Origin actively blocking ads.
+- uBO Scope captures all network requests the page initiates.
+- Requests blocked by uBlock Origin appear in uBO Scope’s popup as **blocked** or **stealth-blocked**, while allowed requests show as **allowed**.
+- This helps validate if uBlock Origin is effectively blocking expected domains.
+
+### Scenario 2: Browsing with Browser Tracking Protection Enabled
+
+- Your browser (e.g., Firefox) blocks trackers natively.
+- uBO Scope still reports blocked and allowed network connections.
+- You gain insight into which third-party requests the built-in protections are blocking versus allowing.
+
+### Scenario 3: DNS-Level Blocking (e.g., Pi-hole)
+
+- You use a DNS filter that blocks domains before connection.
+- Requests filtered out by DNS may appear as blocked if the browser's `webRequest` API reports an error or failure.
+- uBO Scope reports these as blocked but cannot trace DNS-level behavior in detail.
+
+## Tips for Effective Use
+
+- Use uBO Scope alongside content blockers to gain a more holistic view of third-party connections.
+
+- Remember that a lower distinct third-party server count in uBO Scope indicates fewer external connections, which correlates more directly with privacy than raw block counts.
+
+- Combine insights from uBO Scope with your blocker’s dashboard for troubleshooting allowed or unexpectedly blocked resources.
+
+## Common Pitfalls and How to Avoid Them
+
+- **Assuming uBO Scope Blocks Requests:** uBO Scope only reports; it does not block. If you want to block, use dedicated content blockers.
+
+- **Expecting Coverage of All Network Layers:** Network requests outside the browser’s visibility (e.g., DNS-level blocks or opaque service worker requests) may not be captured.
+
+- **Using “Ad Blocker Test” Sites for Validation:** These sites often generate unrealistic network requests and do not reflect real-world blocking effectiveness. Trust uBO Scope’s measured data instead.
+
+## Summary Diagram of Integration Flow
+
+```mermaid
+flowchart TD
+    subgraph Browser Environment
+      direction TB
+      A["Webpage Network Request"] -->|Observed by| B["webRequest API"]
+      
+      subgraph Content Blockers
+        direction LR
+        CB1["Extension Blockers (uBlock Origin)"]
+        CB2["Browser Native Blockers"]
+        CB3["DNS-Level Blockers"]
+      end
+      
+      A --> CB1
+      A --> CB2
+      A --> CB3
+    end
+    
+    B -->|Reports allowed or blocked| C[uBO Scope - Network Request Logger]
+    
+    CB1 -->|Blocks or allows requests| B
+    CB2 -->|Blocks or allows requests| B
+
+    %% Notes
+    note over CB3: DNS filtering occurs before webRequest API visibility,
+    note over CB3: may limit reporting.
+
+    classDef blocker fill:#d3f9d8,stroke:#2c7a2c,stroke-width:1px;
+    class CB1,CB2,CB3 blocker;
+    class C fill:#f9f7d9,stroke:#bfae1f,stroke-width:1px;
+
+```
+
+## Getting Started with Integration
+
+To effectively use uBO Scope in combination with other blockers:
+
+1. Ensure uBO Scope is installed and active in your browser.
+2. Use your preferred content blockers as usual.
+3. Open the uBO Scope popup to view live network request summaries for the active tab.
+4. Compare allowed and blocked domains with those expected from your content blocker.
+5. Consult diagnostic documentation such as "Understanding the Badge & Popup" and "How uBO Scope Works" for deeper insights.
+
+
+---
+
+For more detailed context on uBO Scope’s data reporting and architecture, please explore related pages:
+- [How uBO Scope Works](../product-architecture-and-workflows/how-ubo-scope-works)
+- [Understanding the Badge & Popup](../getting-started/using-ubo-scope/interpreting-badge-popup)
+- [Core Concepts & Terminology](../introduction-and-core-concepts/core-concepts-terminology)
+
+
+
+---
+
+## Troubleshooting Integration Issues
+
+<Tip>
+If you notice missing or unexpected entries in uBO Scope’s reports, verify that:
+- Your browser supports the `webRequest` API fully.
+- The extension has correct permissions (see installation guides).
+- DNS or system-level blockers are not hiding blocked connections before they reach the browser.
+</Tip>
+
+<Warning>
+uBO Scope cannot detect connections made outside the browser’s `webRequest` API scope. Therefore, highly sandboxed requests or native DNS blocking may not appear in reports.
+</Warning>
+
+
+---
+
+By understanding uBO Scope’s integration boundaries and its relationship with other content blockers, you gain unmatched clarity into your web traffic and the true effectiveness of your privacy tools.
