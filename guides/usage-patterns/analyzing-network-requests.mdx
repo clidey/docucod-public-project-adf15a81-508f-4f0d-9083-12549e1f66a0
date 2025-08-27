@@ -1,0 +1,165 @@
+---
+title: "Analyzing What Was (and Wasn't) Blocked"
+description: "Walks through using uBO Scope to determine the effectiveness of content blockers by identifying exactly which remote servers were connected or blocked. Helps users understand the nuances of content blocking and why block counts alone can be misleading."
+---
+
+# Analyzing What Was (and Wasn't) Blocked with uBO Scope
+
+Understanding exactly which remote servers your browser connected to — and which attempts were blocked — is key to assessing the effectiveness of your content blocker. This guide walks you through using uBO Scope’s network outcomes to gain clear, actionable insight into your web browsing connections.
+
+---
+
+## 1. Why Analyze Blocked and Allowed Connections?
+
+Most users know that content blockers aim to block unwanted network connections, but the reality is nuanced:
+
+- **A block count alone is misleading:** A high number of blocked connections doesn’t necessarily mean better privacy, as it can coexist with many allowed connections to third-party domains.
+- **Allowed connections reveal real exposure:** Ultimately, the number of distinct connected third-party servers is what affects your privacy.
+- **Stealth-blocked connections highlight covert blocking:** Some content blockers block requests silently to avoid detection or website breakage; understanding these can help calibrate filtering strategies.
+
+<u>Goal:</u> Use uBO Scope to see a clear distinction between connections that were allowed, blocked, or stealth-blocked, enabling decisions based on actual network behavior rather than just block totals.
+
+---
+
+## 2. Prerequisites
+
+Before starting this analysis:
+
+- Install uBO Scope in your browser (Chrome 122+, Firefox 128+, Safari 18.5+).
+- Have a content blocker enabled (e.g., uBlock Origin) active.
+- Navigate to a website where you want to analyze network connections.
+
+Make sure uBO Scope is actively monitoring your network requests with its badge displayed in the toolbar.
+
+---
+
+## 3. Understanding the uBO Scope Popup Interface
+
+The popup window categorizes third-party remote servers under three outcomes:
+
+| Outcome         | Meaning                                                                                     |
+|-----------------|---------------------------------------------------------------------------------------------|
+| **Not Blocked** | Servers your browser connected to without interruption, representing allowed connections.     |
+| **Stealth-Blocked** | Servers where the content blocker blocked the request covertly, without website knowing.     |
+| **Blocked**     | Servers where the request was blocked and recorded explicitly as blocked.                    |
+
+Each outcome section lists domain counts — the number of requests made to each domain.
+
+**Toolbar badge** count corresponds to the number of distinct third-party domains connected and allowed.
+
+---
+
+## 4. Step-by-Step Workflow to Analyze Connections
+
+<Steps>
+<Step title="Open uBO Scope Popup">
+1. Click the uBO Scope icon in your browser toolbar.
+2. The popup window will display the current tab's network connection summary.
+3. Confirm the hostname and domain shown at the top match the active tab.
+</Step>
+<Step title="Review Not Blocked Connections">
+1. Look under the 'not blocked' section.
+2. Each line shows a domain and the number of requests succeeded without blocking.
+3. A smaller count here indicates fewer third-party servers connected, which generally means better privacy.
+</Step>
+<Step title="Examine Stealth-Blocked Connections">
+1. Check the 'stealth-blocked' section to see domains with quietly blocked requests.
+2. These connections represent requests that were blocked invisibly to avoid breaking websites.
+3. Understanding stealth-blocking helps differentiate between obvious and covert blocking.
+</Step>
+<Step title="Understand Fully Blocked Connections">
+1. Inspect the 'blocked' section for domains where connections were explicitly blocked.
+2. High counts here show more blocking activity but don’t alone guarantee fewer allowed connections.
+3. Compare this with the allowed list to understand the real impact.
+</Step>
+<Step title="Interpret the Summary">
+1. At the top summary, uBO Scope shows total distinct allowed domains.
+2. Use this to gauge overall exposure to third-party servers.
+3. Lower distinct allowed domains mean stronger privacy.
+</Step>
+<Step title="Validate Against Blocker Behavior">
+1. Cross-check the blocked and stealth-blocked domains lists with your content blocker's dashboard or logs.
+2. Confirm that uBO Scope reflects what is expected from your filters.
+3. If unexpected connections appear allowed, consider updating or tightening your filter lists.
+</Step>
+</Steps>
+
+---
+
+## 5. Real Scenario Example
+
+Imagine browsing an online news site with uBO Origin enabled alongside uBO Scope:
+
+- The 'not blocked' section lists domain `cdn.example.com` with 10 connections.
+- The 'stealth-blocked' section shows `trackersite.com` with 3 connections.
+- The 'blocked' section reports `ads.example.com` with 5 blocked attempts.
+
+**Interpretation:**
+
+- Your content blocker allowed connections to the CDN, typically necessary for site functionality.
+- It stealth-blocked tracker attempts, minimizing detection by the site.
+- It explicitly blocked several ad network domains.
+
+The toolbar badge count showing '1' domain confirms you only connected to one distinct third-party server not blocked.
+
+---
+
+## 6. Best Practices & Tips
+
+- **Don't rely only on block counts:** Focus on allowed third-party domains for true privacy assessment.
+- **Regularly review stealth-blocked domains:** Their presence might indicate subtle tracking attempts interfered with.
+- **Use domain data for filter updates:** Domains repeatedly allowed could be candidates for adding to blocker lists.
+- **Check popup after visiting different sites:** Patterns vary by website; more domains mean wider server exposure.
+- **Combine with other privacy tools:** uBO Scope informs but does not block. Use it alongside blockers for comprehensive protection.
+
+---
+
+## 7. Common Issues & Troubleshooting
+
+<Tip>
+If the popup shows 'NO DATA' or empty sections:
+- Ensure uBO Scope is enabled and permissions are granted.
+- Reload the tab and then reopen the popup.
+- Verify your browser supports the webRequest API fully (some browsers or versions may limit this).
+- Confirm you have navigated to a web page (not internal browser pages).
+</Tip>
+
+<Tip>
+If block or allowed connections do not seem reflecting your content blocker's activity:
+- Refresh the tab to regenerate network activity.
+- Confirm your content blockers are active and operational.
+- Restart browser if background scripts hang.
+- Check for browser-specific permission issues.
+</Tip>
+
+---
+
+## 8. Next Steps
+
+- Explore the guide on [Quick Tour: Monitoring Third-Party Connections](/getting-started/core-usage-and-setup/quick-usage-tour) to deepen your understanding of the popup interface.
+- Review [Making Sense of the Toolbar Badge Count](/guides/core-workflows/toolbar-badge-guide) to better interpret badge indicators.
+- For advanced understanding, consult [Core Concepts & Terminology](/overview/product-architecture/core-concepts-terminology).
+
+---
+
+## 9. Additional Resources
+
+- GitHub repository: [uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- [What is uBO Scope?](/overview/intro-basics/what-is-ubo-scope)
+- [Core Features & Capabilities](/overview/intro-basics/core-features)
+- [Debunking Content Blocker Myths with uBO Scope](/guides/usage-patterns/debunking-blocker-myths)
+
+---
+
+## Appendix: Understanding Network Outcomes Implementation (High-Level)
+
+- uBO Scope listens to browser network events (`onBeforeRedirect`, `onErrorOccurred`, `onResponseStarted`).
+- It records network requests and groups them per tab, tracking domains by outcomes:
+  - **Allowed:** Requests successfully connected.
+  - **Blocked:** Requests blocked explicitly (e.g., by content blocking or network errors).
+  - **Stealth:** Redirected or blocked requests hidden from page detection.
+- Data is processed and reflected in the popup UI for the active tab.
+
+This approach empowers transparency into your browser's network interactions, independent of the blockers' internal mechanisms.
+
+---
