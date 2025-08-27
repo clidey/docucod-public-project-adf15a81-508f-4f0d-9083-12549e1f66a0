@@ -1,114 +1,99 @@
 ---
 title: "Terminology & Core Concepts"
-description: "Defines domain-specific terms such as 'third-party server', 'webRequest API', and explains concepts like ‘allowed’, ‘blocked’, and ‘stealth’ requests. Equips users with the necessary vocabulary and conceptual base to confidently engage with the extension."
+description: "Defines key terms such as 'third-party remote server,' 'allowed,' 'stealth-blocked,' 'blocked,' and 'badge count.' Provides the essential vocabulary users need to interpret what the extension reports."
 ---
 
 # Terminology & Core Concepts
 
-Understanding the key terms and foundational concepts of uBO Scope is essential for effectively using the extension and interpreting its data. This page defines critical domain-specific vocabulary and explains the core categories that uBO Scope uses to classify network requests.
+Understanding the terms used within uBO Scope is essential to accurately interpret the extension’s reports. This page clarifies the key vocabulary such as 'third-party remote server,' 'allowed,' 'stealth-blocked,' 'blocked,' and 'badge count.' Equipped with these definitions, you will confidently analyze network connection data presented by the extension.
 
 ---
 
 ## Key Terms Defined
 
-### Third-Party Server
-A **third-party server** refers to any remote server domain different from the main domain of the webpage you are visiting. For example, if you are on `example.com` and your browser makes a connection to `cdn.example.net`, that `cdn.example.net` is a third-party server relative to `example.com`.
+### Third-Party Remote Server
+A *third-party remote server* refers to any server contacted by a webpage you are visiting that does **not** share the same base domain as the page itself. These servers often provide external content or services, such as advertisements, analytics, or content delivery networks (CDNs).
 
-This is crucial because uBO Scope counts and reports connections to these third-party domains to reveal the extent of external network requests initiated by webpages.
-
-### webRequest API
-The **webRequest API** is an interface provided by modern browsers that allows extensions like uBO Scope to observe and intercept network activity initiated by webpages. Through this API, uBO Scope monitors all remote connections attempted by the page, regardless of any content blocker's effect.
-
-This transparency is vital because other content blockers might conceal certain network activities or outcomes, but uBO Scope sees all network requests reported by this API.
-
-### Hostname and Domain
-- **Hostname**: The full host part of a URL (e.g., `sub.example.com`).
-- **Domain**: The registered domain, generally the higher-level host name (e.g., `example.com`).
-
-uBO Scope aggregates data primarily by domains to provide a concise view of third-party connections, helping you understand which main external entities your browser communicates with.
-
-The extension uses the Public Suffix List (PSL) to accurately extract these domains even from complex hostnames, ensuring precise classification.
-
----
-
-## Network Request Outcomes: What Do They Mean?
-
-uBO Scope classifies network requests based on their final outcome into three clear categories, displayed in the popup UI and reflected in data summaries:
+**Example:** If you visit `example.com` and your browser connects to `cdn.somecdn.com`, this is a connection to a third-party remote server.
 
 ### Allowed
-- **Definition**: Network requests that successfully fetched resources from third-party servers.
-- **Meaning**: These are requests that were not blocked by content blockers and completed without error.
-- **User Value**: Shows you which external domains your browser actually loaded content from during page visits.
+**Allowed** connections are network requests to third-party remote servers that were permitted to complete successfully by the browser and any active content blocker.
 
-### Blocked
-- **Definition**: Requests prevented from completing, often by content blockers or browser policies.
-- **Meaning**: These represent connections that did not reach the server or failed due to an error.
-- **User Value**: Helps you identify which blocked requests would have otherwise contributed to resource loading.
+- These connections fetched resources or data without intervention.
+- They are listed in the "not blocked" section of uBO Scope’s popup UI.
+
+**Value:** Identifying allowed connections helps you understand which external servers your browsing session genuinely communicates with.
 
 ### Stealth-Blocked
-- **Definition**: Requests that were redirected or suppressed stealthily — the browser handles them in a way that hides their blocking from the webpage.
-- **Meaning**: This category exposes subtle blocking tactics used by extensions to block requests without revealing their presence to web pages.
-- **User Value**: Reveals hidden blocking that content blockers perform, helping advanced users understand stealth filtering.
+**Stealth-blocked** connections refer to third-party requests that were blocked by stealthy content blocking mechanisms, such as redirects or silent blocking, that prevent the request without outright error reporting.
+
+- These connections do not complete and are hidden or suppressed to prevent detection by webpages.
+- They appear in the "stealth-blocked" section.
+
+**Why it matters:** Stealth blocking minimizes webpage disruptions or breakage while maintaining privacy.
+
+### Blocked
+**Blocked** connections are third-party requests that failed due to explicit blocking by the content blocker or network errors.
+
+- These show as failed attempts that the browser or blocking rules actively stopped.
+- Displayed in the "blocked" list, they signify recognized and prevented external connections.
+
+### Badge Count
+The **badge count** is the number displayed on the extension’s toolbar icon. It shows:
+
+- **The number of distinct third-party remote domains connected to in the current tab.**
+- A *lower count* is desirable, indicating fewer external connections and potentially less tracking or exposure.
+
+**Important:** The badge count is always relative to successful or allowed connections and does not reflect the number of blocked requests.
 
 ---
 
-## Why Understanding These Concepts Matters
+## How uBO Scope Uses These Terms
 
-At the core, uBO Scope is designed to enhance your visibility into third-party network connections that webpages make, regardless of blocking measures or obfuscation. Knowing the definitions above empowers you to interpret all data seen in the extension interface confidently.
+When you open the popup interface for an active browser tab, uBO Scope fetches and presents network connection details classified into the three outcomes:
 
-For instance, a site might silently attempt dozens of connections to various third-party domains, but your content blocker might only block or report some. uBO Scope shines light on that entire landscape, clarifying privacy and security implications.
+- **Not Blocked (Allowed):** These are active third-party connections that completed successfully.
+- **Stealth-Blocked:** These are silently blocked requests, often by stealth techniques integrated into content blockers.
+- **Blocked:** These connections were stopped due to errors or explicit blocking.
 
----
+Each category lists the connected domain names along with the count of requests made.
 
-## Practical Examples
+### Sample User Scenario
+Imagine you visit a news website. The popup shows:
 
-- **Scenario 1:** Visiting your favorite news site, you notice the `allowed` domain count is relatively low, but the `stealth-blocked` domains are numerous.
-  - This indicates that while few third-party domains actually loaded content, many were blocked subtly without alerting the site.
+- _Not blocked:_ Domains serving essential content and trusted CDNs.
+- _Stealth-blocked:_ Domains possibly associated with tracking scripts silently blocked to prevent site errors.
+- _Blocked:_ Domains known for ads or trackers explicitly blocked.
 
-- **Scenario 2:** A shopping website connects to multiple domains labeled `blocked`.
-  - This may point to content blockers preventing ads or trackers, and you can see exactly which domains were stopped.
-
-- **Scenario 3:** Some domains appear in both `allowed` and `stealth-blocked` categories.
-  - This reflects mixed outcomes for different requests to the same third-party domains, offering granular transparency.
-
----
-
-## Best Practices for Users
-
-- Always consider **domains** over individual hostnames for a higher-level understanding of third-party connections.
-- Use the **webRequest API** definitions to appreciate that uBO Scope reports all requests your browser observes, catching more than just what your content blocker reports.
-- Interpret `stealth-blocked` as a sign of advanced blocking behavior that's aimed at invisibility to web pages — an important privacy insight.
-- Remember that **allowed** requests are the actual third-parties your browser relied on, which may affect privacy and page behavior.
+The badge count reflects only the unique and allowed third-party domains.
 
 ---
 
-## Common Pitfalls
+## Practical Tips & Common Pitfalls
 
-- Confusing **hostname** with **domain** can cause misunderstanding of the scope of unique third-parties. Always check the domain for counting third-party servers.
-- Misinterpreting `blocked` vs. `stealth-blocked` can lead to incorrect assumptions about whether blocking is visible or hidden from the webpage.
-- Expecting uBO Scope to report network requests made outside the browser's webRequest API (such as internal browser processes) will lead to confusion since those are not captured.
-
----
-
-## Quick Reference: Outcome Categories and Their Meaning
-
-| Outcome        | What It Means                                    | User Impact                         |
-|----------------|-------------------------------------------------|-----------------------------------|
-| Allowed        | Request succeeded, resource loaded               | Indicates third-party servers in use |
-| Blocked        | Request prevented or errored                      | Shows explicit blocking            |
-| Stealth-Blocked| Request handled so webpage cannot detect blocking| Reveals hidden blocking behavior   |
+- **Interpret badge count cautiously:** It tracks unique allowed remote servers, not total requests or blocked domains.
+- **Legitimate connections exist:** Not all third-party connections are harmful; CDNs or third-party APIs are often necessary.
+- **Stealth blocking indicates subtle protections:** Absence from allowed and blocked does not mean invisibility; stealth-blocked requests are silently handled.
+- **Domains are normalized:** Using the [public suffix list](https://publicsuffix.org/), domains are accurately identified by their base domain for clarity.
 
 ---
 
-For deeper insights, visit the [What is uBO Scope?](../introduction-core-value/what-is-ubo-scope) page and explore [How uBO Scope Works](../core-concepts-architecture/how-ubo-scope-works) to see these concepts in action.
+## How This Fits Into Your Workflow
+
+This terminology page provides the terminology foundation that aligns with the:
+
+- [Navigating the uBO Scope Interface](./navigating-ubo-scope-ui) page showing how these terms relate to UI elements.
+- [Understanding and Interpreting the Badge Count](../using-ubo-scope/interpreting-badge) which explains further nuances about the badge count.
+
+Mastering this vocabulary enables you to comprehend every network event the extension observes and classifies.
 
 ---
 
-### Additional Resources
+## Additional Resources
 
-- [Public Suffix List](https://publicsuffix.org/list/) — The list uBO Scope uses to derive domains from hostnames.
-- uBO Scope [GitHub Repository](https://github.com/gorhill/uBO-Scope) — For source code and updates.
+- **Public Suffix List:** uBO Scope uses this list to determine base domains accurately — more info at [publicsuffix.org](https://publicsuffix.org/).
+- **uBO Scope Home:** Get the latest updates and source code at the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
 
 ---
 
-If you encounter unclear terms or unexpected data presentations, revisit this page to reinforce your foundational understanding before progressing to operational guides.
+**With these core definitions, you can now move forward and explore how uBO Scope displays connections and how to use that data for your benefit.**
