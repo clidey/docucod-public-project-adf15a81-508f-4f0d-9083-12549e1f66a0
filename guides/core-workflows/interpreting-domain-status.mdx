@@ -1,0 +1,176 @@
+---
+title: "Interpreting Allowed, Blocked, and Stealth Domains"
+description: "Understand how uBO Scope detects and distinguishes between allowed, stealth-blocked, and outright blocked network requests. Get tips for reading each category and examples of real site scenarios."
+---
+
+# Interpreting Allowed, Blocked, and Stealth Domains
+
+## Overview
+
+This guide helps you understand how uBO Scope detects and categorizes network requests into three key outcomes: **allowed**, **blocked**, and **stealth-blocked** domains. You will learn how to read these categories in the extension’s popup interface and interpret what each means in terms of your browser’s network activity and privacy exposure.
+
+## Prerequisites
+
+- You have installed uBO Scope in your Chromium, Firefox, or Safari browser.
+- You have opened the extension popup while browsing a webpage.
+- You are familiar with basic concepts of third-party connections (see the [Core Concepts and Terminology](overview/core-concepts-architecture/core-concepts-terminology) guide).
+
+## Expected Outcome
+
+By following this guide, you will be able to:
+- Distinguish between allowed, blocked, and stealth-blocked domains shown by uBO Scope.
+- Understand how each category reflects actual network request outcomes.
+- Use real-world examples to relate uBO Scope’s categorization to common browsing scenarios.
+
+## Time Estimate
+
+10–15 minutes to read and review examples.
+
+## Difficulty Level
+
+Beginner to Intermediate.
+
+---
+
+## Understanding the Three Domain Categories
+
+uBO Scope organizes observed third-party network requests into the following three categories displayed in the extension popup:
+
+### 1. Allowed Domains ("not blocked")
+
+- **What it means:** These are domains from which your browser successfully fetched resources during the current browsing session.
+- **Characteristics:**
+  - Requests reached their destination and returned a response (such as images, scripts, or API data).
+  - These domains contribute directly to the page’s rendered content or functionality.
+  - The count badge next to each domain shows how many requests were made to it.
+- **User Value:** Understanding allowed domains shows the extent of third-party exposure and the actual endpoints your browser communicated with.
+
+### 2. Blocked Domains ("blocked")
+
+- **What it means:** These are domains whose network requests your content blocker or DNS filter prevented from completing.
+- **Characteristics:**
+  - Requests failed with errors or were actively canceled.
+  - Blocked domains may correspond to trackers, ads, or other unwanted network endpoints.
+- **User Value:** Identifies domains prevented from initiating connections and helps validate your blocking settings.
+
+### 3. Stealth-Blocked Domains ("stealth-blocked")
+
+- **What it means:** This category represents network requests that were interrupted or manipulated during HTTP redirects, typically to avoid detection by the webpage.
+- **Characteristics:**
+  - These requests showed initial network activity but were redirected or canceled stealthily before final resolution.
+  - Stealth blocking often involves extensions transparently stripping or altering requests to prevent tracking without breaking page functionality.
+- **User Value:** Shows domains involved in subtle blocking that tools or webpages may not easily detect.
+
+
+## How uBO Scope Distinguishes These Outcomes
+
+uBO Scope captures network requests via the browser’s `webRequest` API and examines their lifecycle:
+
+- **Allowed:** Requests completing successfully (status code > 0, IP resolved).
+- **Blocked:** Requests that fail or error out without reaching the destination.
+- **Stealth-Blocked:** Requests caught during redirects or covert cancellation before a full connection.
+
+This functionality means uBO Scope provides a complete and honest view of network connection attempts, beyond what typical blocklists and counters disclose.
+
+## Using the Popup Interface
+
+When you open the uBO Scope popup for the active tab, you see sections labeled:
+
+- **not blocked** — Allowed domains
+- **stealth-blocked** — Stealth-blocked domains
+- **blocked** — Blocked domains
+
+Each domain listed shows how many times the tab connected or tried to connect to it.
+
+
+## Examples: Real Site Scenarios
+
+### Example 1: News Website
+
+- **Allowed:** CDN domains hosting images, videos, or scripts load with normal requests.
+- **Blocked:** Tracking ad servers prevented, so their requests never complete.
+- **Stealth-blocked:** Redirect trackers (e.g., link trackers) intercepted during navigation.
+
+This gives you a clear picture of what third-party content is allowed vs. suppressed silently or overtly.
+
+### Example 2: Social Media Platform
+
+- **Allowed:** Core domains enabling chat, feed content, and user media.
+- **Blocked:** Ad-related domains or third-party analytics blocked.
+- **Stealth-blocked:** Redirect chains to tracking domains.
+
+This helps audit privacy exposure on complex interactive sites.
+
+
+## Tips for Reading the Data
+
+- **Focus on Allowed Domains:** The most direct indication of privacy exposure and third-party reach.
+- **Consider Stealth Blocking:** It may indicate sophisticated privacy defenses in place.
+- **Blocked Domains Are No Guarantee:** Blocking might only be partial or ineffective; combining this insight with allowed counts is key.
+- **Use Domain Counts:** High numbers indicate heavy reliance or exposure to a domain.
+
+
+## Common Pitfalls & Considerations
+
+- **Not All Allowed Domains Are Malicious:** Many allowed domains are legitimate CDNs or essential services.
+- **Stealth-Blocked May Not Appear in Other Logs:** uBO Scope reveals hidden blocking that regular block counters omit.
+- **Blocked Domains Could Include False Positives:** Some legitimate domains may get blocked inadvertently; review blocklists accordingly.
+
+
+## Troubleshooting
+
+- If your popup shows no data or incorrect lists:
+  - Ensure uBO Scope extension permissions are enabled.
+  - Verify you are viewing the popup on a tab with network activity.
+  - Check for browser compatibility issues (see Installation guides).
+
+
+## Next Steps
+
+- Explore auditing actual third-party connections with the [Auditing Third-Party and Remote Server Connections](guides/core-workflows/auditing-third-party-connections) guide.
+- Learn terminology and concepts in detail via [Core Concepts and Terminology](overview/core-concepts-architecture/core-concepts-terminology).
+- Validate your installation with [Validating Your Installation](getting-started/first-use-and-troubleshooting/validating-installation).
+
+
+---
+
+## Related Documentation
+
+- [What is uBO Scope?](overview/intro-value/what-is-ubo-scope) — Understanding the product’s mission and interface.
+- [Why Use uBO Scope?](overview/intro-value/value-proposition) — Value proposition and use cases.
+- [Your First Connection Audit: Reading the Popup](guides/getting-started/first-connection-overview) — Guide to initial popup interpretation.
+- [Installing and Enabling uBO Scope](guides/getting-started/installing-ubo-scope) — Installation and setup instructions.
+- [Troubleshooting Common Issues](getting-started/first-use-and-troubleshooting/troubleshooting-common-issues) — Help for common problems.
+
+
+<Callout type="info">
+For more technical depth on how uBO Scope classifies requests internally, see the [Architecture Overview](overview/core-concepts-architecture/architecture-overview).
+</Callout>
+
+---
+
+## Appendix: How uBO Scope Processes Request Outcomes (Technical Insight)
+
+(For users interested in deeper understanding—this reflects detection behavior relevant to the domain categorization.)
+
+- The extension listens to network events: redirects, errors, and successful responses.
+- Redirects are flagged as stealth blocking.
+- Errors mark blocked status.
+- Success is confirmed via valid IP or HTTP status code and counted as allowed.
+
+This complete observation ensures you see all network attempts and their effective outcomes.
+
+
+
+---
+
+## Summary Table of Outcomes
+
+| Outcome        | Meaning                            | Typical Behavior                                     | Example
+|----------------|----------------------------------|-----------------------------------------------------|-----------------------------
+| Allowed        | Request succeeded                 | Resource fetched without interruption                | CDN domain hosting images    
+| Blocked        | Request blocked/errors occurred   | No response, request cancelled by blocker or network| Third-party ad or tracking domain
+| Stealth-Blocked| Request intercepted during redirect| Redirect chain altered or request silently blocked | Tracking or redirection domains
+
+
+---
