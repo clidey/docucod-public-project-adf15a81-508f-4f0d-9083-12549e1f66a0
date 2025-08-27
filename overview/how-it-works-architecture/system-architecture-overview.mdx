@@ -1,0 +1,141 @@
+---
+title: "System Architecture Overview"
+description: "Uses a Mermaid diagram to give a high-level visual of uBO Scope’s core components: how the background script captures browser network requests, how session and domain data is tracked, and how the popup UI displays these results to the user. Briefly highlights essential data flows and integration points (e.g., webRequest API hooks, popup rendering, cross-browser compatibility)."
+---
+
+# System Architecture Overview
+
+## Visualizing uBO Scope’s Core Architecture
+
+Understanding how uBO Scope operates behind the scenes is essential for appreciating its precise measurement of network activity and third-party connections. This page provides a clear, high-level diagram and explanation of the extension’s key components, their interactions, and the flow of data from browser network events to user-facing insights.
+
+---
+
+## Architecture at a Glance
+
+At its core, uBO Scope functions by tapping into the browser’s ability to monitor network requests and tracking their outcomes across each open tab. The architecture comprises three primary components:
+
+1. **Background Script:** Listens to browser network events, analyzes connection outcomes, and maintains session data about these connections.
+2. **Session and Domain Tracker:** Holds structured data on the status (allowed, blocked, stealth-blocked) of domains contacted per tab, updated in real-time.
+3. **Popup Interface:** Queries the background data to display a categorized, easy-to-understand report of remote server connections for the currently active tab.
+
+Together, these elements form a seamless, cross-browser system that delivers immediate and clear diagnostic information without interfering with the user’s browsing experience.
+
+---
+
+## Key Data Flows and Integration Points
+
+- The **browser.webRequest API hooks** detect every network request triggered by web pages, capturing successes, redirects, and blocked errors.
+- The **background script** aggregates these events asynchronously, organizing them by tab and categorizing outcomes per domain.
+- When a user opens the **popup UI**, it sends a message to request the latest recorded data for that tab, then presents counts and lists of domains broken down by connection outcome.
+
+This approach ensures the extension can accurately reflect real-world network behaviors regardless of what content blockers are active, giving users transparent insight into their web traffic.
+
+---
+
+## Detailed Mermaid Diagram
+
+```mermaid
+flowchart TD
+
+  subgraph Browser
+    WKAPI["webRequest API Events"]
+    Pages["Web Pages\n(Network Requests)"]
+  end
+
+  subgraph uBO_Scope
+    BG["Background Script"]
+    Tracker["Session & Domain Tracker"]
+    Popup["Popup UI"]
+  end
+
+  Pages --> WKAPI
+  WKAPI --> BG
+  BG --> Tracker
+  Popup --> BG
+  BG --> Popup
+
+  classDef browser fill:#8dd3c7,stroke:#334;border-radius:5px;
+  classDef extension fill:#fb8072,stroke:#a00,bold;
+
+  class Browser browser
+  class uBO_Scope extension
+
+  %% Notes
+  note1["Captures network requests across tabs and categorizes outcomes"]
+  BG --> note1
+  note2["Stores and updates domain connection statuses by tab"]
+  Tracker --> note2
+  note3["Requests live data for display and interaction"]
+  Popup --> note3
+
+```
+
+---
+
+## Component Breakdown
+
+### Background Script
+
+- **Role:** Acts as the brain of uBO Scope by hooking into `webRequest` events like `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`.
+- **Functionality:** Processes these network events asynchronously, recording whether connections were successful, blocked, or stealth-blocked.
+- **Outcome Management:** Stores categorized data in a session-based structure keyed by browser tab ID.
+- **Persistence:** Saves session data to ensure continuity even when the service worker or browser restarts.
+
+### Session & Domain Tracker
+
+- **Role:** Maintains detailed maps of domains (both hostnames and registered domains) and how often they have appeared in each outcome category for the current session.
+- **Data Structure:** Uses efficient maps to hold counts of domains seen under “allowed,” “blocked,” and “stealth-blocked” statuses.
+- **Domain Resolution:** Utilizes public suffix list parsing and punycode decoding for accurate domain extraction.
+
+### Popup UI
+
+- **Role:** Provides a user-friendly interface accessible from the browser toolbar.
+- **Functionality:** Upon opening, it queries the background script for the current tab’s connectivity summary.
+- **Presentation:** Displays the hostname, total distinct domains connected to, and categorizes them into three sections:
+  - **Not Blocked (Allowed)**
+  - **Stealth-Blocked**
+  - **Blocked**
+- **User Interaction:** Enables users to quickly interpret current third-party connections without needing to dig into raw logs.
+
+---
+
+## Cross-Browser Compatibility
+
+- Architecture respects browser manifest v3 requirements and uses standard web extension APIs.
+- Background script behavior adapts per platform, employing a background service worker in Chromium and Firefox, or a background script in Safari.
+- Toolbar icon, popup triggers, and data storage use consistent APIs ensuring uniform user experience across supported browsers.
+
+---
+
+## Real-World Scenario: Tracking a Webpage Load
+
+Imagine navigating to a news website. As the page loads, it triggers numerous network requests:
+
+- The background script detects these calls immediately through the `webRequest` API.
+- Each request is classified as it receives a response—whether it was allowed (fetched), blocked, or stealth-blocked by another content blocker.
+- The session tracker associates this data with the tab you’re browsing.
+- When you open uBO Scope’s popup, it presents an up-to-date report revealing exactly which third-party domains your browser connected to.
+
+This workflow helps you understand your exposure to remote servers, validating the effectiveness of your content blockers and privacy protections.
+
+---
+
+## Tips for Troubleshooting and Exploration
+
+- If expected connections aren’t visible, ensure your browser supports the `webRequest` API fully.
+- Data persistence allows inspection after tab reloads, but newly opened tabs start fresh tracking.
+- Use the extension alongside other privacy tools to gain complementary insights.
+
+---
+
+With this architecture, uBO Scope empowers users and filter list maintainers alike to gain definitive, real-time visibility into web requests and remote server connections, all within a lightweight, efficient browser extension.
+
+---
+
+For deeper insights into terminology and user workflows, visit:
+- [Core Concepts & Terminology](/overview/how-it-works-architecture/core-concepts-and-terminology)
+- [What is uBO Scope?](/overview/product-introduction-and-value/what-is-ubo-scope)
+- [Features at a Glance](/overview/product-introduction-and-value/feature-overview)
+
+Explore the popup interface and start monitoring your browser’s network footprint effectively.
