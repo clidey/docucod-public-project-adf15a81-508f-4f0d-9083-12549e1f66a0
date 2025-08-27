@@ -1,108 +1,162 @@
 ---
-title: "First-Time Setup & Permissions"
-description: "Quick guide to the initial configuration after installation. Learn about necessary permissions, how to recognize the extension icon, and confirm basic setup is complete."
+title: "Initial Configuration"
+description: "Walk through any required or optional setup after installation. Understand interface permissions, badge behavior, and how uBO Scope integrates with your browser environment."
 ---
 
-# First-Time Setup & Permissions
+# Initial Configuration for uBO Scope
 
-Welcome to uBO Scope! This guide walks you through the critical initial configuration immediately after installation. You'll learn about the permissions this extension requires, how to identify its icon in your browser, and how to confirm that the basic setup is complete for first use.
+Get up and running quickly by understanding the essential configuration and interface behavior of uBO Scope after installation. This guide will help you configure your environment, interpret permissions, and get familiar with the extension's badge and popup interface behaviors.
 
 ---
 
-## 1. Understanding Required Permissions
+## 1. Understanding Interface Permissions
 
-uBO Scope uses browser permissions to monitor and report network requests effectively. These permissions enable it to observe all connections your browser attempts, helping expose third-party remote server interactions as intended.
+uBO Scope requires a specific set of browser permissions to accurately monitor your browser's network requests. These permissions enable the extension to observe all connections initiated by web pages and display relevant details in the UI.
 
-### Essential Permissions Explained
+### Permissions Required
 
-- **Active Tab**: Grants uBO Scope access to the currently active browser tab for monitoring network requests originating there.
-- **Storage**: Allows saving of connection data securely within your browser for persistence across sessions.
-- **WebRequest**: Enables uBO Scope to listen to all network requests, track outcomes (allowed, blocked, redirected), and update its interface and badge accordingly.
-- **Host Permissions**: uBO Scope must have access to all URLs starting with `http://`, `https://`, `ws://`, and `wss://` to comprehensively monitor connections.
-
-### How Permissions Are Granted
-
-When you install uBO Scope, your browser should prompt you to grant these permissions automatically. This process is standard for browser extensions and ensures the extension can function fully.
+- **activeTab**: Allows uBO Scope to access the active tab to collect data about network connections relevant to the current page.
+- **storage**: Enables the extension to save session data and settings locally within the browser.
+- **webRequest**: Grants access to observe, analyze, and report all outgoing network requests triggered by web content.
+- **Host Permissions**: 
+  - Access to URLs of the form `http://*/*`, `https://*/*`, `ws://*/*`, and `wss://*/*` 
+  - These allow monitoring connections across all websites and web protocols.
 
 <Tip>
-If you do not see a permission prompt upon installation, check your browser’s extension management page to verify permissions manually.
+These permissions are essential for uBO Scope to function correctly, as they let it transparently track every attempted and successful remote connection your browser initiates.
 </Tip>
 
----
+## 2. Badge Behavior Explained
 
-## 2. Recognizing the uBO Scope Extension Icon
+The toolbar icon badge is a quick-glance indicator showing the current number of distinct third-party remote domains connected by the active tab.
 
-Once installed and enabled, uBO Scope displays an icon in your browser’s toolbar.
+- **Badge Count Meaning**: The number displayed on the badge represents the count of distinct third-party domains for which at least one connection was allowed (not blocked).
+- **Preferred State**: A lower badge count indicates fewer remote third-party connections, which is often desirable from a privacy perspective.
+- **Behavior on New Tabs and Page Loads**:
+  - On loading a new page, the count resets and updates as network requests occur.
+  - If no connections to third-party domains have been made or detected, the badge will be empty (no number).
 
-### What the Icon Looks Like
+<Note>
+The badge only counts **allowed** third-party domains, not blocked or stealth connections.
+</Note>
 
-- The icon resembles a small shield with a globe, consistent across supported browsers (Chrome, Firefox, Safari).
-- Icon sizes include 16x16, 32x32, 64x64, and 128x128 pixels to support various display densities.
+## 3. Popup Interface Overview and Domain Statuses
 
-### Toolbar Behavior
+Opening the uBO Scope popup (by clicking the toolbar icon) displays detailed connection outcomes categorized by domain groups:
 
-- If the icon is hidden, you may need to pin it to your toolbar from the browser’s extension management interface for easy access.
-- The icon also displays a badge with a number, representing the count of distinct third-party remote servers connected during browsing. Lower badge counts are generally better, indicating fewer remote servers connected.
+| Section | Description |
+|-----------------|-------------------------|
+| **Allowed** | Domains where network requests succeeded and were not blocked. |
+| **Blocked** | Domains where network requests were blocked or failed. |
+| **Stealth-Blocked** | Domains involved in silent redirects or stealth blocking by content blockers. |
+
+Each section lists domains with a badge count representing the number of connection attempts made to that domain.
+
+### Navigating the Popup
+
+1. **Tab Hostname Display**: At the top, you see the current tab's hostname and its base domain.
+2. **Summary Section**: Shows total count of distinct connected domains.
+3. **Detailed Sections**: Scroll each section to review the relevant domains and their request counts.
+
+Example:
+
+```
+domains connected: 5
+
+Allowed:
+- cdn.example.com [10]
+- api.example.org [2]
+
+Blocked:
+- ads.tracker.net [3]
+
+Stealth-blocked:
+- some.redirected.site [1]
+```
 
 <Info>
-The badge count updates dynamically as you browse, reflecting your current tab’s third-party remote connections.
+Use this interface to understand which third-party servers your browser communicates with when visiting a page, and how content blocking affects these connections.
 </Info>
 
+## 4. How uBO Scope Integrates with Your Browser
+
+uBO Scope runs as a lightweight browser extension that works seamlessly in the background with minimal configuration.
+
+- It listens to all relevant network requests at the browser level.
+- Maintains per-tab session data on allowed, blocked, and stealth connections.
+- Dynamically updates the toolbar badge to reflect current connection counts.
+- Provides instant detailed feedback via the popup interface.
+
+This integration guarantees accurate monitoring regardless of whether you use uBlock Origin or other content blockers, since it taps into the browser's native `webRequest` API.
+
+<Tip>
+The extension automatically handles session persistence and cleanup as you open and close tabs, needing no manual intervention.
+</Tip>
+
+## 5. Steps to Perform Your First Configuration Validation
+
+<Steps>
+  <Step title="Confirm Permissions">
+    Ensure the extension is installed and granted the necessary permissions during installation. Check your browser’s extension page for permission details.
+  </Step>
+  <Step title="Open any Website">
+    Navigate to a common website with typical third-party connections.
+  </Step>
+  <Step title="Observe the Toolbar Badge">
+    Look at the uBO Scope icon badge; it should show a number representing the distinct third-party domains connected.
+  </Step>
+  <Step title="Open the Popup Interface">
+    Click the toolbar icon to open the popup and review detailed connection statuses.
+  </Step>
+  <Step title="Verify Domain Statuses">
+    See that domains are correctly categorized under Allowed, Blocked, or Stealth as per ongoing network activity.
+  </Step>
+</Steps>
+
+<Check>
+Successful review of badge counts and popup domain entries means uBO Scope is properly configured and actively monitoring.
+</Check>
+
+## 6. Best Practices and Common Pitfalls
+
+- **Allow Time for Data Collection**: When you open a page, wait a moment for connections to be recorded and badge to update.
+- **Beware of Incognito Mode Limitations**: Permissions and background activity may be limited if the extension isn't enabled for private browsing.
+- **Understand Badge Resets**: Badge count resets when you switch tabs or reload pages, reflecting fresh data.
+- **No Settings Panel**: uBO Scope requires minimal configuration; avoid looking for options dialogs.
+
+<Tip>
+If the badge never updates or the popup shows no data, verify that the extension is enabled and has permission to access webRequest APIs.
+</Tip>
+
+## 7. Troubleshooting Common Setup Issues
+
+<AccordionGroup title="Troubleshooting uBO Scope Initial Setup">
+  <Accordion title="Badge Does Not Appear or Update">
+    - Ensure you installed the latest version of uBO Scope from your browser’s official add-on store.
+    - Confirm the extension permissions include access to all websites.
+    - Restart the browser and reload tabs.
+    - Check for conflicting extensions or policies blocking extension activities.
+  </Accordion>
+  <Accordion title='Popup Shows "NO DATA" or Empty Sections'>
+    - The current tab may not have triggered any network requests yet. Reload the page.
+    - The extension may have insufficient permissions; verify in browser extensions manager.
+    - Try disabling private/incognito mode restrictions.
+  </Accordion>
+  <Accordion title="Queries on the Badge Number Meaning">
+    Refer to the [Key Concepts & Terminology](https://your.documentation.url/overview/core-concepts-workflow/core-terminology) to understand how domain counting works.
+  </Accordion>
+</AccordionGroup>
+
+## 8. Next Steps
+
+Now that you've completed initial configuration and understand interface behavior, move on to:
+
+- [Launching uBO Scope for the First Time](/getting-started/first-run-validation/running-extension) to see it in action
+- [Quick Validation & First Use](/getting-started/first-run-validation/validation) to test real-world scenarios
+- Explore [Understanding Domain Statuses: Allowed, Blocked, Stealth](/guides/getting-started/understanding-domain-statuses) for deeper insights into connection outcomes
+
 ---
 
-## 3. Confirming Basic Setup Completion
+For advanced users or those curious about the extension internals, the background service worker script manages session data, network event queuing, and badge updates seamlessly without requiring manual configuration.
 
-After installation and granting permissions, verify that uBO Scope is correctly initialized and ready to use.
-
-### Step 1: Check Extension Status
-
-1. Locate the uBO Scope icon in your browser’s toolbar.
-2. Click the icon to open its popup interface.
-3. The popup will display in a few moments a summary of domains connected for the active tab.
-
-### Step 2: Verify Data Collection
-
-- Initially, the popup shows “NO DATA” while loading or if no network requests have been logged yet.
-- Visit a few websites to generate network activity.
-- Reload the popup by clicking the icon again. You should see a domains count and categorized domains under **not blocked**, **stealth-blocked**, and **blocked** sections.
-
-### Step 3: Understand the Badge Count
-
-- The badge number on the toolbar icon reflects the count of distinct third-party remote servers connected in the current tab.
-- If the badge is empty or missing after browsing websites with external content, this could indicate a permissions or installation issue.
-
----
-
-## 4. Best Practices and Tips
-
-- **Pin uBO Scope Icon:** Pin the extension icon to your toolbar immediately after installation for easy access.
-- **Allow Host Access:** Ensure the extension has proper host permissions to avoid missing data.
-- **Use in Private Browsing:** Some browsers restrict extension functionality in private or incognito mode; check your browser’s extension settings.
-
-<Warning>
-Without the necessary permissions, uBO Scope cannot accurately report network requests, rendering its data incomplete or empty.
-</Warning>
-
----
-
-## 5. Troubleshooting Basics
-
-If you do not get expected results or the extension behaves unexpectedly:
-
-- Confirm all permissions are granted by visiting your browser’s extension management page.
-- Reload your browser after installation.
-- Try visiting multiple webpages to allow uBO Scope to collect sufficient network data.
-- Disable other extensions that might interfere with webRequest APIs or network monitoring.
-
-For detailed troubleshooting, refer to the [Troubleshooting Common Setup Issues](/getting-started/first-use-validation/troubleshooting-common-setup-issues) page.
-
----
-
-## 6. Next Steps
-
-- Explore [Getting Your First Results](/getting-started/first-use-validation/getting-your-first-results) to see how to interpret and use the data uBO Scope provides.
-- Learn about how to interpret the [Toolbar Badge & Popup Categories](/guides/getting-started-usage/interpreting-badge-and-popup) to fully realize the extension’s insights.
-
----
-
-<u>By completing this first-time setup, you are on your way to unlocking insight into the real third-party network connections your browser makes. Enjoy enhanced transparency and privacy awareness with uBO Scope!</u>
+By mastering these foundational details, you ensure a smooth and insightful experience monitoring your browser’s network activity with uBO Scope.
