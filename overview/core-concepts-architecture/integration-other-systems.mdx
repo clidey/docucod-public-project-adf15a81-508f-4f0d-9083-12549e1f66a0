@@ -1,0 +1,143 @@
+---
+title: "Integration with Browsers & Content Blockers"
+description: "Outlines how uBO Scope leverages browser APIs (like webRequest) to report network activity, its compatibility across browsers (Chromium, Firefox, Safari), and how it complements other content-blocking tools rather than replacing them."
+---
+
+# Integration with Browsers & Content Blockers
+
+## Unlocking Transparent Network Insights Across Browsers
+
+uBO Scope harnesses the power of modern browser APIs, primarily the `webRequest` API, to faithfully report every network request initiated by webpages. This integration ensures that you gain clear visibility into which remote servers your browser connects to—whether those connections were allowed, blocked, or stealthily handled by other content blockers.
+
+### Why This Matters to You
+uBO Scope’s seamless integration ensures that the network insights it provides are accurate and comprehensive, regardless of which content blocking tools you run alongside it. Rather than functioning as a standalone blocker, uBO Scope complements your existing setup by shining a light on what happens behind the scenes.
+
+### Who Benefits Most
+- Privacy-conscious users seeking to audit their online exposure
+- Web developers validating network requests in real browsing environments
+- Researchers and filter list maintainers needing real-world connection data
+
+---
+
+## How uBO Scope Interfaces with Browsers
+
+### Leveraging the webRequest API for Real-Time Data
+- **Comprehensive Request Monitoring:** uBO Scope listens to several webRequest events such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`.
+- **Outcome Categorization:** It records the outcome of each request—whether it was successful, redirected, or blocked with errors—by tracking requests within the lifecycle of each browser tab.
+- **Session Awareness:** Data about requests is stored and updated in session storage, so the statistics persist during your browsing session and refresh as tabs close or reload.
+
+### Multi-Browser Compatibility
+uBO Scope is designed to run smoothly across all major browsers that support the modern WebExtensions API model with `webRequest` permissions:
+
+- **Chromium-based browsers:** Leveraging MV3 service workers for background event handling.
+- **Mozilla Firefox:** Using script modules compatible with MV3, with specific manifest settings.
+- **Safari:** Supported with Safari-specific manifest configurations and minimum version requirements.
+
+This cross-browser design means you can install and use uBO Scope wherever you prefer, without losing functionality or insights.
+
+### Permissions and Security
+To achieve its deep network visibility, uBO Scope requests only a minimal set of permissions:
+- **`webRequest`:** Essential to monitor network requests as they happen.
+- **`activeTab` and `storage`:** Manage active tab data and persist collected information safely.
+- **Host Permissions:** These include broad URL patterns (`http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*`) to observe requests across domains.
+
+These permissions are standard for extensions providing network insights and do not grant the ability to alter or block network traffic.
+
+---
+
+## Complementing, Not Replacing, Content Blockers
+
+### Respecting Your Existing Blocking Setup
+uBO Scope is not a content blocker itself. Instead, it provides transparency into what blocking tools you already have in place are doing.
+
+- It can detect requests that were blocked, allowed, or redirected stealthily, reflecting outcomes from your active content blockers or network filters.
+- It reports connections even when a content blocker uses stealth techniques that mask blocking events from webpages.
+
+### Why Use uBO Scope Alongside Content Blockers
+
+| Scenario                                  | Without uBO Scope             | With uBO Scope                  |
+|-------------------------------------------|------------------------------|--------------------------------|
+| Understanding which third-party servers are contacted | Unclear or hidden | Clear identification of distinct third-party domains|
+| Detecting stealth blocking (where blockers don’t surface block events) | Impossible | Revealed through stealth-blocking categorization |
+| Validating effectiveness of content blockers | Based on block counts, often misleading | Based on distinct third-party connection counts for accuracy |
+
+This approach empowers you to get actionable insights that help you fine-tune your privacy posture without interfering with your current blockers.
+
+---
+
+## Practical Example: How uBO Scope Monitors Your Browsing
+
+1. You open a webpage.
+2. The browser initiates multiple network requests.
+3. uBO Scope listens to the `webRequest` events triggered by these requests.
+4. For each request, uBO Scope records:
+    - The URL and domain involved.
+    - The outcome (allowed, blocked, redirected).
+5. uBO Scope aggregates this data per browser tab and updates the toolbar icon badge and popup UI.
+6. You see a real-time report of all distinct third-party servers contacted, grouped by their connection status.
+
+This workflow helps you immediately grasp the exposure your browsing activity has to external servers and how effective your blockers are.
+
+---
+
+## Tips & Best Practices
+
+- **Use on Browsers That Support `webRequest`:** Some browsers or private modes might limit the availability of the `webRequest` API; for the best experience, use uBO Scope on supported browsers like Chrome (v122+), Firefox (v128+), or Safari (v18.5+).
+
+- **Don’t Expect Blocking:** Remember, uBO Scope reports what happens but does not interfere with requests—continue using your preferred content blockers for active protection.
+
+- **Combine with Real-world Testing:** Pair uBO Scope insights with real site visits rather than relying on synthetic ad-blocker tests for more practical evaluation.
+
+- **Manage Permissions Wisely:** Keep permissions enabled only as needed to maintain both functionality and privacy.
+
+—
+
+## Troubleshooting Integration Issues
+
+<AccordionGroup title="Common Issues with Browser Integration">
+<Accordion title="No network request data visible in popup">
+Verify the extension has `webRequest` permission and is enabled.
+Confirm uBO Scope is running in a supported browser version.
+Reload the tab or restart the browser.
+Check for conflicting extensions that may block events.
+</Accordion>
+<Accordion title="Incorrect or missing badge counts">
+Ensure tabs are active and requests are going through the monitored sessions.
+Close unused tabs to clear session cache.
+Confirm the browser is not restricting background service worker operations.
+</Accordion>
+<Accordion title="Compatibility problems on specific browsers">
+Check the manifest permissions - Safari requires minimum 18.5, Firefox 128.0, Chromium 122.0.
+Update browser to the latest stable version.
+Refer to browser-specific documentation for extension limitations.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+By deeply integrating with browser `webRequest` APIs, uBO Scope provides an accurate, real-time window into the network activity initiated by your browser tabs. This integration ensures broad compatibility across all major browsers while respecting and complementing any existing content blockers you use. The result is a trustworthy, transparent tool that empowers you to see beyond mere block counts and truly understand your network exposure.
+
+---
+
+## See Also
+- [What is uBO Scope?](./getting-started/product-overview) — Overview and purpose
+- [Feature Snapshot](./getting-started/feature-glance) — Key capabilities including network monitoring
+- [How uBO Scope Works (Architecture Overview)](./core-concepts-architecture/architecture-diagram) — Data flow inside the extension
+- [Key Concepts & Terminology](./core-concepts-architecture/network-terminology) — Definitions for outcomes and network terms
+- [Analyzing Network Requests](../../guides/real-world-usage/analyzing-network-requests) — Real-world application examples
+
+---
+
+## References
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- Browser API documentation:
+  - [Chrome webRequest API](https://developer.chrome.com/docs/extensions/reference/webRequest/)
+  - [Firefox WebExtensions](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest)
+  - [Safari Web Extensions](https://developer.apple.com/documentation/safariservices/safari_web_extensions)
+
+---
+
+## Next Steps
+Check out the [Feature Snapshot](./getting-started/feature-glance) to learn how to leverage these integrations to get the most from uBO Scope’s UI and badge reporting. From there, explore the [Analyzing Network Requests](../../guides/real-world-usage/analyzing-network-requests) guide to deepen your understanding of network behavior and filtering nuances.
