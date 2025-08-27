@@ -1,0 +1,157 @@
+---
+title: "Making the Most of Session Tracking"
+description: "Describes how uBO Scope maintains per-tab and per-session histories, strategies for analyzing changes in allowed or blocked domains over time, and using this for long-term insight gathering."
+---
+
+# Making the Most of Session Tracking
+
+## Overview
+
+This guide helps you understand how uBO Scope maintains detailed histories of network connection events on a per-tab and per-session basis. You'll learn how uBO Scope records outcomes of allowed, stealth-blocked, and blocked requests for each browser tab, and how you can leverage this data to analyze changes over time and gain deeper insights into browsing behavior and content blocking effectiveness.
+
+## Prerequisites
+
+- uBO Scope extension installed and enabled in your supported browser (Chromium v122+, Firefox v128+, Safari v18.5+).
+- Basic familiarity with browsing tabs and accessing the uBO Scope popup interface.
+- Access to the browser's extension badge (toolbar icon) reflecting active session tracking.
+
+## What You Will Achieve
+
+By following this guide, you will be able to:
+- Understand how uBO Scope tracks and categorizes network request outcomes for each tab.
+- Explore the per-session and per-tab data maintained internally.
+- Use the recorded data to analyze allowed and blocked domains over time.
+- Apply these insights for long-term transparency and evaluation of content blocking.
+
+## Estimated Time
+
+Approximately 10-15 minutes to grasp concepts and practical usage.
+
+---
+
+## How Session Tracking Works in uBO Scope
+
+uBO Scope continuously monitors network requests made by each browser tab, assigning each request into one of three categories based on its outcome:
+
+- **Allowed:** Requests successfully made and not blocked.
+- **Stealth-blocked:** Requests that were redirected or otherwise stealthily blocked (hidden from webpages).
+- **Blocked:** Requests that encountered errors or were explicitly blocked.
+
+This categorization happens in the background, where uBO Scope maintains an internal mapping of tab IDs to detailed tracking data structures.
+
+<Accordion title="Understanding Tab Details Data Structure">
+Each tab's tracking data includes:
+- The main domain and hostname of the tab's active page.
+- Maps of domains and hostnames categorized by outcome (allowed, stealth, blocked), each counting the number of connection attempts.
+
+This allows uBO Scope to uniquely track how many distinct domains were connected or blocked per tab during the session.
+</Accordion>
+
+<Callout>
+The badge count on the extension icon for each tab reflects the number of distinct allowed third-party domains found during the session for that tab.
+</Callout>
+
+## Step-by-Step: Tracking and Using Session Data
+
+### 1. Data Collection per Tab
+
+- When a main frame request is made in a tab, uBO Scope resets the tracking for that tab to ensure accuracy for the current page load.
+- For every network request related to the tab (allowed, redirected, or blocked), uBO Scope updates counts in the corresponding category maps.
+- All this data is kept live during the browsing session and saved periodically.
+
+### 2. Data Persistence and Recovery
+
+- uBO Scope stores session data using the browser's `storage.session` API.
+- Upon extension startup, it loads this saved session data to resume accurate tracking without loss.
+
+### 3. Viewing Session Data
+
+- Open the uBO Scope popup for any active tab to see a breakdown of allowed, stealth, and blocked domains, including counts of how many times a domain was contacted.
+- The popup UI dynamically renders this data, decoding internationalized domains properly.
+
+### 4. Analyzing Domain Changes Over Time
+
+- By observing tab data across browsing sessions, you can identify changes in which domains are allowed or blocked.
+- High counts of allowed domains may indicate many third-party services are active for a page.
+- Increases in blocked or stealth-blocked domains over time may signal changes in blocking rules or extensions.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Monitor Tabs Independently:** Session data is organized per tab, so analyze each tab separately for precise insights.
+- **Interpret Badge Counts Carefully:** The badge shows allowed distinct domains only; complement this with popup details for blocked and stealth domains.
+- **Use Data to Evaluate Content Blockers:** Changes in allowed/blocked domains across sessions can help confirm if content blockers are effectively limiting unwanted connections.
+- **Leverage Internationalized Domain Handling:** uBO Scope uses the Public Suffix List and punycode to accurately group domains and display them in user-friendly formats.
+
+<Warning>
+Session data is limited to the current browser session and may be reset when the browser or extension restarts, so capture any critical insights promptly.
+</Warning>
+
+---
+
+## Troubleshooting Session Tracking Issues
+
+### Common Issues
+
+- **No data shown for active tab:** This usually means the tab has not made any network connections since uBO Scope started or data is still loading. Try refreshing the tab or waiting a moment.
+- **Badge count not updating:** Ensure the extension has the necessary permissions and that the browser version supports session storage.
+- **Data disappears after browser restart:** Session storage resets on browser restart; this is expected behavior. Consider exporting any important data externally if needed (currently unsupported in UI).
+
+### Solutions
+
+- Reload the uBO Scope extension or browser if session data seems stale.
+- Verify active tab is selected when viewing popup data.
+- Check for browser updates to ensure compatibility with uBO Scope’s use of the storage API.
+
+---
+
+## Advanced Insights
+
+- By programmatically querying tab session data via extension messaging, developers or filter list maintainers can automate collection of domain outcome histories for analysis.
+- Changes in stealth-blocked domain counts can help identify when stealth blocking tactics evolve or when blocking efficacy alters unnoticed.
+
+---
+
+## Example: Understanding Domain Tracking for a Tab
+
+Suppose you open a tab on example.com and visit a site that loads resources from multiple third-party domains:
+
+- uBO Scope initializes tab data on main frame load, clearing previous records.
+- Allowed requests to cdn.example-cdn.com count toward the allowed domains map.
+- Requests blocked by content blockers count in the blocked domains map.
+- Redirected requests tracked in stealth-blocked.
+- Over the session, you see the badge increment to show distinct allowed 3rd-party domains.
+- Clicking the popup, you see detailed counts like:
+
+  ```
+  Allowed:
+  - example-cdn.com: 5
+  - analytics.com: 2
+
+  Stealth-blocked:
+  - tracking.net: 3
+
+  Blocked:
+  - ads.com: 4
+  ```
+
+This helps you identify who exactly your browser connected to, and which connections were blocked or stealthily handled.
+
+---
+
+## Next Steps & Related Content
+
+- Explore [Viewing Your First Connection Report](/guides/getting-started/first-connection-report) to see real-time session data in action.
+- Read [Interpreting Toolbar Badge Counts](/guides/practical-scenarios/interpreting-badge-counts) to understand the implications of allowed domain counts.
+- Consult [Mythbusting Ad Blocker Claims](/guides/practical-scenarios/debunking-blocker-myths) to learn how session tracking helps evaluate content blocker performance.
+- For deeper understanding of uBO Scope’s data architecture, see [How Does uBO Scope Work? (Architecture & Data Flow)](/overview/system-overview-and-features/architecture-dataflow).
+
+---
+
+## References
+
+- uBO Scope GitHub Repo: https://github.com/gorhill/uBO-Scope
+- Public Suffix List: https://publicsuffix.org/
+
+---
