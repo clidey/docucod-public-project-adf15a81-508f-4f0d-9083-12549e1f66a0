@@ -1,0 +1,223 @@
+---
+title: "Installation & Browser Setup"
+description: "Learn how to install uBO Scope on major browsers, understand permissions, and activate the extension for immediate use. This guide also covers basic configuration steps and introduces the browser-specific aspects covered by the extension."
+---
+
+# Installation & Browser Setup
+
+## Overview
+
+This guide walks you through installing uBO Scope on supported browsers, understanding the permissions it requires, and activating the extension for immediate use. You will also learn about basic configuration steps and the subtle differences in setup across Chromium-based browsers, Firefox, and Safari to ensure smooth operation right from installation.
+
+---
+
+## 1. Prerequisites
+
+Before installing uBO Scope, ensure your environment meets the following requirements:
+
+- **Supported Browsers & Versions:**
+  - **Chromium-based browsers:** Version 122.0 or newer
+  - **Firefox:** Version 128.0 or newer
+  - **Safari:** Version 18.5 or newer
+- **Permissions Requested:**
+  - Access to web requests via the `webRequest` API
+  - Storage access for saving session data
+  - Active tab permissions
+
+These prerequisites ensure uBO Scope can function effectively, capture browser network requests, and provide accurate connection transparency.
+
+<Info>
+Check detailed prerequisites and system requirements in the [Prerequisites & Supported Browsers](../getting-started/installation-setup/prerequisites-browsers) document.
+</Info>
+
+---
+
+## 2. Installation Steps
+
+uBO Scope is distributed as a browser extension available through official browser stores or as manually packaged versions.
+
+### 2.1 Installing from Official Browser Stores
+
+1. **Chromium Browsers (Google Chrome, Edge, etc.):**
+   - Visit the [Chrome Web Store for uBO Scope](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp).
+   - Click 'Add to Chrome' and confirm installation.
+
+2. **Firefox:**
+   - Go to the [Firefox Add-ons page for uBO Scope](https://addons.mozilla.org/firefox/addon/ubo-scope/).
+   - Click 'Add to Firefox' and approve the permissions.
+
+3. **Safari:**
+   - Install from the Apple Safari Extensions Gallery or as directed by your version support.
+
+### 2.2 Manual Packaging and Installation
+
+For advanced users or development setups, scripts are provided to package uBO Scope for Firefox and Chromium:
+
+- **Firefox packaging:** Run `tools/make-firefox.sh` (Linux environment assumed).
+- **Chromium packaging:** Run `tools/make-chromium.sh` (Linux environment assumed).
+
+Once packaged, load the extension in "Developer mode" as an unpacked extension.
+
+<Note>
+Manual packaging is recommended only for advanced users. Use official stores for regular usage to receive updates and verified integrity.
+</Note>
+
+---
+
+## 3. Understanding Permissions
+
+uBO Scope requires certain browser permissions to intercept and analyze network requests reliably:
+
+- **`webRequest` permission:** Enables the extension to listen to all web requests in order to classify connections as allowed, blocked, or stealth-blocked.
+- **`activeTab` permission:** Grants temporary permission to access the active tab details when needed.
+- **`storage`:** Used to store session information such as connection data and the public suffix list for domain parsing.
+
+<Warning>
+Rejecting or disabling any of these permissions will prevent uBO Scope from functioning as intended.
+</Warning>
+
+---
+
+## 4. Activation and Initial Configuration
+
+After installation:
+
+1. **Verify the Extension's Icon:**
+   - Look for the uBO Scope icon in your browser's toolbar; it shows a badge count.
+   - The badge displays the number of distinct third-party domains currently connected in the active tab.
+
+2. **Open the uBO Scope Popup Interface:**
+   - Click the toolbar icon.
+   - The popup will display categorized lists of connected domains:
+     - **Not Blocked:** Connections allowed.
+     - **Stealth-Blocked:** Connections internally redirected or stealth-blocked.
+     - **Blocked:** Connections that failed or were actively blocked.
+
+3. **Understanding Initial Data:**
+   - On first run, the data may be minimal as connections accumulate with browsing.
+   - The popup updates dynamically with new connection information as you browse.
+
+4. **No Manual Settings Required:**
+   - uBO Scope does not require additional configuration out of the box.
+   - It transparently gathers data once permissions are granted and the browser is in active use.
+
+<Check>
+If the badge does not update or no data appears in the popup after browsing, confirm permissions are granted and the extension is enabled.
+</Check>
+
+---
+
+## 5. Browser-Specific Notes
+
+### Chromium
+
+- Uses a service worker as the background execution context.
+- Minimum Chrome version 122.0 is required due to Manifest V3 constraints.
+- The extension listens to network requests with `webRequest` API, capturing HTTP(S) and WebSocket connections.
+
+### Firefox
+
+- Requires strict minimum version 128.0.
+- Uses `background` scripts with module type.
+- Supports all necessary permissions and listens on HTTP(S) and WS(S) URLs.
+
+### Safari
+
+- Requires at least version 18.5.
+- Background script runs as a module similarly.
+- Limited to HTTP(S) URLs (`wss://` and `ws://` may not be fully supported).
+
+<Note>
+Ensure your browser is fully updated to meet these version requirements before installation.
+</Note>
+
+---
+
+## 6. Verifying a Successful Installation
+
+1. Visit any website with third-party content (e.g., news sites, social media).
+2. Observe the badge count on the uBO Scope icon.
+3. Click the icon to open the popup and check the categorized domains lists.
+
+If the extension is functioning properly, you will see domains appearing under **not blocked**, **stealth-blocked**, or **blocked** categories reflecting actual network activity.
+
+<Tip>
+For additional validation steps and troubleshooting, see the [Quick Validation Steps](../getting-started/first-use-validation/quick-validation-steps) and [Troubleshooting Setup Issues](../getting-started/first-use-validation/troubleshooting-setup) guides.
+</Tip>
+
+---
+
+## 7. Troubleshooting Tips
+
+- **Extension Icon Missing:** Ensure the extension is enabled and permissions were accepted.
+- **Badge Not Updating:** Refresh the tab, restart the browser, or try a different website.
+- **No Data in Popup:** Confirm that the browser supports the `webRequest` API and that no content blocker prevents uBO Scope from functioning.
+
+If issues persist, consult the detailed [Troubleshooting Setup Issues](../getting-started/first-use-validation/troubleshooting-setup) documentation.
+
+---
+
+## Appendix: How uBO Scope Works Behind the Scenes
+
+For those interested in the underpinnings, uBO Scope uses the browser's `webRequest` API to monitor network requests in real time. It categorizes connections per tab as:
+
+- Allowed connections (resources successfully loaded).
+- Stealth-blocked connections (redirected or suppressed without apparent blocking).
+- Blocked connections (failed or actively blocked requests).
+
+This data is then aggregated and displayed via the popup UI, with the badge showing a count of distinct allowed third-party domains.
+
+<Info>
+See the [System Architecture (with Diagram)](../overview/architecture-concepts/system-architecture-diagram) for an in-depth visualization of this workflow.
+</Info>
+
+---
+
+# Summary
+
+You have now completed installing and activating uBO Scope. The extension is ready to assist you in transparently monitoring your browser's third-party network connections.
+
+---
+
+## Related Documentation
+
+- [Prerequisites & Supported Browsers](../getting-started/installation-setup/prerequisites-browsers) — Verify environment compatibility.
+- [Installation Instructions](../getting-started/installation-setup/installation-instructions) — Detailed installation process.
+- [Initial Configuration](../getting-started/installation-setup/initial-configuration) — Post-install setup and verification.
+- [Quick Validation Steps](../getting-started/first-use-validation/quick-validation-steps) — Confirm correct operation.
+- [Troubleshooting Setup Issues](../getting-started/first-use-validation/troubleshooting-setup) — Solve common problems.
+- [System Architecture (with Diagram)](../overview/architecture-concepts/system-architecture-diagram) — How uBO Scope captures network connections.
+
+---
+
+# Next Steps
+
+Once installed and verified, proceed to explore how to interpret the uBO Scope popup interface and understand the badge counts for real-world usage:
+- See [Understanding the UI: Badge & Popup Explained](../guides/getting-started-core-flows/understanding-ui-badge-popup)
+- Learn to monitor network requests on any webpage: [Monitoring Network Requests on Any Webpage](../guides/getting-started-core-flows/monitor-network-page)
+
+These guides will empower you to make the most of uBO Scope's capabilities.
+
+---
+
+# Example: Installing on Firefox
+
+```bash
+# On Linux, to package uBO Scope for Firefox
+./tools/make-firefox.sh
+
+# Load the resulting uBO-Scope.firefox.xpi in Firefox via about:addons
+```
+
+After installation, verify the extension icon is visible and click to open the popup showing active network connection domains.
+
+---
+
+# Example: Enabling in Chrome
+
+1. Navigate to Chrome Web Store and install uBO Scope.
+2. Confirm any permission prompts.
+3. Browse to a website and observe the badge count update.
+4. Click the icon to open the popup showing connection details.
+
+---
