@@ -1,0 +1,178 @@
+---
+title: "High-Level Architecture"
+description: "A visual diagram and plain-language explanation of uBO Scope’s architecture: how the extension background script uses webRequest listeners, persists per-tab state, and exposes connection summary data to the UI. Includes a Mermaid diagram for conceptual clarity."
+---
+
+# High-Level Architecture of uBO Scope
+
+Understanding how uBO Scope operates behind the scenes gives you confidence in its accuracy and the reliability of the insights it provides. This page breaks down the key architectural components of the extension, explaining how it captures, processes, and presents remote server connection data for each browser tab.
+
+---
+
+## What You Will Learn
+
+- How uBO Scope leverages browser APIs to monitor network requests.
+- The role of the background script and how it maintains connection state per tab.
+- How connection data is persisted and synchronized.
+- How the UI queries and displays consolidated connection information.
+
+---
+
+## Introduction: Architecture Overview
+
+At its core, uBO Scope is a browser extension designed to track all remote server connections triggered by webpages you visit. It accomplishes this by listening to network events, collecting request outcomes, and categorizing connections based on whether they were allowed, blocked, or stealth-blocked.
+
+The extension's architecture is built around three main elements:
+
+1. **Background Script**: Runs persistently in the browser and intercepts network requests through `webRequest` listeners.
+2. **Per-Tab State Management**: Stores detailed information about connections for each active tab.
+3. **User Interface (Popup)**: Displays a summarized connection report, querying real-time per-tab data from the background.
+
+This separation ensures that monitoring is seamless and does not interfere with the user's browsing experience while providing precise and timely insights.
+
+---
+
+## Core Components
+
+### 1. Background Script — The Monitoring Engine
+
+- Utilizes browser `webRequest` API to monitor all HTTP(S) and WebSocket requests.
+- Listens to three key network events:
+  - **Redirects** (`onBeforeRedirect`)
+  - **Errors** (`onErrorOccurred`)
+  - **Response starts** (`onResponseStarted`)
+- Each event triggers queuing of network request details, which are processed in batches to optimize performance.
+- Processes each network request to identify and record the request outcome as:
+  - **Allowed** (successful connection)
+  - **Blocked** (request failed or was explicitly blocked)
+  - **Stealth** (requests that result in redirects or stealth blocking)
+- Uses the [Public Suffix List](https://publicsuffix.org/) to accurately determine the domain from hostnames, ensuring correct grouping and counting of servers.
+- Maintains a per-tab map storing hostname and domain-level outcomes, enabling distinction of connections on a granular tab basis.
+- Periodically persists all this session data in browser session storage to maintain data continuity even if the extension's background service worker is temporarily evicted.
+
+### 2. State Management and Persistence
+
+- Keeps detailed maps of domains and hostnames for each connection outcome category (allowed, blocked, stealth).
+- Ensures current tab data is reset when a new main frame navigation occurs, preventing stale or inaccurate reports.
+- Cleans up data when tabs are closed, safeguarding against memory bloat.
+- Persists session information asynchronously, allowing fast user interactions without blocking the UI or browser.
+
+### 3. User Interface (Popup) — Real-Time Connection Summary
+
+- Activated when you click the extension icon, the popup requests tab-specific connection data from the background via message passing.
+- Receives serialized connection data and renders it categorically:
+  - Domains connected and allowed
+  - Domains stealth-blocked
+  - Domains explicitly blocked
+- Displays the main hostname of the active tab prominently for context.
+- Uses Unicode-aware decoding to correctly display internationalized domain names.
+
+---
+
+## How Data Flows Through uBO Scope
+
+```mermaid
+flowchart TD
+
+  %% User triggers popup
+  UserClick["User clicks uBO Scope icon"] --> PopupRequest["Popup sends 'getTabData' message with tabId"]
+
+  %% Popup queries background
+  PopupRequest --> BackgroundListener["Background script receives message"]
+  BackgroundListener --> TabDataLookup["Lookup per-tab connection data"]
+  TabDataLookup --> SerializeData["Serialize connection details"]
+  SerializeData --> RespondPopup["Send serialized data to popup"]
+
+  %% Popup renders UI
+  RespondPopup --> PopupRender["Popup renders connection summary"]
+
+  %% Background listens to network
+  subgraph Background Process
+    Direction TB
+    WebRequestRedirect["Browser webRequest.onBeforeRedirect"]
+    WebRequestError["Browser webRequest.onErrorOccurred"]
+    WebRequestResponse["Browser webRequest.onResponseStarted"]
+
+    WebRequestRedirect --> QueueRequest["Queue network request (redirect event)"]
+    WebRequestError --> QueueRequest["Queue network request (error event)"]
+    WebRequestResponse --> QueueRequest["Queue network request (success event)"]
+
+    QueueRequest --> ProcessBatch["Process batched network requests"]
+    ProcessBatch --> UpdateTabData["Update per-tab state with outcomes"]
+    UpdateTabData --> PersistSession["Persist session data in browser storage"]
+    UpdateTabData --> UpdateBadge["Update toolbar badge with allowed domain count"]
+  end
+
+  %% Tab lifecycle
+  UserCloseTab["User closes tab"] --> CleanupTabData["Remove per-tab data from session"]
+  CleanupTabData --> PersistSession
+
+  %% Context notes
+  classDef background fill:#f9f9f9,stroke:#333,stroke-width:1px;
+  class BackgroundListener,TabDataLookup,SerializeData,RespondPopup,WebRequestRedirect,WebRequestError,WebRequestResponse,QueueRequest,ProcessBatch,UpdateTabData,PersistSession,UpdateBadge,CleanupTabData background;
+
+```
+
+This flowchart captures the key interactions within uBO Scope. When network events occur, the background queues and processes them in batches to maintain performance. Per-tab state is updated with fresh connection status, which then updates the user interface and the toolbar badge indicator.
+
+---
+
+## Key Implementation Details for Users
+
+### Using the Public Suffix List
+
+uBO Scope uses the public suffix list to accurately identify domains by stripping subdomains intelligently. This ensures connections are aggregated at the domain level for clearer analysis.
+
+> **Tip:** This avoids misleading counts from multiple subdomains of the same third party.
+
+### Efficient Network Request Handling
+
+To avoid UI lag and excessive processing overhead, network request events are queued and processed asynchronously every second. This ensures smooth browser operation even during heavy network traffic.
+
+### Seamless User Experience with Live Updates
+
+Your popup UI always reflects the latest network data for the active tab, providing immediate, actionable insights into remote connections without delay.
+
+### Robust Data Management
+
+Per-tab data is cleaned up automatically when tabs are closed, and partially persisted in session storage during browsing to prevent loss of data in case of extension background reloads.
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting High-Level Architecture">
+<Accordion title="Why does the toolbar badge count sometimes lag behind actual connections?">
+The extension batches network request events for performance reasons, processing them approximately once every second. Short bursts of connections might not immediately update the badge, but it will synchronize quickly shortly after.
+</Accordion>
+<Accordion title="Why are some network requests missing from the popup UI?">
+uBO Scope relies on the browser's `webRequest` API. Network requests made by browser internals or extensions, or outside the API's scope, will not be captured.
+</Accordion>
+<Accordion title="How does uBO Scope distinguish allowed, blocked, and stealth-blocked connections?">
+Blocked connections are typically those resulting in errors or explicit blocking reported by content blockers or browser. Stealth-blocked connections are inferred primarily from redirect events. Allowed are successful requests that loaded resources.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Additional Resources
+
+- [What is uBO Scope?](../introduction-core-value/what-is-ubo-scope)
+- [Who Should Use uBO Scope?](../introduction-core-value/who-should-use)
+- [Interpreting the Toolbar Badge & Popup Categories](../../guides/getting-started-usage/interpreting-badge-and-popup)
+
+---
+
+## Next Steps
+
+Explore the related [Feature Overview: What Can You See and Do?](feature-quicklook) page to understand the practical capabilities enabled by the architecture detailed here.
+
+
+---
+
+For complete source and latest updates, visit the [uBO-Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+
+---
+
+*This documentation reflects uBO Scope version 1.0.1 and is aligned with current browser extension standards.*
