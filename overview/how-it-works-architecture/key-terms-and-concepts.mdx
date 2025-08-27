@@ -1,0 +1,147 @@
+---
+title: "Key Terms and Concepts"
+description: "Defines crucial terms such as 'sanctioned domains', 'blocked connections', 'stealth-blocking', and how badge counts reflect distinct third-party remote servers. Clarifies the difference between attempted, successful, and stealth-blocked requests."
+---
+
+# Key Terms and Concepts
+
+Understanding how uBO Scope presents data and categorizes network requests is vital for accurately interpreting the information it provides. This page clarifies some crucial terms and concepts such as **sanctioned domains**, **blocked connections**, **stealth-blocking**, and how badge counts relate to distinct third-party remote servers. Additionally, it explains the differences between attempted, successful, and stealth-blocked requests to give you a firm grounding in the extension’s reporting.
+
+---
+
+## Sanctioned Domains
+
+Sanctioned domains refer to third-party domains that have successfully resolved network requests during the current browsing session under your content blocker settings. These are domains your browser attempted to reach when loading a webpage and were permitted to connect. 
+
+- **Why It Matters:** Seeing sanctioned domains helps you identify which external servers are actively communicating with your browser as you browse.
+
+- **User Scenario:** For instance, when visiting news.yoursite.com, uBO Scope might show domains the page loads resources from, like analytics or ad servers, that are allowed by your filtering rules.
+
+## Blocked Connections and Stealth-Blocking
+
+### Blocked Connections
+Blocked connections are network requests that your content blocker (or any filtering mechanism) has identified and prevented from completing due to matching blocklists or rules.
+
+- **Characteristics:** These requests are typically visible as denied attempts and may be associated with standard blocking methods.
+
+- **User Impact:** Blocked connections ensure certain third-party servers do not receive requests or data, enhancing your privacy.
+
+### Stealth-Blocking
+Stealth-blocking refers to a subtle form of blocking where requests are intercepted and suppressed without exposing obvious error responses or notifications to the target server.
+
+- **Invisible to Blockee:** Unlike outright blocking, stealth-blocked requests do not generate apparent network errors—creating a “stealth” effect.
+
+- **uBO Scope Representation:** These stealth-blocked requests are separately categorized and surfaced distinctly so you can differentiate them from allowed or plainly blocked requests.
+
+- **Example:** When a tracking pixel is stealth-blocked, the requesting server receives no indication the request was denied, preserving a quieter browsing footprint.
+
+## Badge Counts and Domain Tracking
+
+The badge count displayed on uBO Scope’s toolbar icon shows the number of **distinct domains** that have been contacted by the active tab during your browsing session.
+
+- **What Counts as a Domain?** Domains are calculated at the effective second-level domain level, based on the public suffix list (e.g., `example.com`, not sub.example.com).
+
+- **Why Domains, Not Requests?** This approach avoids inflating the count by multiple resource requests from the same domain, providing a cleaner view of unique third-party connections.
+
+- **How Badge Counts Change:** 
+  - When a new domain is contacted and allowed, the count increments.
+  - Domains associated with stealth-blocking or blocking do not increase the badge count.
+
+- **Practical Tip:** Use the badge count as a quick gauge of the number of different third-party domains involved in the page you’re viewing.
+
+## Attempted, Successful, and Stealth-Blocked Requests
+
+### Attempted Requests
+
+All network requests initiated by your browser are **attempted** requests, regardless of whether they succeed or fail.
+
+- These include main frame loads, sub-resources (scripts, images), and redirects.
+
+### Successful Requests
+
+Successful requests are those that completed with a valid network response (non-error HTTP status, IP resolution, etc.) and were allowed by your content blocker.
+
+- These successfully retrieved resources contribute to the **allowed domains** displayed in uBO Scope.
+
+### Stealth-Blocked Requests
+
+As described above, stealth-blocked requests were stopped quietly — the remote server does not get an error, but the request results are suppressed locally.
+
+- These are tracked separately to highlight connections that did not complete but without explicit failure.
+
+- You can review these domains in the 'stealth-blocked' section inside the popup UI.
+
+---
+
+## Summary of Outcomes Shown in uBO Scope Popup
+- **Not Blocked (Allowed):** Third-party domains where requests were successful.
+- **Stealth-Blocked:** Requests silently suppressed without exposing error to the server.
+- **Blocked:** Requests explicitly blocked by your content blocker.
+
+Each category lists domains alongside counts reflecting how many times requests were made to them within the session.
+
+---
+
+## Practical Interpretation Example
+Imagine you visit a video streaming site. uBO Scope might show:
+
+- **Allowed Domains:** `videohost.com` (video source), `cdn.example.net` (content delivery), `analytics.tracker.com` (tracking)
+- **Stealth-Blocked:** `tracker.blockedtracker.com` (tracking pixel stealth-blocked)
+- **Blocked:** `ads.adserver.net` (ads explicitly blocked)
+
+The badge count will show the number of unique domains contacted successfully (e.g., `videohost.com`, `cdn.example.net`, `analytics.tracker.com`). Blocked or stealth-blocked domains do not raise this count but are still visible in their respective categories.
+
+---
+
+## Best Practices and Tips
+- Use the **allowed domains** to understand what third-party services are active and potentially track you.
+- Review **stealth-blocked** domains to gauge where your content blocker quietly intervenes without alerting remote servers.
+- Remember badge counts indicate **unique allowed domains only**, so a low badge count with many requests might mean extensive blocking.
+- When troubleshooting connection issues, check the **blocked** category to verify if specific domains are prevented.
+
+---
+
+## Related Pages
+For deeper understanding, consider reviewing:
+
+- [What is uBO Scope?](../../overview/intro-core-value/what-is-ubo-scope) — Introduction to the product and its philosophy.
+- [System Architecture Overview](../../overview/how-it-works-architecture/core-architecture-overview) — How uBO Scope internally tracks and processes network requests.
+- [Decoding Connection Outcomes](../../guides/interpreting-results/decoding-connection-outcomes) — Detailed interpretation of possible connection results.
+
+---
+
+## Summary
+This documentation defined critical key terms and concepts vital for interpreting the data uBO Scope presents. By clarifying the meaning of sanctioned domains, blocked connections, stealth-blocking, and the logic behind badge counts, you can more confidently analyze your browsing privacy exposure and content blocker effectiveness.
+
+---
+
+## Spotlight: Domain Counting Logic (Simplified)
+
+Here’s a practical pseudocode illustrating the core of how domains are counted and categorized:
+
+```javascript
+// For each network request made in the current tab
+for (const request of networkRequests) {
+    const hostname = extractHostname(request.url);
+    const domain = getPublicSuffixDomain(hostname);
+
+    if (request.isAllowed && request.completedSuccessfully) {
+        allowedDomains.add(domain);
+    } else if (request.isStealthBlocked) {
+        stealthBlockedDomains.add(domain);
+    } else if (request.isBlocked) {
+        blockedDomains.add(domain);
+    }
+}
+
+// Badge count = size of allowedDomains set
+const badgeCount = allowedDomains.size;
+```
+
+With this logic, you get a clean, intuitive picture of your browsing session’s domain exposure.
+
+---
+
+For detailed code and functionality, see the [GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+---
