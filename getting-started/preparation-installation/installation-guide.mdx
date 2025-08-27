@@ -1,0 +1,261 @@
+---
+title: "Installing uBO Scope"
+description: "Follow clear instructions to install uBO Scope on your browser of choice—Chromium-based browsers, Firefox, or Safari. Steps cover both extension store installation and manual methods, highlighting key considerations for each platform and how to verify a successful installation."
+---
+
+# Installing uBO Scope
+
+Unlock the power of visibility into your browser's network connections by installing uBO Scope. This guide walks you through step-by-step instructions for installing uBO Scope on your preferred browser—Chromium-based browsers (such as Google Chrome and Edge), Mozilla Firefox, and Safari. Whether you prefer installing from official extension stores or opting for manual installation, you'll find clear, platform-specific guidance and tips to ensure success.
+
+---
+
+## 1. Prerequisites
+
+Before installing uBO Scope, confirm the following prerequisites are met:
+
+- **Supported Browsers & Versions**
+  - **Chromium browsers**: Version 122 or newer (includes Chrome, Edge, Brave, etc.)
+  - **Firefox**: Version 128 or newer
+  - **Safari**: Version 18.5 or newer
+
+- **Required Permissions**
+  - Browser must support the `webRequest` API with permissions for network monitoring.
+  - Support for Manifest V3 extensions.
+
+- **Network Access**
+  - Internet access to download the extension package from official stores or GitHub if manually installing.
+
+- **User Privileges**
+  - Permission to install or load browser extensions.
+
+<Tip>
+Refer to the [System Requirements](https://docs.example.com/getting-started/preparation-installation/system-requirements) page for a detailed list of supported platforms and environment configurations.
+</Tip>
+
+---
+
+## 2. Installation Methods
+
+You can install uBO Scope by either downloading it directly from your browser's official extension store or manually loading it as an unpacked extension. Both methods are fully supported.
+
+### 2.1 Installing from Browser Extension Stores
+
+This is the easiest and recommended installation method.
+
+#### 2.1.1 Chromium-based Browsers
+
+1. Open your Chromium-based browser.
+2. Visit the [Chrome Web Store uBO Scope page](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp).
+3. Click **Add to Chrome** (or equivalent button).
+4. Confirm the permissions request to complete the installation.
+
+#### 2.1.2 Firefox
+
+1. Open Firefox.
+2. Navigate to the [Mozilla Add-ons page for uBO Scope](https://addons.mozilla.org/firefox/addon/ubo-scope/).
+3. Click **Add to Firefox**.
+4. Approve permissions when prompted.
+
+#### 2.1.3 Safari
+
+1. Open Safari (requires version 18.5 or later).
+2. Access the Mac App Store or Safari Extensions gallery.
+3. Search for 'uBO Scope' and install the extension.
+
+<Note>
+If you cannot find uBO Scope in your browser’s official store, or prefer a manual or development version, use the manual installation method below.
+</Note>
+
+---
+
+### 2.2 Manual Installation (Developer Mode / Unpacked Extension)
+
+Manual installation lets you build and load uBO Scope directly from the source code, useful for development or if the store version is unavailable.
+
+#### Step 1: Download the Source Code
+
+- Clone or download the latest source from the GitHub repository:
+
+  ```bash
+  git clone https://github.com/gorhill/uBO-Scope.git
+  cd uBO-Scope
+  ```
+
+#### Step 2: Build the Extension Package (Optional)
+
+- For manual packaging (Linux example):
+
+  ```bash
+  ./tools/make-package.sh <platform>  # platform: chromium, firefox, safari
+  ```
+
+- This generates a build folder with the extension files.
+
+#### Step 3: Load the Extension in Your Browser
+
+##### Chromium-Based Browsers
+
+1. Navigate to `chrome://extensions/`.
+2. Enable **Developer mode** (toggle at top right).
+3. Click **Load unpacked**.
+4. Select the `build/uBO-Scope.chromium` directory or the root folder if building isn’t done.
+
+##### Firefox
+
+1. Go to `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on**.
+3. Select the `manifest.json` file under `build/uBO-Scope.firefox` or source folder.
+
+##### Safari
+
+1. Open Safari and enable the **Develop** menu via Preferences → Advanced.
+2. Open **Extension Builder** under the Develop menu.
+3. Add the extension folder (`build/uBO-Scope.safari`), then enable it.
+
+<Warning>
+Manual installation is intended for advanced users. Be aware that manually loaded extensions might require reloading after browser restarts.
+</Warning>
+
+---
+
+## 3. Verifying Installation
+
+After installing uBO Scope, confirm the extension is properly installed and active.
+
+### 3.1 Toolbar Icon
+
+- Look for the uBO Scope icon in your browser's toolbar. The icon acts as a toolbar badge showing the count of distinct third-party remote servers detected.
+  - The badge will be empty initially until you navigate to any webpage.
+
+### 3.2 Verify from the Popup UI
+
+1. Click the uBO Scope toolbar icon to open the popup.
+2. The popup should display:
+   - The hostname and domain of the current active tab.
+   - Sections listing connections: **not blocked**, **stealth-blocked**, and **blocked** domains.
+   - A summary with the total number of connected domains.
+
+### 3.3 Test Network Monitoring
+
+- Visit a frequently used website (e.g., https://example.com).
+- Check the uBO Scope badge for a number indicating distinct third-party connections.
+- Open the popup and verify that connections are categorized and listed.
+
+<Tip>
+If the badge count remains empty or the popup shows “NO DATA,” reload the page or try another site since uBO Scope updates data per active tab.
+</Tip>
+
+---
+
+## 4. Platform-Specific Notes & Considerations
+
+### Chromium
+
+- Requires version 122 or newer for Manifest V3 compliance.
+- The background service worker manages network request listeners.
+- Permissions must be granted explicitly on installation.
+
+### Firefox
+
+- Minimum version 128 is required to support Manifest V3 extensions and `webRequest` API.
+- Background script runs in a module context.
+- In Firefox, the extension ID is fixed as `uBO-Scope@raymondhill.net`.
+
+### Safari
+
+- Version 18.5 or newer.
+- Extension packages are signed via Apple’s extension ecosystem.
+- Permissions scope excludes WebSocket; only HTTP/S URLs are monitored.
+
+<Note>
+For Safari, the `host_permissions` scope is limited compared to Chromium and Firefox and does not include `wss://` or `ws://` URLs.
+</Note>
+
+---
+
+## 5. Troubleshooting
+
+### Issue: Extension Icon Does Not Appear
+
+- Confirm your browser version meets minimum requirements.
+- Check that extension installation was completed without errors.
+- Restart your browser and try again.
+
+### Issue: No Data Shown or Badge Remains Empty
+
+- Ensure that you have navigated to an active tab with HTTP/HTTPS traffic.
+- Reload the page after uBO Scope installation.
+- Verify that content blocker extensions are not interfering in unexpected ways.
+
+### Issue: Permissions Denied or Installation Failed
+
+- Double-check permissions prompts and approve them.
+- Try manual installation if the extension store method fails.
+
+<Tip>
+Refer to the [Validating and Troubleshooting](https://docs.example.com/getting-started/first-use-setup/validating-installation) guide for comprehensive troubleshooting steps.
+</Tip>
+
+---
+
+## 6. Next Steps
+
+Once installed and verified, explore the following to maximize your usage:
+
+- Open uBO Scope popup regularly to monitor real-time third-party connection data.
+- Refer to the [Exploring the Popup UI](https://docs.example.com/guides/getting-started/first-look-at-the-popup) page to understand the UI components.
+- Learn about use cases and network terminology to interpret your data accurately:
+  - [Key Use Cases & Who Should Use It](https://docs.example.com/overview/getting-started/value-use-cases)
+  - [Key Concepts & Terminology](https://docs.example.com/overview/core-concepts-architecture/network-terminology)
+
+- For advanced users, consider compiling your own version from source or contributing improvements.
+
+<Check>
+You have successfully installed uBO Scope and are ready to monitor your browser’s network connection transparency.
+</Check>
+
+---
+
+For further assistance, visit the official GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+
+
+---
+
+### Appendix: Quick Reference Installation Commands (Manual Build Example)
+
+```bash
+# Clone repository
+git clone https://github.com/gorhill/uBO-Scope.git
+cd uBO-Scope
+
+# Build Chromium package
+./tools/make-package.sh chromium
+
+# Then load unpacked extension in chrome://extensions/
+```
+
+Replace `chromium` with `firefox` or `safari` as needed.
+
+---
+
+### Common uBO Scope Manifest Permissions (For Reference)
+
+```json
+{
+  "permissions": [
+    "activeTab",
+    "storage",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+  ]
+}
+```
+
+Note that Safari limits `host_permissions` to HTTP and HTTPS only.
+
+---
