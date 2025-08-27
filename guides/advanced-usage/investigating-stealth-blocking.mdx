@@ -1,0 +1,158 @@
+---
+title: "Investigating Stealth-Blocked Requests"
+description: "A practical guide for identifying and interpreting stealth-blocked network requests. Learn how stealth blocking works, why it matters, and how to troubleshoot websites that use evasive techniques or rely on undetected connections."
+---
+
+# Investigating Stealth-Blocked Requests
+
+## Overview
+
+This guide provides a practical approach to identifying and understanding stealth-blocked network requests using uBO Scope. Stealth blocking is an evasive technique content blockers use to silently prevent certain network connections without visibly breaking the webpage or exposing the block to the site. Here, you'll learn what stealth blocking means, why it's important to recognize it, how uBO Scope detects these hidden blocks, and methods for troubleshooting sites that use stealth blocking.
+
+---
+
+## What is Stealth Blocking?
+
+Stealth blocking refers to network request blocking done in a way that the blocked request is not directly observable by the webpage or user. Instead of outright blocking a request and signaling it as blocked, the content blocker lets the request go through but disrupts it via subtle means such as redirection, error injection, or manipulation of the response so the destination does not successfully receive or respond to the request. This technique minimizes webpage breakage and decreases detection of the blocker.
+
+**Why it matters:**
+- Websites increasingly use scripts to detect when their resources are blocked.
+- Stealth blocking allows blockers to silently intervene, enhancing privacy and usability.
+- Recognizing stealth blocks helps users and filter maintainers evaluate blocker effectiveness beyond obvious blocked counts.
+
+---
+
+## How uBO Scope Identifies Stealth Blocking
+
+uBO Scope distinguishes three categories for network requests related to a page:
+
+| Outcome          | Meaning                                                                                     |
+|------------------|---------------------------------------------------------------------------------------------|
+| Allowed          | Requests that successfully fetched resources from remote domains.                           |
+| Blocked          | Requests visibly blocked, resulting in network errors reported by the browser.              |
+| Stealth-Blocked  | Requests intercepted silently, often manifesting as redirects or unusual responses without explicit error messages. |
+
+<u>Stealth blocking detection uses network event observation:</u>
+
+- Requests tagged with the `redirect` event but which do not proceed to a successful connection or clear failure are labeled stealth-blocked.
+- These are requests that uBO Scope observes being quietly rerouted or disrupted without clear error notifications.
+- The extension tracks domains associated with these stealth-blocked requests and displays them in a dedicated section in the popup panel.
+
+---
+
+## Using the uBO Scope Popup Panel to Investigate Stealth Blocks
+
+The uBO Scope popup interface organizes network request outcomes into clear sections for the active browser tab:
+
+### Reading the Popup Panel
+
+- **Hostname and Domain Header:** Displays the primary host and domain of the active tab.
+- **Domains Connected Counter:** Shows the count of distinct third-party domains contacted.
+- **Outcome Sections:** Separate lists show domains categorized as Allowed, Stealth-Blocked, or Blocked.
+
+### Step-by-Step Investigation
+
+<Steps>
+<Step title="Open the uBO Scope Popup">
+Click the extension icon in your browser toolbar to open the popup panel for the current tab.
+</Step>
+<Step title="Observe Domain Summaries">
+Check each outcome section:
+- "Not Blocked" shows domains successfully contacted.
+- "Stealth-Blocked" lists domains where requests have been quietly blocked or altered.
+- "Blocked" indicates explicit network errors or canceled requests.
+</Step>
+<Step title="Analyze Stealth-Blocked Domains">
+Focus on stealth-blocked domains. High counts here indicate stealth blocking activity which may affect site behavior unpredictably.
+</Step>
+<Step title="Compare with Blocked and Allowed">
+Evaluate relationships: Are domains stealth-blocked or fully blocked? Both suggest filtering but differ in detectability.
+</Step>
+</Steps>
+
+### Example Scenario
+
+Imagine visiting a news website where ads and trackers are stealth-blocked rather than transparently blocked. In the uBO Scope popup, you might see:
+
+- Allowed domains: `news-site.com`, `cdn.content.com`
+- Stealth-blocked domains: `trackers.ads.com`, `ads.network.com`
+- Blocked domains: none
+
+This shows advertisements are silently subdued to avoid webpage breakage while effectively limiting tracking.
+
+---
+
+## Troubleshooting Stealth-Blocked Requests
+
+When a website behaves unexpectedly, possibly due to stealth blocking, use these techniques:
+
+### Steps to Diagnose
+
+1. **Confirm Stealth Blocking Presence:**
+   Use uBO Scope popup to verify domains are listed under stealth-blocked.
+
+2. **Test Disabling Content Blocking Temporarily:**
+   Temporarily disable your content blocker or uBO Scope extension to see if stealth-blocked domains become allowed and site behavior is restored.
+
+3. **Inspect Domain Patterns:**
+   Look for specific domains repeatedly stealth-blocked that might relate to critical services (e.g., CDN, API endpoints).
+
+4. **Check for False Positives:**
+   Some domains may be stealth-blocked due to overly restrictive filters. Consider adjusting filter lists if these domains are essential.
+
+5. **Use Browser Developer Tools:**
+   Complement uBO Scope data with network tab inspection for nuanced analysis of request redirects or errors.
+
+### Tips and Best Practices
+
+- Stealth blocking is often a balance between privacy and webpage functionality; adjust your filters carefully.
+- Regularly update filter lists to minimize unintended stealth blocking of legitimate domains.
+- Remember that a stealth-blocked count may not always indicate a deficiency - it can mean subtle, effective blocking.
+
+### Common Pitfalls
+
+- Mistaking stealth blocking for extension malfunction: this blocking is intentional.
+- Overreacting to stealth-blocked domains without context: analyze domain roles before whitelisting.
+- Ignoring the stealth-blocked section in the popup; it holds vital clues about subtle network interference.
+
+---
+
+## Advanced Understanding
+
+For those interested in the inner workings, the background script listens to browser `webRequest` events:
+- Requests generating a `redirect` event related to network flow are tracked as stealth-blocked.
+- Data aggregated per browser tab distinguishes allowed, stealth, and blocked requests by domain.
+- This aids comprehensive reporting despite the evasive nature of stealth blocking.
+
+See the [System Architecture Diagram](/overview/understanding-architecture-concepts/system-architecture-diagram) and [Core Concepts & Terminology](/overview/understanding-architecture-concepts/core-concepts-terminology) for deeper technical context.
+
+---
+
+## Summary
+
+Investigating stealth-blocked requests with uBO Scope allows you to uncover subtle content blocking that otherwise escapes detection. By effectively interpreting the popup panel, you gain valuable insights into silent network filtering affecting website behavior and user privacy.
+
+Regular use enhances your awareness of the privacy strategies in place and empowers informed adjustments to filters and blocklists.
+
+## Next Steps
+
+- Explore [Filter List Maintainers: Best Practices with uBO Scope](/guides/advanced-usage/filter-maintainers-workflow) to refine your filter management.
+- Review [Debunking Block Counter Myths](/guides/using-analyzing-connections/debunking-blocking-myths) to better understand blocker effectiveness.
+- Visit [Understanding the Popup Panel and Toolbar Badge](/guides/getting-started/understanding-popup-and-badge) for foundational UI knowledge.
+
+---
+
+## Additional Resources
+
+- Official repository and source code: [GitHub uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List details for domain parsing: [publicsuffix.org](https://publicsuffix.org/)
+
+---
+
+<Tip>
+Stealth blocking is a powerful content blocker technique that protects user privacy without disrupting website usability or alerting the site to the block.
+
+Use uBO Scope to detect stealth blocks and make informed decisions about your blocking preferences.
+</Tip>
+
+---
