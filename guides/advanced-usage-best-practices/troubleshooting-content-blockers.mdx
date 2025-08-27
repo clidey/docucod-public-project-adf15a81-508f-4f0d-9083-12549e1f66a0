@@ -1,0 +1,251 @@
+---
+title: "Troubleshooting: Why Are These Connections Allowed?"
+description: "Helps users investigate why some third-party requests are still visible with uBO Scope, how to distinguish between limitations of blockers vs. browser APIs, and actionable steps to follow."
+---
+
+# Troubleshooting: Why Are These Connections Allowed?
+
+Understanding why certain third-party connections appear as *allowed* in uBO Scope is critical for interpreting your network inspection results accurately. This guide helps you investigate these allowed connections, differentiate between content blocker limitations and browser API boundaries, and take practical steps to clarify what you see.
+
+---
+
+## 1. Purpose and Scope
+
+This page focuses specifically on troubleshooting **allowed connections reported by uBO Scope**, addressing user questions such as:
+
+- Why do some third-party servers still show as allowed despite content blocker usage?
+- How does uBO Scope’s data relate to what content blockers actually block?
+- What are the limitations inherent to browser APIs affecting uBO Scope’s reports?
+- What concrete actions can users take to better understand or mitigate unexpected allowed connections?
+
+
+## 2. Understanding Allowed Connections in uBO Scope
+
+### What 'Allowed' Means
+
+The *allowed* classification in uBO Scope refers to network requests that successfully connected to third-party remote servers without being blocked. This includes connections that content blockers explicitly allow or requests that blocker technologies cannot detect or block.
+
+<u>**Key point:** The badge count reflects the number of **distinct third-party domains** with allowed connections.</u>
+
+### Common Reasons for Allowed Connections
+
+1. **Legitimate Third-Party Resources**
+
+   Many websites rely on essential third-party services such as CDNs (e.g., cloudfront.net), analytics providers, or payment gateways. These are expected and typically allowed by default.
+
+2. **Content Blocker Limitations**
+
+   Content blockers sometimes cannot block certain connections due to:
+
+   - Browser API restrictions (e.g., `webRequest` API can't observe/block requests initiated by some browser internals or extensions).
+   - Connections initiated via secure WebSocket protocols or non-HTTP(s) schemes if unsupported.
+   - Limitations in filter lists or rules applied.
+
+3. **Stealth-Blocking Limitations**
+
+   Some content blockers silently block requests or delay blocking, making these appear as allowed in uBO Scope.
+
+4. **Browser API Differences Across Platforms**
+
+   uBO Scope’s underlying reliance on browser `webRequest` APIs means blocked requests outside that API’s scope won't be reported as blocked but might still appear allowed.
+
+---
+
+## 3. Step-by-Step Investigation Workflow
+
+Follow these steps to understand why certain connections are allowed:
+
+<Steps>
+<Step title="Verify Your Content Blocker Configuration">
+Review your content blocker settings to confirm that blocking rules are active and up to date.
+
+- For uBlock Origin or similar, check filter subscriptions and custom rules.
+- Ensure the blocker is active on the affected site.
+- Disable conflicting extensions if needed and retry.
+
+Expected result: Your blocker is correctly configured and enabled.
+</Step>
+
+<Step title="Open uBO Scope Popup to Inspect Allowed Domains">
+Click the uBO Scope toolbar icon to open the popup.
+
+- Examine the list of allowed domains.
+- Identify domains you consider unexpected.
+- Note counts of connections vs. domain names.
+
+Expected result: You have a clear list of allowed third-party domains.
+</Step>
+
+<Step title="Compare Domain Names With Known Trusted Services">
+Cross-reference allowed domains against known good services such as CDNs, analytics providers, or payment platforms.
+
+- Use developer tools network tab for cross-validation.
+- Refer to the public suffix list for domain grouping.
+
+Decision point: Are these domains likely necessary for site functionality?
+
+If yes, they could be essential.
+If no, proceed to next steps.
+</Step>
+
+<Step title="Check Browser and API Limitations">
+Note your browser type and version.
+
+- Confirm that your browser supports the necessary `webRequest` permissions.
+- Review the uBO Scope documentation for platform-specific notes (e.g., Safari vs. Firefox vs. Chromium).
+
+Tip: Some browsers or versions restrict blocking WebSocket or background service requests.
+
+Expected result: Understanding whether your browser environment affects the data.
+</Step>
+
+<Step title="Test With Other Content Blockers or In Private Mode">
+To isolate whether allowed connections relate to your blocker or browser:
+
+- Temporarily disable uBO Scope and enable only your content blocker.
+- Open the site in a private or incognito window with default blocker settings.
+- Observe network activity.
+
+Expected result: You can compare blocking effectiveness.
+</Step>
+
+<Step title="Analyze 'Stealth Blocked' and 'Blocked' Sections in Popup">
+Review stealth and blocked domains in uBO Scope closely.
+
+- Confirm if some allowed domains are substitutes or redirects of these.
+- Identify potential blocking delays or stealth methods in your blocker.
+
+Expected result: Deeper insight into blocking nuances.
+</Step>
+
+<Step title="Consider Filter List Maintenance and Custom Rules">
+If unwanted allowed connections persist:
+
+- Add custom blocking rules based on domain or URL patterns.
+- Report false negatives to filter list maintainers if you believe filtering misses.
+
+Expected result: User-driven refining of blocking rules.
+</Step>
+</Steps>
+
+---
+
+## 4. Best Practices and Tips
+
+- **Understand That Allowed Connections Are Not Always Bad:**
+  Some allowed domains support critical website functionality or privacy-preserving CDNs.
+
+- **Use uBO Scope to Validate Content Blocker Behavior:**
+  Rather than only counting blocked requests, focus on third-party domains allowed to connect.
+
+- **Refresh Your Content Blocker Regularly:**
+  Filter lists update frequently — stale lists may miss blocking new tracking domains.
+
+- **Beware of 'Ad Blocker Test' Sites:**
+  These tests are often naive and unreliable. Real-world network inspection with uBO Scope provides more accurate insights.
+
+- **Leverage the 'Stealth-Blocked' Category to Identify Quiet Blocking:**
+  Some blockers silently block requests; identifying these can avoid confusion with allowed connections.
+
+---
+
+## 5. Common Issues & Troubleshooting
+
+| Issue | Cause | Solution |
+|---|---|---|
+| Some unwanted third-party connections show as allowed | Browser `webRequest` API does not intercept or block these requests (e.g., WebSocket requests or browser internals) | Verify browser compatibility and version; try another browser or update to latest version |
+| Allowed domains appear despite blocker installed | Content blocker rules do not cover those domains or use stealth blocking invisible to uBO Scope | Review and update filter lists; add custom rules if needed |
+| Network request not visible in uBO Scope popup | uBO Scope lacks permission or the request is out of `webRequest` API scope | Confirm extension permissions; see [Supported Browsers & System Requirements](../getting-started/introduction-overview/system-requirements) |
+| Unexpected allowed domains related to CDN or analytic services | Legitimate third-party services essential to site functionality | Consider whether to block these manually or accept as necessary |
+
+---
+
+## 6. Additional Resources
+
+- [Understanding the Badge & Popup](../getting-started/using-ubo-scope/interpreting-badge-popup) — Learn how to interpret allowed, stealth-blocked, and blocked lists.
+- [Core Concepts & Terminology](../overview/introduction-and-core-concepts/core-concepts-terminology) — Definitions for networking terms used in reports.
+- [How uBO Scope Works](../overview/product-architecture-and-workflows/how-ubo-scope-works) — Overview of extension internals and request categorization.
+- [Integration & Compatibility](../overview/product-architecture-and-workflows/integration-with-content-blockers) — Understand how uBO Scope works alongside blockers.
+- [Filter Maintainer Guide](../guides/advanced-usage-best-practices/filter-maintainer-guide) — For advanced users interested in fine-tuning filters.
+- [Common Issues & Support](../getting-started/troubleshooting-support/common-issues) — Troubleshoot installation and startup problems.
+
+---
+
+## 7. Summary
+
+By following this guide, you can confidently explore why certain connections remain allowed, distinguish blocker limitations from browser API constraints, and take informed steps to refine your blocking strategy.
+
+To keep your browsing experience private and lean, focus on the distinct third-party domains that actually establish connections, as reported by uBO Scope's badge and popup lists.
+
+---
+
+## 8. Feedback & Contribution
+
+uBO Scope is in active development with plans to enhance reporting detail, especially for filter list maintainers. Contributions or issue reports are welcome via the [GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+
+---
+
+# Appendix
+
+### Why Some Connections Are Reported Allowed by uBO Scope Even When Blockers Are Active
+
+This snippet from uBO Scope's background process shows how network requests are recorded and categorized based on browser events:
+
+```javascript
+// Records network request outcome for a tab
+function recordOutcome(tabId, request) {
+    const { type, url, frameId, event } = request;
+    const tabDetails = session.tabIdToDetailsMap.get(tabId) || structuredClone(TABDETAILS_ENTITY);
+    if ( tabDetails.tabId === undefined ) {
+        tabDetails.tabId = tabId;
+        session.tabIdToDetailsMap.set(tabId, tabDetails);
+    }
+    const hostname = hostnameFromURI(url);
+
+    if ( frameId === 0 ) {
+        if ( type === 'main_frame' ) {
+            tabDetailsReset(tabDetails);
+            tabDetails.hostname = hostname;
+            tabDetails.domain = domainFromHostname(hostname);
+            outcomeDetailsAdd(tabDetails.allowed, hostname);
+            return true;
+        }
+        if ( tabDetails.hostname === '' ) {
+            const top = request.initiator || request.documentUrl;
+            if ( top ) {
+                tabDetails.hostname = hostnameFromURI(top);
+                tabDetails.domain = domainFromHostname(tabDetails.hostname);
+            }
+        }
+    }
+
+    switch ( event ) {
+    case 'redirect':
+        outcomeDetailsAdd(tabDetails.stealth, hostname);
+        break;
+    case 'error':
+        outcomeDetailsAdd(tabDetails.blocked, hostname);
+        break;
+    case 'success':
+        if ( outcomeDetailsAdd(tabDetails.allowed, hostname) ) { return true; }
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+```
+
+This code illustrates that **only network events reported by the browser API can be categorized.** If a request is invisible at the API level or uses opaque protocols, uBO Scope cannot block or detect it, so it may appear as allowed even if your blocker intercepts it by other means.
+
+---
+
+# Explore more:
+- [Installation & Setup](../guides/getting-started/installation-setup)
+- [First Use and Validation](../getting-started/using-ubo-scope/run-first-check)
+- [Interpreting Reports](../guides/everyday-usage/interpreting-reports)
+
+---
+
+<u>For source code and issue tracking, visit the <a href="https://github.com/gorhill/uBO-Scope">uBO-Scope GitHub repository</a>.</u>
