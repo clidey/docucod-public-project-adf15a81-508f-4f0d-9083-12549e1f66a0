@@ -1,0 +1,137 @@
+---
+title: "Browser Integration & Compatibility"
+description: "Understand how uBO Scope fits into your browser’s extension ecosystem, leveraging the webRequest API for deep insights. Review its cross-browser compatibility—including Chromium, Firefox, and Safari—and browser-specific integration nuances."
+---
+
+# Browser Integration & Compatibility
+
+## Seamless Integration Within Your Browser Ecosystem
+
+uBO Scope is designed to fit naturally into your browser's extension environment by leveraging the powerful `webRequest` API. This integration provides deep visibility into every network connection initiated from your browser, enabling you to understand and monitor third-party connections transparently and independently of any content blockers you might have installed.
+
+### Why This Matters
+
+Browser extensions live in a complex ecosystem with many APIs and permissions. uBO Scope’s use of the `webRequest` API allows it to access detailed network event data directly from the browser’s networking layer. This gives you an unprecedented, real-time look at which remote servers your browser reaches out to — including requests blocked by content blockers or DNS filtering.
+
+
+## Cross-Browser Compatibility: Supporting Chromium, Firefox, and Safari
+
+uBO Scope is engineered for broad compatibility, ensuring consistent behavior and accurate reporting across major browsers:
+
+- **Chromium (e.g., Google Chrome, Microsoft Edge)**
+  - Utilizes Manifest Version 3 with a `service_worker` background script.
+  - Requires `webRequest` permission to monitor network traffic.
+  - Supports WebSocket and HTTP(S) schemes for comprehensive tracking.
+  - Minimum supported Chrome version: 122.0.
+
+- **Firefox**
+  - Uses a module-type background script.
+  - Incorporates browser-specific settings such as a minimum version of 128.0 for desktop and Android.
+  - Supports extensive host permissions including WebSocket schemes.
+
+- **Safari**
+  - Employs manifest and JavaScript background scripts compatible with Safari’s extension model.
+  - Requires at least Safari version 18.5.
+  - Supports HTTP(S) schemes; WebSocket support is limited by Safari's extension APIs.
+
+This cross-platform support ensures that whether you prefer Chromium-based browsers, Firefox, or Safari, uBO Scope will reliably collect and report connection data without sacrificing accuracy or performance.
+
+## Key Integration Highlights
+
+### Use of webRequest API
+
+The `webRequest` API is the cornerstone of uBO Scope’s integration. It listens to multiple network events (`onBeforeRedirect`, `onErrorOccurred`, `onResponseStarted`) using permissions tightly scoped to relevant URLs (`http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*`). This empowers the extension to provide a complete journal of network requests, including successes, errors, and redirects.
+
+### Browser Action Interface
+
+In all supported browsers, uBO Scope uses the toolbar icon to engage users, showing:
+
+- A **badge** indicating the number of distinct third-party remote servers connected.
+- A **popup UI** detailing connected domains categorized by their outcome: allowed, stealth-blocked, or blocked.
+
+The popup interface and badge update behavior are consistent across browsers, providing a familiar and intuitive experience.
+
+### Permissions and Host Access
+
+The extension requests a minimal but sufficient set of permissions:
+
+- `activeTab` to interact with the current tab.
+- `storage` for saving session and configuration data.
+- `webRequest` for network request monitoring.
+
+Host permissions encompass a broad range of web and WebSocket URLs to capture all potential remote connections comprehensively.
+
+## Browser-Specific Nuances
+
+While uBO Scope maintains feature parity across browsers, certain subtle differences influence integration:
+
+- **Chromium:** The background script runs as a service worker due to Manifest V3 requirements, offering event-driven background processing with better resource efficiency.
+
+- **Firefox:** Background scripts run as ES modules with full access to session APIs, enabling robust session data storage and public suffix list caching.
+
+- **Safari:** Background scripts rely on Safari's module model and have constraints on WebSocket event capturing. Minimum version constraints ensure compatibility with required API surface.
+
+Despite these differences, all versions deliver reliable, real-time monitoring with the same user-facing outputs.
+
+## Real-World Example of Browser Integration Impact
+
+Imagine browsing a news website that silently loads content from multiple ad networks, CDNs, and analytics servers. Thanks to uBO Scope’s deep integration:
+
+1. As soon as the webpage starts loading, the extension tracks every outgoing network request via the `webRequest` listeners.
+2. The toolbar badge updates dynamically, counting unique third-party servers successfully connected.
+3. Opening the popup reveals detailed categorized domains, highlighting any stealth-blocked or fully blocked connections.
+4. This transparency helps you audit and control your browsing privacy effectively across browsers.
+
+
+## Best Practices for Using uBO Scope in Your Browser
+
+- **Ensure Permissions Are Granted:** Confirm during installation or setup that uBO Scope has requested and received the permissions it needs (`webRequest`, `activeTab`, `storage`).
+- **Keep Your Browser Updated:** Minimum version requirements (e.g., Chrome 122, Firefox 128, Safari 18.5) guarantee the extension operates with supported APIs.
+- **Understand Browser Limitations:** Be aware that some network events or WebSocket details may vary slightly due to browser-specific API constraints.
+
+## Troubleshooting Common Integration Issues
+
+<AccordionGroup title="Troubleshooting Browser Integration Issues">
+<Accordion title="Extension Not Showing Badge or Popup Updates">
+- Verify the extension has the `webRequest` permission and host access.
+- Reload or restart the browser to ensure extension background scripts are active.
+- Check for conflicting extensions that may interfere with `webRequest` listeners.
+</Accordion>
+<Accordion title="Missing WebSocket Connection Data in Safari">
+- Safari’s extension APIs may limit WebSocket monitoring.
+- Confirm you use Safari 18.5 or newer with the latest uBO Scope build.
+- Consider reporting any missing functionality on the official GitHub repository.
+</Accordion>
+<Accordion title="Incorrect Count or Data Displayed">
+- The badge reflects distinct third-party domains connected, not individual requests.
+- If the count appears too high, review your content blockers as they may allow more connections.
+- Use the popup to categorize and identify domains to better assess connection legitimacy.
+</Accordion>
+</AccordionGroup>
+
+## Summary
+
+uBO Scope seamlessly integrates into your browser’s extension landscape by leveraging the `webRequest` API, providing precise visibility into all remote server connections your browser makes. Its cross-browser compatibility across Chromium, Firefox, and Safari ensures consistent, reliable insights while honoring each browser’s capabilities and constraints.
+
+For deeper understanding, consult the related documentation on system architecture and feature overview to see how this integration fits into the full product design.
+
+---
+
+[Explore System Architecture at a Glance](/overview/architecture-overview/system-architecture) | [Feature Overview](/overview/architecture-overview/feature-overview) | [Installing on Chrome, Firefox, and Safari](/getting-started/installation-setup/installation-browser) | [Troubleshooting & Quick Checks](/getting-started/first-use/troubleshooting-install-use)
+
+<Info>
+To gain full value from uBO Scope, ensure your browser meets the minimum version requirements and that the extension permissions are correctly granted during installation.
+</Info>
+
+## Source Code Reference
+
+The foundation of uBO Scope’s browser integration can be reviewed in the manifest files and the background script implementations for each platform:
+
+- Chromium manifest: `platform/chromium/manifest.json`
+- Firefox manifest: `platform/firefox/manifest.json`
+- Safari manifest: `platform/safari/manifest.json`
+- Background script: `js/background.js`
+
+<Source url="https://github.com/gorhill/uBO-Scope" paths={[{"path": "platform/chromium/manifest.json", "range": "1-61"},{"path": "platform/firefox/manifest.json", "range": "1-61"},{"path": "platform/safari/manifest.json", "range": "1-61"},{"path": "js/background.js", "range": "1-193"}]} />
+
+---
