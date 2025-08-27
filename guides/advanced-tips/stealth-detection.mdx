@@ -1,0 +1,183 @@
+---
+title: "Spotting Stealth Domains and Hidden Requests"
+description: "Master the techniques for detecting stealthy, filtered, or indirect network requests often missed by test websites and standard blockers. Ideal for advanced users and filter list maintainers seeking exhaustive transparency into web activity."
+---
+
+# Spotting Stealth Domains and Hidden Requests
+
+## Overview
+
+This guide empowers advanced users and filter list maintainers to detect stealthy, filtered, or indirect network requests that standard blockers and most test websites fail to reveal. Understanding these hidden connections enhances your ability to audit real-world web activity with unparalleled transparency. uBO Scope provides key insights into these stealth domains by categorizing connection outcomes and surfacing requests that are typically obscured by content blockers or browser stealth techniques.
+
+---
+
+## Prerequisites
+
+- You have uBO Scope installed and configured in your browser.
+- Familiarity with basic networking concepts and terminology used in uBO Scope, such as "allowed," "blocked," and "stealth" domains.
+- Understanding of third-party domain distinctions and the extension’s popup UI.
+- Access to the [Core Concepts & Terminology](../overview/core-concepts-architecture/core-concepts-terminology) guide for foundational knowledge.
+
+---
+
+## What Are Stealth Domains and Hidden Requests?
+
+- **Stealth Domains**: Domains involved in network requests that were _redirected_ or _filtered_ in such a way that they remain hidden from normal webRequest listeners or typical content blocker metrics.
+- **Hidden Requests**: Network requests that are made but do not appear as straightforward "allowed" or "blocked" connections; these might be subject to redirections, background fetching, or other indirect mechanisms.
+
+These stealth activities are often missed by test websites or standard content blockers due to their inherent stealthiness or the use of alternative network techniques.
+
+---
+
+## How uBO Scope Detects Stealth Domains
+
+uBO Scope listens to browser network events through the `webRequest` API, capturing every network request outcome per tab. It uses a sophisticated mechanism categorizing requests into three buckets:
+
+| Category       | Description                                                  |
+| -------------- | ------------------------------------------------------------|
+| **Allowed**    | Requests that successfully fetched resources from domains.  |
+| **Blocked**    | Requests that failed or were denied (errors).                |
+| **Stealth**    | Requests redirected or modified stealthily, often hidden.   |
+
+Stealth entries are extracted from redirect events, indicating requests intercepted or rerouted before completion. This enables detecting domains that browsers or content blockers normally keep under the radar.
+
+---
+
+## Step-by-Step: Using the Popup to Spot Stealth Domains
+
+<Steps>
+<Step title="Open the uBO Scope Popup">
+Click the uBO Scope icon in your browser toolbar to open the popup. This displays network connection details for the active tab.
+</Step>
+<Step title="Observe Domain Categories">
+The popup lists domains under three headings:
+
+- **Not Blocked** — domains fully allowed.
+- **Stealth-Blocked** — domains with stealthy redirects or filtering.
+- **Blocked** — domains whose requests failed or were explicitly blocked.
+
+Focus on the "Stealth-Blocked" section.
+</Step>
+<Step title="Analyze Stealth Domains">
+Review domains shown in the stealth section. These represent requests often invisible on other network monitoring tools or ad blocker metrics.
+
+Consider the implications of these connections for privacy or filter accuracy.
+</Step>
+<Step title="Compare with Allowed and Blocked Domains">
+Cross-check stealth domains against allowed and blocked lists to understand what’s actively permitted vs. hidden or redirected.
+</Step>
+<Step title="Investigate Specific Domains">
+Use tools like `ping`, `whois`, or online domain analyzers on stealth domains to determine their legitimacy and behavior.
+</Step>
+</Steps>
+
+---
+
+## Practical Tips for Detecting Stealth Connections
+
+- **Reload Pages for Fresh Data**: Always refresh the page after installation to allow uBO Scope to collect fresh network request outcomes.
+- **Use Real-World Sites**: Avoid ad blocker test pages; they are poor at triggering stealth network activity.
+- **Check Redirect Patterns**: Stealth detection primarily signals redirect events. If you see repeated redirects to unusual domains, investigate further.
+- **Combine With Filter List Knowledge**: Stealth domains can arise due to complex filter list rules that redirect or modify requests behind the scenes.
+- **Use Badge Count Insight**: The toolbar icon badge shows distinct allowed domains. If stealth counts spike without matching badge increases, you're likely witnessing stealthy filtering.
+
+---
+
+## Real-World Scenario
+
+Imagine visiting a news website that loads content from multiple third-party sources. Some of these connections are redirected through privacy proxies or CDN edge networks, which behave like stealth domains. While traditional blockers may show low block counts, uBO Scope reveals many stealth domains indicating subtle tracking or filtering.
+
+This enables filter maintainers to improve blocking rules or users to be aware of hidden network activity.
+
+---
+
+## Common Pitfalls and How to Avoid Them
+
+| Pitfall                                  | Solution                                                |
+| ----------------------------------------| --------------------------------------------------------|
+| Relying on "ad blocker test" websites  | Use real websites with typical network behaviors instead |
+| Confusing stealth domains with allowed  | Reference domain counts and categorization in popup carefully |
+| Overlooking redirects to legitimate CDNs | Cross-check domains with CDN providers before flagging |
+| Ignoring session persistence            | Clear session storage if stale data appears or after browser updates |
+
+---
+
+## Troubleshooting Stealth Detection
+
+<AccordionGroup title="Troubleshooting Stealth Domains">
+<Accordion title="No Stealth Domains Appear">
+Make sure you:
+- Have uBO Scope enabled and active on the current tab.
+- Visited a site known for dynamic content and complex third-party requests.
+- Reload the page after opening the popup.
+- Confirm that necessary permissions (`webRequest`, host access) are granted.
+</Accordion>
+<Accordion title="Popup Shows 'NO DATA'">
+This indicates no network data is available for the tab.
+
+Steps:
+- Refresh the page to trigger network events.
+- Verify the extension's permission in your browser’s extension settings.
+- Confirm that the tab is not a browser internal page or special scheme.
+</Accordion>
+<Accordion title="Inaccurate Domain Classification">
+Sometimes domains appear in unexpected categories due to network fluctuations.
+
+Tips:
+- Reload page and clear extension/session storage if needed.
+- Check if the domain uses CDN or redirect services causing stealth classification.
+- Consider browser quirks or upstream blockers that may alter request outcomes.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps & Additional Resources
+
+- Explore the [First Connection Analysis: A Guided Tour](../guides/getting-started/first-analysis-tour) to deepen understanding of the popup UI and domain categorizations.
+- Review [Mapping Allowed and Blocked Third-Party Domains](../guides/core-use-cases/tracking-blocked-allowed) to connect stealth domain insights with overall connection auditing.
+- Read [Debunking Block Count Myths: What Really Matters?](../guides/core-use-cases/debunking-metrics) to contextualize stealth detection within privacy measurement.
+- Consult [Troubleshooting Common Issues](../getting-started/validation-troubleshooting/troubleshooting) to resolve typical setup or usage challenges.
+
+---
+
+## Source Code Highlights (For Context)
+
+The stealth detection centers on handling `redirect` events in the background script, categorizing these requests separately:
+
+```javascript
+// Background script excerpt: processing redirect events
+browser.webRequest.onBeforeRedirect.addListener(details => {
+    queueNetworkRequest(details, 'redirect');
+}, { urls: manifest.host_permissions });
+
+// Queueing and processing network requests
+function queueNetworkRequest(details, event) {
+    details.event = event;
+    networkRequestJournal.push(details);
+    if (networkRequestJournalTimer !== undefined) return;
+    networkRequestJournalTimer = setTimeout(() => {
+        networkRequestJournalTimer = undefined;
+        processNetworkRequestJournal();
+    }, 1000);
+}
+
+function processNetworkRequestJournal() {
+    // processes redirect events distinctively
+    // update stealth domains list
+}
+```
+
+This logic ensures stealth domains resulting from redirects are tracked, presented in the popup in the "stealth-blocked" category.
+
+---
+
+## Summary
+
+Detecting stealth domains is key to understanding the full scope of web tracking and filtering. uBO Scope elevates your visibility by capturing redirect-driven hidden requests missed by conventional methods.
+
+By mastering this guide, you gain the ability to scrutinize indirect network activity and enhance your privacy posture or filter rules effectively.
+
+---
+
+For complete information, consult relevant guides in the documentation set as referenced above.
