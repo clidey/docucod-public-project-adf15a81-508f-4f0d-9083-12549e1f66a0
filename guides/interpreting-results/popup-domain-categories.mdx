@@ -1,0 +1,178 @@
+---
+title: "What Are Allowed, Stealth, and Blocked Domains?"
+description: "Provides clear definitions of allowed, stealth-blocked, and blocked domains as reported by uBO Scope. Helps users make informed judgments about the implications for privacy and content blocking in real scenarios."
+---
+
+# What Are Allowed, Stealth, and Blocked Domains?
+
+Understanding the categories of domains reported by uBO Scope is essential for making informed privacy and content blocking decisions. This guide explains the meaning of **Allowed**, **Stealth-blocked**, and **Blocked** domains as shown in the extension's popup interface, helping you interpret real-world network activity accurately.
+
+---
+
+## 1. Overview
+
+When you open the uBO Scope popup, domains connected by the active browser tab are divided into three clear categories:
+
+- **Allowed**: Domains to which your browser successfully connected.
+- **Stealth-blocked**: Domains for which requests were redirected or otherwise altered stealthily by content blockers.
+- **Blocked**: Domains where network requests failed due to blocking by content blockers or other errors.
+
+This classification provides transparency into what actually happens behind the scenes when you visit a web page, showing both successful connections and various forms of blocking.
+
+---
+
+## 2. Understanding the Domain Categories
+
+### Allowed Domains
+
+**Allowed domains** list all remote servers from which your browser successfully fetched resources or established connections for the current tab.
+
+- These connections indicate third-party servers that were permitted by your content blocker settings or other browser/network conditions.
+- A lower number of allowed domains generally means better privacy because fewer third-parties are contacted.
+- Allowed domains include legitimate services like CDNs, API providers, or essential third-party content required by the website.
+
+<u>_Example Scenario_:</u>
+
+Visiting a news website may show allowed domains such as `cdn.example.com` and `fonts.examplecdn.net`, indicating these content domains were accessed successfully without blocking.
+
+### Stealth-blocked Domains
+
+**Stealth-blocked domains** represent those origins where requests were **redirected or modified quietly** by your content blocker or privacy tools.
+
+- These domains didn’t result in outright failures but were redirected to different URLs to prevent tracking or resource loading.
+- This stealth blocking helps maintain site functionality and avoid detection by trackers or web pages trying to detect content blockers.
+- Domains in this category may still see some network traffic, but the nature of the content or requests is altered to safeguard your privacy.
+
+<u>_Example Scenario_:</u>
+
+A tracking domain like `tracker.example.com` might be stealth-blocked by redirecting its request to a local 'null' URL or modified proxy, thus preventing the tracker from operating while keeping the page intact.
+
+### Blocked Domains
+
+**Blocked domains** are remote servers where network requests explicitly failed due to blocking.
+
+- These failures are commonly caused by content blocking rules, network errors, or security restrictions.
+- Domains in this section indicate that connection attempts to these domains were prevented, which could include ads, known trackers, or other undesirable content.
+- Tracking a high count of blocked domains can reveal aggressive blocking behavior but doesn’t necessarily mean fewer actual third-party connections, making the distinction from allowed count important.
+
+<u>_Example Scenario_:</u>
+
+Attempted connections to ad servers like `ads.exampleadnetwork.com` may appear here, indicating they were prevented from loading by the content blocker.
+
+---
+
+## 3. How Domains Are Categorized Internally
+
+- uBO Scope parses each outgoing network request to extract its **hostname** and then normalizes it to its **domain** using the Public Suffix List.
+- Requests are recorded in three separate mappings (allowed, stealth, blocked), tracking domains and hostnames with counts of occurrences.
+- The extension distinguishes connection outcomes by listening to the browser's `webRequest` events:
+  - `success` events lead to categorization as **allowed**.
+  - `redirect` events are marked as **stealth**.
+  - `error` events indicate **blocked**.
+
+This layered approach ensures users can see an accurate reflection of all real remote server interactions reported by the browser.
+
+---
+
+## 4. Using the Popup Interface to Assess Privacy
+
+The popup shows these domain categories in separate sections with counts:
+
+- **Not Blocked** shows allowed domains.
+- **Stealth-blocked** reveals subtle blocking via redirection.
+- **Blocked** lists outright blocked domains.
+
+Each domain shows a count representing how many requests were made involving that domain, helping prioritize which third parties are the most active or potentially invasive.
+
+### Practical Tips
+
+- Focus on the number and type of **allowed domains** to gauge how many third parties your browsing contacts.
+- Use the **stealth-blocked domains** to understand where content blockers are silently preventing trackers or annoying content without breaking sites.
+- Review **blocked domains** to verify that known trackers or ad servers are being stopped entirely.
+
+---
+
+## 5. Common Pitfalls & Troubleshooting
+
+- **Empty or NO DATA in popup:** This means no tab data is available or no connections were measured yet. Reload the page and re-check.
+- **Unexpected domains in allowed:** Some essential services (e.g., content delivery networks) may always show up; ensure you distinguish these from tracking or ad domains.
+- **Discrepancy between badge count and popup:** Badge count reflects unique allowed domains, while popup shows detailed count breakdowns; they serve complementary purposes.
+
+If popup contents do not update or categories seem incorrect, consult related documentation sections on [reading the badge count](/guides/interpreting-results/reading-badge) and troubleshooting.
+
+---
+
+## 6. Next Steps & Related Guides
+
+- Learn more about interpreting the **badge count** and its implications in [Understanding the Badge Count and What It Means](/guides/interpreting-results/reading-badge).
+- Explore common misconceptions in [Common Myths about Ad Blockers and Test Pages](/guides/interpreting-results/debunking-myths).
+- Follow the [Your First Scan: Interpreting Popup Results](/guides/getting-started/first-connection-overview) guide to see domain categories in action.
+
+---
+
+## 7. Appendix: Example Visualization
+
+The popup interface divides the results as follows:
+
+```html
+<section class="outcome allowed">
+  <h3>not blocked</h3>
+  <div class="domains">
+    <!-- Allowed domains listed here -->
+  </div>
+</section>
+<section class="outcome stealth">
+  <h3>stealth-blocked</h3>
+  <div class="domains">
+    <!-- Stealth-blocked domains listed here -->
+  </div>
+</section>
+<section class="outcome blocked">
+  <h3>blocked</h3>
+  <div class="domains">
+    <!-- Blocked domains listed here -->
+  </div>
+</section>
+```
+
+Each domain row includes the domain name in Unicode and a badge showing the count of requests.
+
+---
+
+This guide empowers you to read uBO Scope’s domain categories confidently, translating raw network data into clear privacy insights.
+
+
+
+---
+
+# Related Source Code References
+
+- Popup rendering logic: [`js/popup.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+- Domain categorization and data handling: [`js/background.js`](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js)
+- Popup interface markup: [`popup.html`](https://github.com/gorhill/uBO-Scope/blob/main/popup.html)
+
+---
+
+# Frequently Asked Questions
+
+<AccordionGroup title="FAQs about Domain Categories">
+<Accordion title="Why are some domains stealth-blocked instead of blocked?">
+Stealth blocking involves redirecting or modifying requests silently to prevent user tracking without breaking website functionality. This is often preferable to outright blocking, as it avoids site breakage or anti-adblock detection.
+</Accordion>
+<Accordion title="Can allowed domains include tracking or advertising servers?">
+Yes. Allowed domains are simply those successfully connected. Whether they track or serve ads depends on your content blocker’s rules. uBO Scope reflects actual connection outcomes without judgement.
+</Accordion>
+<Accordion title="What if I see suspicious domains in blocked or stealth-blocked categories?">
+Investigate those domains further to understand their nature. They could be trackers or malicious servers. You can then adjust your content blocker settings if needed.
+</Accordion>
+</AccordionGroup>
+
+---
+
+# Tip
+
+<Tip>
+To maintain strong privacy, focus on reducing the count of allowed third-party domains across your browsing sessions while ensuring website functionality.
+</Tip>
+
+---
