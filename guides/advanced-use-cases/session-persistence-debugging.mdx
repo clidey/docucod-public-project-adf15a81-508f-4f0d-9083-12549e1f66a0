@@ -1,0 +1,229 @@
+---
+title: "Session Persistence and Tab Analysis for Advanced Debugging"
+description: "Walks power users through session data management, tracking remote connections over time, and investigating how network requests vary with browsing context. Useful for filter authors and those troubleshooting content blocking."
+---
+
+# Session Persistence and Tab Analysis for Advanced Debugging
+
+## Overview
+
+This guide empowers power users, filter list maintainers, and advanced privacy analysts to leverage uBO Scope's session persistence capabilities. It explains how session data retention enables tracking third-party remote connections over time, even as browsing activity spans multiple tabs and sessions. By mastering tab-wise data storage and retrieval, you can investigate network requests in greater depth to uncover patterns or troubleshoot complex content blocking scenarios.
+
+
+### What You Will Learn
+
+- How uBO Scope preserves and structures session data across browser tabs
+- Methods to track, analyze, and interpret tab-specific remote connections over time
+- Techniques to use session data for advanced debugging and filter tuning
+- Practical insights for identifying stealth-blocked, allowed, and blocked connections within a browsing context
+
+
+### Prerequisites
+
+- uBO Scope extension installed and enabled in your Chromium-based, Firefox, or Safari browser
+- Basic familiarity with the extension's popup UI and badge count metrics
+- Understanding of third-party vs first-party domains in network connections
+
+
+### Expected Outcome
+
+By following this guide, you will confidently access and interpret uBO Scope’s session data for each browser tab. You will be able to track network request outcomes across page loads, tab lifetimes, and browser sessions to pinpoint issues or optimize filter lists.
+
+
+### Time Estimate
+
+Approximately 15–20 minutes to assimilate concepts and explore session data using developer tools or programmatic messaging.
+
+
+### Difficulty Level
+
+Intermediate to Advanced
+
+---
+
+## Understanding Session Persistence in uBO Scope
+
+uBO Scope maintains persistent session data that records network request outcomes per browser tab. This data encompasses all distinct third-party domains your browser interacts with—whether the request was allowed, blocked, or stealth-blocked.
+
+
+### How Session Data is Structured
+
+- **Tab Identifier Mapping:** Each browser tab is uniquely identified by its `tabId`. uBO Scope uses an internal mapping from `tabId` to detailed connection outcomes.
+- **Outcome Categories:** For every tab, requests are categorized into three outcome groups:
+  - **Allowed:** Third-party connections successfully made.
+  - **Blocked:** Connections explicitly blocked with error events.
+  - **Stealth-Blocked:** Connections attempting redirection or stealth blocking logic.
+- **Domains and Hostnames:** Counts are maintained at both domain and hostname levels to give granular visibility.
+
+
+### Persistent Storage Mechanism
+
+uBO Scope uses browser session storage via asynchronous read/write operations to save this tab-wise data. This enables continuous tracking without losing state when tabs refresh or when browsing sessions restore.
+
+
+### Key Benefits of Session Persistence
+
+- **Longitudinal Analysis:** Track how network requests evolve for a given tab over time and multiple page loads.
+- **Cross-Session Debugging:** Reload tabs or return to previously visited pages and retain accurate request outcomes.
+- **Filter List Insights:** Assess how changes in blocker filters impact network requests historically.
+
+---
+
+## Step-by-Step Guide to Session Data and Tab Analysis
+
+<Steps>
+<Step title="Access uBO Scope Popup on Active Tab">
+Open the uBO Scope popup by clicking its toolbar icon while viewing the tab you want to analyze. The popup displays the count of distinct third-party domains contacted and lists domains classified under allowed, blocked, and stealth sections.
+</Step>
+<Step title="Understand Tab-Specific Session Data">
+uBO Scope internally associates this data with the current tab's unique `tabId`. This ensures that each tab’s network request history is isolated and accurately maintained.
+</Step>
+<Step title="Using Developer Tools to Query Session Data">
+If desired, you can extract session data programmatically for deeper inspection.
+
+1. Open your browser's developer console.
+2. Send a message to uBO Scope's background script requesting data for a specific tab by running:
+
+```javascript
+browser.runtime.sendMessage({ what: 'getTabData', tabId: YOUR_TAB_ID }).then(response => {
+  const tabDetails = JSON.parse(response); // Deserialize data
+  console.log(tabDetails);
+});
+```
+
+Replace `YOUR_TAB_ID` with the numerical ID of the tab (visible in browser devtools).
+</Step>
+<Step title="Interpret Tab Details Object">
+The `tabDetails` object contains:
+
+- `hostname` and `domain`: the main site of the tab
+- `allowed`, `blocked`, `stealth`: objects each mapping domains and hostnames to counts of connections
+
+You can analyze these to understand which domains are contacted and how they were treated by filters.
+</Step>
+<Step title="Investigate Network Request Outcomes Over Time">
+Observe changes by:
+
+- Reloading the page and watching how `allowed`, `blocked`, and `stealth` domains update.
+- Switching tabs and comparing session data to discover which connections are unique or common.
+- Closing tabs to see how session data clears per tab, ensuring a clean state.
+</Step>
+<Step title="Use Badge Count for Quick Visual Feedback">
+The extension icon badge indicates the number of distinct allowed third-party domains per tab. A rising badge number signals more third-party connections, while zero or low numbers typically indicate tighter blocking or fewer external requests.
+</Step>
+</Steps>
+
+---
+
+## Practical Tips for Advanced Debugging
+
+- **Filter List Tuning:** Use session data to identify domains that repeatedly appear as stealth-blocked or blocked to refine your filters.
+
+- **Analyze Redirects:** Stealth-blocking logged under redirects reveals interesting cases where resources try to circumvent blocking—investigate these carefully.
+
+- **Cross-Tab Comparison:** Comparing session data across multiple simultaneous tabs helps understand if a problematic domain is widespread or isolated.
+
+- **Persistence Checks:** Reload tabs or restart the browser to ensure session data persists correctly; stale or missing data indicates permission or extension issues.
+
+- **Domain Parsing Reliability:** The extension uses the Public Suffix List to normalize hostnames to canonical domains, making analysis consistent.
+
+---
+
+## Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Troubleshooting Session Persistence Issues">
+<Accordion title="Session Data Not Updating">
+Check that uBO Scope has the necessary permissions (`webRequest`, storage). Without these, network event listening and data saving fail.
+
+Restart the browser or reinstall the extension if problems persist.
+</Accordion>
+<Accordion title="Badge Count Incorrect or Stuck">
+A stuck badge count may result from corrupted session data.
+
+Try closing the affected tab and reopening it to reset the session. Ensure you are using a supported browser version.
+</Accordion>
+<Accordion title="Tabs Missing Connection Data">
+If the popup shows no data, confirm you have the correct tab active and that the extension is enabled.
+
+Some pages (e.g., internal browser pages) do not emit network events accessible by the extension.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Example: Accessing Session Data for a Tab
+
+```javascript
+(async () => {
+  const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+  if (tabs.length === 0) return;
+  const tabId = tabs[0].id;
+  const response = await browser.runtime.sendMessage({ what: 'getTabData', tabId });
+  const tabDetails = JSON.parse(response);
+  console.log('Tab hostname:', tabDetails.hostname);
+  console.log('Allowed domains:', Object.fromEntries(tabDetails.allowed.domains));
+  console.log('Blocked domains:', Object.fromEntries(tabDetails.blocked.domains));
+  console.log('Stealth-blocked domains:', Object.fromEntries(tabDetails.stealth.domains));
+})();
+```
+
+This snippet fetches and logs detailed connection outcomes for the active tab, aiding programmatic inspection.
+
+---
+
+## Next Steps & Related Content
+
+- Explore **[Interpreting the uBO Scope Popup](/guides/getting-started/understanding-the-popup)** to deepen understanding of UI components.
+- Review **[Analyzing Remote Servers Connected by Webpages](/guides/analyzing-network-connections/analyzing-remote-servers)** for practical workflows.
+- Consult **[Tips for Filter List Maintainers](/guides/advanced-use-cases/filter-list-maintainers-guide)** for specialized advice.
+- Visit the **official GitHub repository** at [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope) for source code and further exploration.
+
+---
+
+## Summary
+
+uBO Scope’s session persistence feature records all network request outcomes per browser tab, stored seamlessly in session storage. This enables long-term analysis and improved debugging by tracking allowed, blocked, and stealth connections over the tab lifecycle. Advanced users can query this data programmatically to optimize filters and investigate how content blocking behaves across sessions and tabs.
+
+# Diagram
+
+```mermaid
+flowchart TD
+  subgraph "uBO Scope Session Data Flow"
+    direction TB
+    WebRequestAPI["Browser WebRequest API"] --> BackgroundScript["uBO Scope Background Script"]
+    BackgroundScript -->|Records| TabSessionData["Session Storage: TabId ➔ Connection Outcomes"]
+    TabSessionData -->|Serves Data| PopupUI["Popup UI"]
+    PopupUI -->|Displays| User["User"]
+    User -->|Requests Data| BackgroundScript
+  end
+
+  TabSessionData -->|Updated on Network Events| NetworkEventQueue["Network Event Queue"]
+  NetworkEventQueue --> BackgroundScript
+
+  browserTabs["Browser Tabs"] -.-> TabSessionData
+  browserTabs -.-> PopupUI
+
+  %% Style
+  classDef storage fill:#eef6f9,stroke:#2c3e50,stroke-width:1px;
+  class TabSessionData storage;
+
+  classDef component fill:#dce6f1,stroke:#34495e,stroke-width:1px;
+  class WebRequestAPI,BackgroundScript,PopupUI,NetworkEventQueue browserTabs component;
+
+```
+
+This diagram illustrates the flow of session data recording and serving within uBO Scope, showing interaction between browser APIs, the background logic, session storage, and the popup interface.
+
+---
+
+<Tip>
+Always confirm you are using a browser version supported by uBO Scope and that storage and network permissions are enabled to fully benefit from session persistence.
+</Tip>
+
+<Note>
+Session data is scoped per tab and cleared when tabs are closed, facilitating tidy and isolated analysis without cross-tab contamination.
+</Note>
+
+<Check>
+Use the extension icon badge as a quick indicator to monitor how your browsing context affects third-party connections.
+</Check>
