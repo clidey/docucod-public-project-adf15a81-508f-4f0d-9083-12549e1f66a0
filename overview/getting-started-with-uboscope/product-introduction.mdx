@@ -1,0 +1,142 @@
+---
+title: "What is uBO Scope?"
+description: "An introduction to uBO Scope's intent to empower users with real-time visibility into all attempted or successful connections from a browser tab, regardless of content blocker or DNS-level filtering. Explains the tool’s rationale: offering clear, actionable insights about network requests for privacy-focused users and filter maintainers."
+---
+
+# What is uBO Scope?
+
+Discover uBO Scope, a powerful companion tool designed to give you real-time visibility into every network connection attempt initiated from your browser's active tab. Whether a connection is allowed, stealth-blocked, or fully blocked by content filters or DNS-level interventions, uBO Scope unveils the full picture with clarity and precision.
+
+## A Tool Built for Transparency and Control
+
+uBO Scope addresses a critical challenge: understanding exactly which external servers your browser tries to communicate with—even those masked by content blocking or DNS filtering. Privacy-focused users, filter list maintainers, and security enthusiasts use uBO Scope to monitor and analyze all network requests, gaining actionable insights to safeguard browsing integrity.
+
+### Why uBO Scope Matters
+
+- **Holistic Network Insight:** See all connection attempts from the page you’re browsing, including third-party domains often hidden by blockers.
+- **Real-Time Updates:** Monitor connections as they happen, without delay, and understand browser behavior instantly.
+- **Inclusive Visibility:** Track connections regardless of filtering levels—content blocked, stealth blocked, or allowed.
+- **Useful for Privacy and Filtering:** Helps users verify privacy protections and enables filter maintainers to refine blocklists based on actual network activity.
+
+### Who Benefits from uBO Scope?
+
+- **Privacy-Conscious Users:** Ensure no unexpected connections slip through unnoticed, empowering informed browsing decisions.
+- **Filter List Maintainers:** Use precise data to improve filter definitions, optimizing content blocking efficacy.
+- **Researchers and Security Analysts:** Analyze network behaviors and connections initiated by web content.
+
+---
+
+## How uBO Scope Works
+
+Rather than relying only on the browser’s standard UI or logs, uBO Scope taps into the browser's web request events through permissions granted by the extension framework. It collects data about each network request initiated by the tab, then categorizes and summarizes outcomes:
+
+| Outcome Type    | What It Means                                                |
+|-----------------|-------------------------------------------------------------|
+| Allowed         | Connection requests permitted by filters or the browser    |
+| Stealth-blocked | Requests that were redirected as a stealth-blocking method  |
+| Blocked         | Requests explicitly blocked due to errors or filter rules  |
+
+This categorization happens transparently, capturing all relevant URLs and domains regardless of underlying filtering mechanisms.
+
+### Core Workflow
+
+1. **Session Management:** Tracks state and data per tab, maintaining details about domains contacted.
+2. **Event Listening:** Hooks into `webRequest` events like redirect, error, and response start.
+3. **Outcome Recording:** Updates connection records based on events, counting attempts per domain.
+4. **User Presentation:** Provides an intuitive popup UI summarizing results in allowed, stealth, and blocked sections.
+
+## See Network Connections at a Glance
+
+The popup panel highlights the domain of the current tab and lists connected domains grouped by their outcome status:
+
+- **Not Blocked:** Domains with allowed requests
+- **Stealth-Blocked:** Domains involved in stealth redirects
+- **Blocked:** Domains with connections that failed due to blocking
+
+Each domain entry includes a count of how many connections were attempted, enabling quick identification of persistent or suspicious network behaviors.
+
+## Example Scenario
+
+Imagine visiting a news website. Normally, you might suspect many third-party trackers and ads connecting behind the scenes. uBO Scope lets you:
+
+- Confirm which domains actually load resources.
+- Identify stealth redirects that try to disguise their presence.
+- See which requests your content blocker successfully blocked.
+
+No guesswork, just transparent data connected to your current browsing tab.
+
+---
+
+## Practical Tips for Using uBO Scope
+
+- **Open the popup panel for the active tab to get immediate network insights.**
+- **Use uBO Scope alongside your content blocker as a diagnostic tool to verify blocking effectiveness.**
+- **Filter list maintainers can leverage detailed request counts for refinement and testing.**
+- **Remember that stealth blocking may involve redirects that do not appear in typical logs, so rely on uBO Scope to reveal these.**
+
+---
+
+## Troubleshooting and Gotchas
+
+- uBO Scope requires permissions to observe web requests (`webRequest`, `storage`, `activeTab`). Make sure the extension is correctly installed and authorized.
+- Some connections may appear after a delay due to session syncing; refresh the popup if needed.
+- Network requests from subframes or privileged contexts may sometimes present incomplete data—uBO Scope does its best to collect all meaningful requests.
+
+---
+
+## Getting Started
+
+To start leveraging uBO Scope:
+
+1. Install the extension compatible with your browser.
+2. Navigate to any website/tab.
+3. Click the uBO Scope icon to open the popup panel.
+4. Review connection data instantly.
+
+For detailed installation and setup instructions, refer to the [Installing and Setting Up uBO Scope](./guides/getting-started-essentials/install-and-setup) guide.
+
+---
+
+Explore uBO Scope to gain unparalleled clarity on your browser's network behavior. Take back control of your privacy and deepen your understanding of the web’s underlying connections.
+
+
+---
+
+<Info>
+For more context, see related documentation topics on [Understanding Connection Outcomes](./guides/interpreting-advanced-insights/understanding-outcomes) and [Best Practices for Privacy Analysis](./guides/interpreting-advanced-insights/best-practices-privacy-analysis).
+</Info>
+
+---
+
+# Related Source Files
+
+- Background script managing network event collection and tab session data: `js/background.js`
+- Popup UI showing connection summaries: `popup.html`, `js/popup.js`
+- Permissions and extension metadata: Various `manifest.json` files under `platform/` folders
+
+---
+
+# Example Code Snippet: Recording a Network Request Outcome
+
+```javascript
+function recordOutcome(tabId, request) {
+    const tabDetails = session.tabIdToDetailsMap.get(tabId) || structuredClone(TABDETAILS_ENTITY);
+    if (tabDetails.tabId === undefined) {
+        tabDetails.tabId = tabId;
+        session.tabIdToDetailsMap.set(tabId, tabDetails);
+    }
+    const hostname = hostnameFromURI(request.url);
+    if (request.event === 'redirect') {
+        outcomeDetailsAdd(tabDetails.stealth, hostname);
+    } else if (request.event === 'error') {
+        outcomeDetailsAdd(tabDetails.blocked, hostname);
+    } else if (request.event === 'success') {
+        outcomeDetailsAdd(tabDetails.allowed, hostname);
+    }
+    return true;
+}
+```
+
+This snippet shows how uBO Scope keeps track of outcomes per network request, categorizing requests per tab and domain.
+
+---
