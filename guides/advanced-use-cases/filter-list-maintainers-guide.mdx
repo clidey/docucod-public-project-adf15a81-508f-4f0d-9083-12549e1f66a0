@@ -1,0 +1,177 @@
+---
+title: "Tips for Filter List Maintainers"
+description: "Specialized advice for filter list maintainers using uBO Scope: identifying problematic third parties, capturing network behavior on sites where browser tool access is restricted, and extracting insights for list updates."
+---
+
+# Tips for Filter List Maintainers
+
+_uBO Scope_ is a powerful companion tool designed to provide filter list maintainers with deep insights into third-party network activity encountered during web browsing. This page delivers specialized advice on how to leverage uBO Scope's core functionalities to identify problematic third parties, capture network behaviors from otherwise restrictive sites, and derive actionable data to improve filter lists.
+
+---
+
+## 1. Understanding the Value of uBO Scope for Filter List Maintenance
+
+Filter list maintainers strive to fine-tune blocking rules that protect users from unwanted or suspicious third-party content injections. uBO Scope supports this goal by giving a transparent, real-time view of network connection outcomes:
+
+- **Allowed connections**: Third parties currently permitted by existing filters
+- **Blocked connections**: Third parties actively blocked by the filter
+- **Stealth-blocked connections**: Requests which were silently redirected or otherwise hidden by blocking mechanisms
+
+By analyzing these outcomes, maintainers can uncover third parties that are either leaking through filters or unnecessarily blocked, allowing for precise adjustments.
+
+<Check>
+Always prioritize insights from uBO Scope over assumptions; the extension logs actual network request outcomes independent of UI myths or superficial traffic counts.
+</Check>
+
+---
+
+## 2. Preparing uBO Scope for Effective Analysis
+
+Before diving into data collection with uBO Scope, ensure your environment is optimized:
+
+- **Installation**: Verify uBO Scope is installed and enabled in the supported browser (Chromium 122+, Firefox 128+, Safari 18.5+).
+- **Permissions**: Confirm it has permissions for activeTab, storage, and webRequest to monitor connection activity.
+- **Public Suffix List (PSL)**: uBO Scope relies on an up-to-date PSL to accurately derive domains from hostnames, which affects correct attribution of network requests.
+
+<u>Tip</u>: Allow some browsing activity prior to inspection to let uBO Scope accumulate meaningful network data.
+
+<Note>
+Refer to the [Installation Instructions](/guides/getting-started/install-extension) and [Requirements & Supported Browsers](/getting-started/installation-essentials/requirements-and-supported-browsers) guides for setup details.
+</Note>
+
+---
+
+## 3. Using uBO Scope to Identify Problematic Third Parties
+
+### 3.1 Access the uBO Scope Popup
+
+Click the uBO Scope extension icon to open its popup interface. This popup categorizes remote connections for the active browser tab into three sections:
+
+- **Not Blocked** (Allowed)
+- **Stealth-Blocked**
+- **Blocked**
+
+Each section lists third-party domains contacted, along with connection counts.
+
+### 3.2 Analyze Domain Outcomes
+
+- **Scour allowed domains**: Look for unexpected or high-frequency domains that may indicate missed blocking opportunities.
+- **Inspect stealth-blocked entries**: These can reveal subtle redirects or network behaviors that might bypass standard UI feedback.
+- **Confirm blocked domains**: Ensure known problematic domains consistently appear here.
+
+<u>Scenario</u>: On a site suspected of leaking tracking domains, open uBO Scope’s popup and note domains under 'Not Blocked'. Cross-reference these with your filter list to verify coverage.
+
+### 3.3 Focus on Domain-Level Attribution
+
+Because uBO Scope reports both hostnames and their root domains derived via the Public Suffix List, you can detect cases where subdomains differ but correlate to the same provider. This helps avoid over-blocking by ignoring trivially different subdomains and focusing on domain-level blocking.
+
+---
+
+## 4. Capturing Network Behavior on Sites Restricting Developer Tools
+
+Some webpages or browsers may restrict access to developer tools or obfuscate network traffic logs. uBO Scope circumvents this by directly listening to browser webRequest events externally.
+
+### 4.1 Run uBO Scope During Browsing
+
+- Open sites in question.
+- Click the uBO Scope icon frequently to refresh connection logs.
+- Record connection patterns that reveal:
+  - Third-party calls during key user interactions
+  - Redirect chains causing stealth-blocked connections
+  - Error events representing blocked request outcomes
+
+### 4.2 Aggregate Data for Filter Updates
+
+Repeated site visits with uBO Scope allow aggregation of hidden or intermittent behaviors vital for filter refinements.
+
+<Tip>
+Keep uBO Scope running in the background during high-stakes browsing sessions to collect comprehensive network data for analysis.
+</Tip>
+
+---
+
+## 5. Extracting Insights for Effective Filter List Updates
+
+Once uBO Scope data highlights domains requiring action, follow these steps:
+
+### 5.1 Identify Consistent Patterns
+
+- Domains that appear frequently under 'Not Blocked' but are known tracking or ad networks may need rules added.
+- Domains under 'Stealth-Blocked' might require special attention; these often involve redirects or script injections.
+- Reviewing failed connections in 'Blocked' may confirm filter rule effectiveness.
+
+### 5.2 Variations and False Positives
+
+Watch for domains that have legitimate uses but share names with known trackers. Use the domain and subdomain information uBO Scope provides to fine-tune filtering precision.
+
+### 5.3 Refinement Workflow
+
+<Steps>
+<Step title="Collect network data for a specific webpage or site">
+Use uBO Scope popup to review connection outcomes per tab during browsing.
+</Step>
+<Step title="Note third-party domains that require blocking or unblocking">
+Focus on domains slipping through or falsely blocked.
+</Step>
+<Step title="Update your filter list rules accordingly">
+Add or adjust rules targeting problematic domains or subdomains.
+</Step>
+<Step title="Test updated filter rules by reloading the site with uBO Scope active">
+Validate changes by checking updated popup domain outcomes.
+</Step>
+<Step title="Iterate as needed">
+Repeat data collection, review, and refinement for continual filter list improvement.
+</Step>
+</Steps>
+
+---
+
+## 6. Best Practices and Common Pitfalls
+
+- **Keep the Public Suffix List current**: An outdated PSL may misattribute domains, skewing the analysis.
+- **Avoid relying solely on counts**: High connection counts might be legitimate resources; always combine data with domain reputation.
+- **Understand stealth-blocked behavior**: Not all stealth-blocked entries are malicious; some relate to legitimate redirects.
+- **Use uBO Scope alongside other tools**: Combine network insights with blocker logs and external domain reputation sources.
+
+<Warning>
+Misinterpreting stealth-blocked domains or ignoring domain groupings can lead to over-blocking, harming website functionality.
+</Warning>
+
+---
+
+## 7. Troubleshooting Common Issues
+
+### 7.1 Empty or Missing Data in the Popup
+
+- Confirm uBO Scope is enabled and has necessary permissions.
+- Ensure network events are being captured by browsing after installation.
+- Check for conflicts with other privacy extensions.
+
+### 7.2 Unexpected Domain Counts
+
+- Refresh the popup to get the latest data.
+- Validate the PSList is loaded by uBO Scope successfully.
+
+### 7.3 Data Not Persisting Across Tabs or Sessions
+
+- Confirm session permissions are granted.
+- Restart the browser and verify.
+
+<Note>
+Consult the [Troubleshooting & Validation Guide](/getting-started/configuration-first-use/quick-troubleshooting) for detailed tips.
+</Note>
+
+---
+
+## 8. Additional Resources and Next Steps
+
+- [Interpreting the uBO Scope Popup](/guides/getting-started/understanding-the-popup) for UI walkthrough
+- [Analyzing Remote Servers Connected by Webpages](/guides/analyzing-network-connections/analyzing-remote-servers) for workflow examples
+- [Session Persistence and Tab Analysis for Advanced Debugging](/guides/advanced-use-cases/session-persistence-debugging) to dive deeper
+- Official [GitHub Repository](https://github.com/gorhill/uBO-Scope) for source, issues, and updates
+
+Start applying these tips now to ensure your filter lists are effective, efficient, and up-to-date with actual third-party network behaviors revealed by uBO Scope.
+
+---
+
+_Last updated on branch `main`._
