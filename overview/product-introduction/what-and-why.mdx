@@ -1,0 +1,161 @@
+---
+title: "What is uBO Scope?"
+description: "A concise, product-driven introduction explaining uBO Scope’s purpose: to transparently reveal all network connections—allowed or blocked—made by your browser, regardless of content blocker or DNS-based protections. Emphasizes the badge’s meaning and how visibility empowers informed privacy decisions."
+---
+
+# What is uBO Scope?
+
+## See Every Network Connection Your Browser Makes — Transparently
+
+When you browse the web, countless network connections happen in the background—some you want, others you might not. uBO Scope shines a clear light on all these network interactions. It reveals every remote server your browser connects to, whether those connections are allowed or blocked, regardless of any other content blockers or DNS protections in place.
+
+## Why Awareness Matters
+
+By displaying the full spectrum of your browser’s network activity, uBO Scope empowers you to make informed decisions about your online privacy and security. The extension’s badge on the browser toolbar shows the exact number of distinct third-party remote servers contacted during the current browsing session. A smaller count usually means fewer external parties tracking or interacting with your browsing.
+
+<u>Understanding this real-time visibility into network connections changes how you evaluate content blockers and privacy tools — it cuts through false impressions often presented by block counts alone.</u>
+
+---
+
+## What uBO Scope Does
+
+- **Reveals all remote servers contacted**: Shows every network connection—both successful and blocked—made by your browser.
+- **Content blocker agnostic**: Works transparently alongside any content blocker or DNS-based filtering you use.
+- **Counts distinct third-party domains**: The toolbar badge reflects unique third-party domains contacted, giving a clear privacy metric.
+- **Breaks down connection outcomes**: Differentiates between allowed, stealth-blocked (redirected), and explicitly blocked domains.
+
+## What the Badge Means
+
+The badge number on the uBO Scope icon isn’t merely a block count. It reports the total number of unique third-party remote server domains your browser attempted to connect with during the current tab session. 
+
+- A **lower badge count** indicates fewer third-party connections—often more desirable for privacy-conscious users.
+- A **higher count** means your browser reached out to more third-party domains, which could signify more tracking or less effective blocking.
+
+<u>Unlike superficial block counts from content blockers, understanding this distinct third-party connection count provides a clearer picture of actual privacy exposure on the web page you are visiting.</u>
+
+---
+
+## How uBO Scope Works
+
+uBO Scope hooks into your browser’s `webRequest` API to monitor network requests and their outcomes. It tracks:
+
+- URLs your browser contacts
+- Whether each connection was **allowed**, **blocked**, or **redirected (stealth-blocked)**
+- Each unique third-party domain involved
+
+This approach enables uBO Scope to see every attempted connection, even those blocked by content blockers or DNS filters, as long as the browser reports it via the API.
+
+If a network request happens outside the browser's API scope (such as some platform-level DNS caches or proxies), uBO Scope cannot detect it.
+
+---
+
+## Empower Your Privacy Decisions
+
+Imagine browsing a site and seeing it silently connect to dozens of unknown third-party domains. With uBO Scope, you catch this behavior instantly, allowing you to:
+
+- Adjust your content blockers
+- Avoid potential tracking or security risks
+- Understand the actual impact of privacy settings
+
+Seeing the clear list of connected domains (allowed, blocked, or redirected) enables transparency previously unavailable in browser tooling.
+
+---
+
+## What Makes uBO Scope Unique?
+
+- **Unfiltered network visibility**: Unlike other tools that only show allowed connections, uBO Scope also reports blocked and stealth-blocked attempts.
+- **Independent of blocking techniques used**: Whether blocking happens via DNS, extension filters, or browser built-ins, uBO Scope reports all.
+- **Clear, actionable metrics**: The badge count and detailed popup show distinct third-party servers, not just raw connection counts.
+
+---
+
+## Real-World Example
+
+You visit a news website. Across the page, ads and embedded social widgets create network requests to multiple third-party services. Your regular ad blocker may count a high number of blocked requests but may still allow connections to various tracking domains.
+
+With uBO Scope, you see:
+
+- How many distinct third-party servers your browser actually reached (badge number).
+- Which domains were allowed (resources fetched).
+- Which connections were blocked or stealth-blocked (redirects stopped).
+
+This insight could reveal previously hidden tracking or help verify privacy improvements after tweaking your filters.
+
+---
+
+## Next Steps
+
+To get hands-on:
+
+- Install uBO Scope from your browser’s extension store.
+- Observe the badge as you browse — note the number of third-party domains your current site connects with.
+- Open the popup to see detailed lists of allowed, stealth-blocked, and blocked connections.
+- Use this knowledge to fine-tune your privacy tools or understand network behavior better.
+
+Explore more documentation to learn who benefits most from uBO Scope and see a features snapshot:
+
+- [Who Should Use uBO Scope?](/overview/product-introduction/use-cases-audience)
+- [Key Features at a Glance](/overview/product-introduction/feature-snapshot)
+
+
+---
+
+<Tip>
+Remember, not all third-party connections are inherently bad. Many legitimate services rely on CDNs or third-party APIs. The goal is visibility, enabling you to distinguish between acceptable and unwanted connections.
+</Tip>
+
+<Note>
+The effectiveness of uBO Scope depends on your browser exposing network requests via the `webRequest` API. If some requests bypass this API (rare in modern browsers), those won't be reported.
+</Note>
+
+---
+
+_For full transparency and updates, visit the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope)._
+
+---
+
+## Quick Recap
+
+- uBO Scope shows all network connections made by your browser, both allowed and blocked.
+- The badge count represents unique third-party domains contacted.
+- It works alongside any content blocker or DNS filter, highlighting true privacy exposure.
+- The detailed popup helps identify which domains are allowed, blocked, or stealth-blocked.
+
+Unlock the true visibility of your browser’s network activity and take control of your online privacy with uBO Scope.
+
+---
+
+## Code Example (Developer Insight)
+
+For those curious about how uBO Scope tracks connections, it listens to the browser's network events like this:
+
+```javascript
+browser.webRequest.onBeforeRedirect.addListener(details => {
+  process(details, 'redirect');
+}, { urls: manifest.host_permissions });
+
+browser.webRequest.onErrorOccurred.addListener(details => {
+  process(details, 'error');
+}, { urls: manifest.host_permissions });
+
+browser.webRequest.onResponseStarted.addListener(details => {
+  process(details, 'success');
+}, { urls: manifest.host_permissions });
+```
+
+In practice, users see the aggregated counts and domain lists without needing this internal detail.
+
+---
+
+## Related Documentation
+
+- [Who Should Use uBO Scope?](/overview/product-introduction/use-cases-audience): Understand if this tool fits your needs.
+- [Key Features at a Glance](/overview/product-introduction/feature-snapshot): Get a quick look at core capabilities.
+- [How uBO Scope Works (with Diagram)](/overview/core-concepts-architecture/system-architecture): Deep dive into architecture.
+- [Using the Popup: First Run](/getting-started/first-use-validation/using-the-popup): Learn to interpret the popup display.
+
+For installation and initial setup, visit:
+- [Supported Browsers & System Requirements](/getting-started/requirements-installation/supported-platforms-browsers)
+- [Installation Instructions](/getting-started/requirements-installation/install-instructions)
+
+---
