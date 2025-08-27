@@ -1,0 +1,187 @@
+---
+title: "Understanding the Popup UI"
+description: "Discover how to use the extension’s popup interface to view real-time statistics about remote server connections on any active browser tab. Learn what the badge count means, how to interpret allowed, blocked, and stealth connections, and navigate the detailed per-domain breakdown."
+---
+
+# Understanding the Popup UI
+
+Discover how to use uBO Scope’s popup interface to gain real-time insights into remote server connections on any active browser tab. This guide walks you through interpreting the badge count, understanding connection outcomes (allowed, blocked, stealth), and navigating the detailed per-domain connection breakdown.
+
+---
+
+## 1. Popup UI Overview
+
+The popup UI is your window into the network activity of the current active browser tab. By opening the uBO Scope popup, you get:
+
+- A summary badge count showing the number of distinct third-party remote servers contacted (allowed).
+- Three clear sections breaking down connection outcomes:
+  - **Not Blocked (Allowed)** — third-party domains the browser successfully connected to.
+  - **Stealth-Blocked** — domains where the extension detected stealth blocking effects (typically redirects).
+  - **Blocked** — domains where connection attempts were blocked outright.
+
+The interface delivers immediate, actionable information allowing you to understand and audit network exposure for privacy and filter tuning.
+
+### Key Visual Elements
+
+- **Tab Hostname Display**: Shows the base domain of the active tab and additional hostname info if applicable.
+- **Domains Connected Counter**: Located in the summary section, reflects the total allowed distinct domains contacted from the active tab.
+- **Outcome Sections (Allowed / Stealth / Blocked)**: Lists each domain found per outcome along with the count of connection attempts.
+
+---
+
+## 2. Step-by-Step: Using the Popup UI
+
+Follow these steps each time you want to analyze connection activity for the active tab.
+
+### Step 1: Open the uBO Scope Popup
+
+- Click the uBO Scope icon in your browser toolbar.
+- The popup loads and shows the current tab's hostname, connection counts, and detailed domain breakdown.
+
+**Expected Result:** The popup displays the hostname of the current active tab along with the network activity summary.
+
+### Step 2: Understand the Badge Count (Toolbar Icon)
+
+- The badge on the extension icon reports the number of distinct allowed third-party domains contacted.
+- A lower badge count indicates fewer third-party connections and less exposure.
+
+**Tip:** Don’t confuse the badge number with blocked count. This reflects actual allowed connections, which reveal your real network exposure.
+
+### Step 3: Review the Domains Connected Summary
+
+- This shows the total number of distinct third-party domains the browser connected to on the active tab.
+- Use this number as your baseline to assess network exposure.
+
+### Step 4: Explore Outcome Sections
+
+- **Not Blocked:** Domains where connections succeeded.
+- **Stealth-Blocked:** Domains with stealth blocking events like redirects (harder to detect).
+- **Blocked:** Domains explicitly blocked by content blockers or other means.
+
+Each section lists domains along with connection attempt counts.
+
+**Decision Point:** If you notice many allowed domains, consider auditing your filters or browsing habits to minimize exposure.
+
+### Step 5: Interpret Domain Counts
+
+- The connection count per domain represents how many network requests were made.
+- High counts might indicate frequent resource loads or trackers.
+
+
+### Step 6: Verify and Refresh
+
+- Close and reopen the popup to refresh data.
+- Navigate to different tabs and observe how counts and domains change.
+
+---
+
+## 3. Practical Examples
+
+Suppose you visit a news website. Opening the popup shows:
+
+- Badge count: 5
+- Not Blocked: `cdn.news.com` (12 requests), `ads.network.com` (3 requests)
+- Stealth-Blocked: `tracker.redirect.com` (2 requests)
+- Blocked: `malicious.domain.com` (1 request)
+
+This means your browser connected successfully to 5 distinct third-party domains, some connections were stealth-blocked, and one was completely blocked.
+
+You can then decide if you want to tighten filtering or recognize the presence of unavoidable content delivery (like legitimate CDNs).
+
+---
+
+## 4. Tips and Best Practices
+
+- **Use in Conjunction with Filters:** Pair the popup insights with your filter list to understand impact.
+- **Regularly Monitor:** Open the popup after visiting new sites to track unusual third-party connections.
+- **Understand Outcomes:** Stealth blocking can be subtle; don’t assume a domain not blocked means harmless.
+- **Badge Counts Are Exposure Metrics:** Low blocked counts with high badge numbers mean more distinct connections allowed.
+
+---
+
+## 5. Troubleshooting Common UI Scenarios
+
+<AccordionGroup title="Troubleshooting Popup UI Issues">
+<Accordion title="Popup Shows 'NO DATA' or No Hostname">
+If the popup displays 'NO DATA' or no tab hostname:
+
+- Ensure you have an active tab selected.
+- Refresh the tab and reopen the popup.
+- Verify the extension has permission to access activeTab and storage.
+- Restart your browser if stale data persists.
+</Accordion>
+
+<Accordion title="Badge Count Not Updating">
+If the toolbar badge does not update:
+
+- Confirm the extension is running with the correct permissions.
+- Close and reopen your browser tab or restart the browser.
+- Check for conflicts with other extensions that may interfere.
+</Accordion>
+
+<Accordion title="Domain Lists Are Empty">
+Empty domain lists despite browsing:
+
+- Verify the current tab has made network requests.
+- Make sure the extension's event listeners are functioning (check browser console for errors).
+- Clear extension storage via browser extension management and reload.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Next Steps & Learning More
+
+- Explore the full [System Architecture Overview](/overview/architecture-and-core-concepts/system-architecture) to understand how the extension collects data.
+- Review [Mythbusting: Sound Web Privacy Practices with uBO Scope](/guides/advanced-analysis-usecases/mythbusting-guidelines) to avoid common privacy misconceptions.
+- Follow the [Quick Validation Checklist](/getting-started/first-run-usage-validation/quick-validation-checklist) to verify your setup.
+
+---
+
+## Appendix: Popup UI Layout Elements
+
+```html
+<h2 id="tabHostname"><span></span><span>NO DATA</span></h2>
+<section id="summary">
+  domains connected: <span>?</span>
+</section>
+<section class="outcome allowed">
+  <h3>not blocked</h3>
+  <div class="domains"></div>
+</section>
+<section class="outcome stealth">
+  <h3>stealth-blocked</h3>
+  <div class="domains"></div>
+</section>
+<section class="outcome blocked">
+  <h3>blocked</h3>
+  <div class="domains"></div>
+</section>
+```
+
+Understanding these sections helps you navigate the popup quickly.
+
+---
+
+## Diagram: User Flow for Popup Data Display
+
+```mermaid
+flowchart TD
+  Start([User clicks uBO Scope icon]) --> FetchTabData["Extension fetches data for active tab"]
+  FetchTabData --> ParseData["Parse allowed, stealth, blocked domain data"]
+  ParseData --> RenderUI["Render hostname, counts, and domain lists"]
+  RenderUI --> ShowPopup["Popup displays detailed info"]
+  ShowPopup --> UserAnalysis["User interprets data and takes action"]
+
+  classDef userAction fill:#d9fdd3,stroke:#2a662a,stroke-width:2px;
+  UserAnalysis class userAction;
+```
+
+This flow shows how data travels from extension to the popup and to you for actionable insights.
+
+---
+
+For any additional assistance, consult the [Support Instructions and Troubleshooting](/getting-started/troubleshooting-setup/extension-not-working) page or visit the [GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+
+
