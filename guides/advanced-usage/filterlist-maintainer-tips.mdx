@@ -1,0 +1,254 @@
+---
+title: "uBO Scope for Filter List Maintainers"
+description: "Guides filter list maintainers on leveraging uBO Scope to verify filter effectiveness and monitor hidden connections in real-world environments, especially on platforms where browser devtools are limited."
+---
+
+# uBO Scope for Filter List Maintainers
+
+## Overview
+
+This guide is designed for filter list maintainers and advanced users who want to leverage uBO Scope’s capabilities to verify filter effectiveness and detect hidden third-party connections in realistic browsing environments. It focuses on using the extension’s domain-based connection data, especially when conventional browser developer tools are unavailable or limited.
+
+By using uBO Scope, you gain practical insights into how your filter lists perform against real-world network activity, enabling you to identify leaks, stealth behaviors, and unexpected connections at the domain and hostname level.
+
+---
+
+## Prerequisites
+
+Before proceeding, ensure you have:
+
+- Installed uBO Scope on a supported browser (Chromium 122+, Firefox 128+, or Safari 18.5+). See [Installing uBO Scope](https://github.com/gorhill/uBO-Scope/blob/main/guides/getting-started/installing-extension.mdx).
+- Basic understanding of browser networking concepts, including domains, hostnames, and requests.
+- Up-to-date filter lists installed in your content blocker to evaluate.
+
+
+## What You Will Achieve
+
+- Gain visibility into real network requests classified as allowed, stealth-blocked, or blocked.
+- Assess the effectiveness of your filter lists based on actual network outcomes.
+- Identify stealth behaviors where requests are blocked but still attempted.
+- Easily monitor changes and connections without relying on browser devtools.
+
+
+## Time Estimate
+
+Expect to spend approximately 15–30 minutes setting up and performing initial analysis workflows.
+
+
+---
+
+## Using uBO Scope to Verify Filter List Effectiveness
+
+### Step 1: Open uBO Scope Popup
+
+1. Navigate to a target webpage where your filter list applies.
+2. Click the uBO Scope extension icon in your browser toolbar.
+3. The popup will display a summary of domains connected for the active tab.
+
+> The displayed domain counts reflect distinct third-party remote servers that were connected during page load and navigation.
+
+
+### Step 2: Interpret Popup Data Sections
+
+- **Not blocked:** Domains from which network requests succeeded
+- **Stealth-blocked:** Domains where requests were blocked, but network activity attempts were detected
+- **Blocked:** Domains fully blocked without observed successful connections
+
+### Step 3: Compare Results Against Your Filter List
+
+- Cross-reference domains under the **blocked** and **stealth-blocked** sections with entries in your filter lists.
+- Investigate any domains showing up under **not blocked** that you expected to block.
+- Pay special attention to **stealth-blocked** domains as these reveal hidden attempts that might bypass simple blocking.
+
+<Tip>
+Use the domain counts and presence in various sections to identify where filter lists need improvement or tuning for better coverage and stealth detection.
+</Tip>
+
+
+### Step 4: Monitor Badge Counts for Ongoing Insights
+
+- The toolbar badge shows the count of distinct allowed domains connected by the current tab.
+- A rising count indicates more distinct third-party connections, potentially unwanted or unblocked.
+- Maintaining a low count affirms filter list effectiveness.
+
+
+### Step 5: Analyze Across Multiple Pages and Browsing Sessions
+
+- Repeat the analysis on representative websites commonly targeted by your filter list.
+- Use uBO Scope to track patterns of connections, stealth behaviors, or leaks over time.
+
+
+---
+
+## Advanced Tips for Filter List Maintainers
+
+### Leveraging uBO Scope on Platforms with Limited Devtools
+
+- On browsers or devices with restricted developer tools, uBO Scope offers a clear window into network activity.
+- Use uBO Scope to supplement or replace devtools-based network assays, especially for mobile or remote testing.
+
+
+### Diagnosing Stealth Blocking
+
+- The **stealth-blocked** section indicates requests that were blocked but still caused network activity, revealing possible bypasses or partial blocking.
+- Investigate these by visiting the affected domains with developer tools if available, or analyze patterns of these domains to enhance filter rules.
+
+
+### Tracking Domain Relationships
+
+- uBO Scope aggregates counts by domain, helping identify if a domain is a top-level service or a smaller third-party.
+- Recognize domains that appear in multiple tabs or pages, indicating widely-used CDNs or tracking services.
+
+
+### Use Cases Beyond Filter Effectiveness
+
+- Verifying that new filter rules actually block third-party connections without causing overblocking
+- Understanding the real-world impact of filter list updates on connected domains
+- Debunking misleading test sites by focusing on authentic network requests
+
+
+---
+
+## Practical Example Scenario
+
+Imagine you maintain a filter list targeting ad and tracker domains.
+
+1. Visit a popular news website with uBO Scope enabled.
+2. Observe the **Not blocked** domains in the popup — these include approved CDNs and necessary external resources.
+3. Review the **Blocked** domains and verify they match your filter list entries.
+4. Notice a few entries under **Stealth-blocked** — network requests attempted but were partially blocked, possibly indicating stealth scripts.
+5. Use these insights to fine-tune your filter list, for example, adding specific hostnames or adjusting rules to prevent stealth leaks.
+
+
+---
+
+## Troubleshooting Common Issues
+
+<AccordionGroup title="Common Issues and Solutions">
+
+<Accordion title="Popup Shows No Data or 'NO DATA'">
+- Confirm that you have navigated to a normal webpage (not a blank tab or internal browser page).
+- Ensure uBO Scope was granted all requested permissions during installation.
+- Reload the page and retry opening the popup.
+</Accordion>
+
+<Accordion title="Badge Count Remains Empty or Zero">
+- The badge shows counts only for the active tab's allowed third-party connections.
+- Make sure you actively browse a site with third-party content.
+- Restart the browser or reinstall uBO Scope if persistent.
+</Accordion>
+
+<Accordion title="Unexpected Allowed Domains or Low Block Counts">
+- Review your filter list for accuracy and coverage.
+- Remember that not all third parties are malicious; some are essential CDNs.
+- Cross-reference with payload inspection tools if available.
+</Accordion>
+
+<Accordion title="Stealth Blocked Domains Appear Empty or No Entries">
+- Not all requests can be stealth detected; the browser must expose some network event.
+- Stealth blocking detection is an evolving feature; consider this a supplemental tool.
+</Accordion>
+
+</AccordionGroup>
+
+
+---
+
+## Best Practices
+
+- Regularly update both uBO Scope and your filter lists to benefit from improvements and new detections.
+- Use domain-based connection counts rather than raw block counts to evaluate filter impact.
+- Combine uBO Scope insights with browser devtools when possible to get full visibility.
+- Avoid relying on synthetic ad blocker test pages; focus on real-world network data.
+
+
+---
+
+## Next Steps
+
+- Explore [Reading Allowed, Blocked, and Stealth Domains](../interpreting-data/reading-status) to deepen understanding of popup data meanings.
+- Learn about [How to Make Sense of Toolbar Badge Counts](../interpreting-data/badge-counts-meaning) to better interpret your privacy posture.
+- For troubleshooting and understanding limitations, consult [Troubleshooting and Understanding Limitations](../advanced-usage/troubleshooting-and-limitations).
+- If you are new to uBO Scope, visit [Installing uBO Scope](../../getting-started/installation-setup/installing-ubo-scope) and [Running Your First Network Connection Analysis](../../guides/getting-started/first-analysis) to start.
+
+
+---
+
+## References and Resources
+
+- Official repository: [uBO-Scope GitHub](https://github.com/gorhill/uBO-Scope)
+- Public Suffix List used for domain parsing: [publicsuffix.org](https://publicsuffix.org/)
+- Browser support details: See prerequisites in [Prerequisites & System Requirements](../../getting-started/installation-setup/prerequisites-requirements)
+
+
+---
+
+## Understanding Domain Classification in uBO Scope
+
+For filter maintainers, it is crucial to understand how uBO Scope classifies domains:
+
+- **Allowed:** Requests successfully completed to a domain, indicating no block.
+- **Blocked:** Requests that failed entirely due to content blocking.
+- **Stealth-blocked:** Attempts detected through network events indicating blocking at some point but with prior connection or redirection attempt.
+
+Using uBO Scope’s domain aggregates, you can identify which domains remain unblocked and should be targeted in your lists, and which stealth attempts suggest partial evasion.
+
+
+---
+
+<uBO Scope’s user interface helps filter maintainers focus on domains, rather than individual requests or IP addresses, simplifying complex network behavior analysis.>
+
+
+---
+
+## Summary
+
+- Open the popup on various websites to review domain-level connection data.
+- Analyze allowed, blocked, and stealth-blocked domains for assessment.
+- Investigate stealth-blocked entries for partial block leaks.
+- Use badge counts as a real-time metric of third-party connection distinctness.
+- Repeat assessments across different browsing sessions for reliable insights.
+
+
+---
+
+<Check>
+By following this guide, filter list maintainers gain concrete visibility into the real-world effectiveness of their filters, enabling continuous improvement and better protection of user privacy even on platforms with limited browser tooling.
+</Check>
+
+
+---
+
+## Example of Domain Analysis with uBO Scope Popup
+
+Assuming you filter list targets advertising domains, on visiting a typical media site:
+
+| Domain                  | Status          | Description                                |
+|-------------------------|-----------------|--------------------------------------------|
+| cdn.domain.com          | Allowed         | Content CDN serving static assets         |
+| ads.tracker.net         | Blocked         | Tracker domain blocked by filter           |
+| stealthbanner.ads.xyz   | Stealth-blocked | Blocked but network request observed       |
+| fonts.example.org       | Allowed         | Allowed third-party fonts                   |
+
+This concise snapshot lets you decide if the filter list covers known trackers adequately and points toward domains which used stealth techniques requiring further rule tuning.
+
+
+---
+
+## Feedback and Contribution
+
+Filter list maintainers are encouraged to test using uBO Scope and contribute findings or feature requests by opening issues or pull requests in the official repo.
+
+
+
+---
+
+For further assistance, browse other guides and documentation linked throughout the uBO Scope docs.
+
+
+---
+
+# End of uBO Scope for Filter List Maintainers Guide
+
+
+---
