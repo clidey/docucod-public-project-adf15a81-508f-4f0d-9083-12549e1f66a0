@@ -1,0 +1,184 @@
+---
+title: "Reading the Popup: What Do the Numbers Mean?"
+description: "An in-depth guide to interpreting the popup interface: what each number and status means, how third-party server counts are determined, and how distinct requests are represented. Explains how badges update and what counts are most significant."
+---
+
+# Reading the Popup: What Do the Numbers Mean?
+
+Understanding the uBO Scope popup interface is essential to accurately interpret the information it provides about third-party network connections initiated by the active browser tab. This guide will walk you through each section of the popup, explain what the numbers represent, and show how distinct requests and outcomes contribute to the data shown.
+
+---
+
+## 1. Overview of the Popup Interface
+
+When you open the uBO Scope popup, you see a summarized report of the current tab's network interactions with remote servers. The interface is split primarily into three outcome categories:
+
+- **Not Blocked (Allowed)**
+- **Stealth Blocked**
+- **Blocked**
+
+Alongside these, you will find the tab's hostname display and a summary count of connected domains.
+
+### Key Elements Explained
+
+| Element                 | Description                                                                                           |
+|-------------------------|---------------------------------------------------------------------------------------------------|
+| Tab Hostname Display    | Shows the active tab's full hostname and, if applicable, the subdomain separately for clarity.    |
+| Domains Connected Count | Shows the number of distinct third-party domains connected that were *not* blocked.                |
+| Not Blocked Section     | Lists third-party domains for which network requests were allowed during page load.                |
+| Stealth Blocked Section | Shows domains where requests were redirected or stealth-blocked by content blockers or the browser.| 
+| Blocked Section         | Lists domains where requests failed or were explicitly blocked.                                    |
+
+<Tip>
+The count shown at the top ("domains connected") corresponds exactly to the number of distinct third-party domains from which resources loaded successfully or were allowed. A lower count indicates fewer third-party connections, usually a desirable outcome for privacy.
+</Tip>
+
+---
+
+## 2. How the Numbers Are Determined
+
+### 2.1 Distinct Domains vs. Hostnames
+
+uBO Scope uses the Public Suffix List to determine what constitutes a "domain" from a hostname. For example, if a hostname is `cdn.example.com`, the domain is `example.com`. The popup counts distinct domains, not individual hostnames, to avoid inflating counts by closely related subdomains.
+
+### 2.2 Allowed, Stealth, and Blocked Outcomes
+
+uBO Scope tracks network requests by outcome:
+
+- **Allowed (Not Blocked):** Requests that successfully connected to third-party servers without being blocked; these increase the badge count and appear under "not blocked".
+
+- **Stealth Blocked:** Requests resulting in a redirect or stealth blocking where the connection attempt was silently prevented; these do not increment the badge count but are listed for tracking.
+
+- **Blocked:** Requests explicitly blocked with an error or failure to connect; these are listed but do not affect the badge count.
+
+<Tip>
+While blocked and stealth-blocked connections indicate filtering actions in effect, the primary badge count focuses on allowed connections since these represent actual third-party exposures.
+</Tip>
+
+### 2.3 Counting Multiple Requests
+
+If multiple requests are made to the same domain, the popup aggregates these into a single domain entry with an accompanying count representing the number of requests. This aggregation helps you identify domains with heavy interaction.
+
+---
+
+## 3. Interpreting the Badge Count
+
+The number you see over the uBO Scope icon in the browser toolbar reflects the count of **unique third-party domains with allowed connections** for the current tab.
+
+- **Why a Lower Number is Better:** A smaller number indicates fewer distinct remote servers your browser actively connects to, enhancing privacy.
+
+- **Not a Raw Count of Requests:** It is *not* the total number of requests or resource loads, but the count of *distinct domains* involved.
+
+- **Updates Dynamically:** The badge updates as network requests progress, reflecting ongoing connections or disconnections in real-time.
+
+<Warning>
+The badge does not count stealth-blocked or blocked outcomes. Therefore, a high badge count means more third-party exposure, regardless of how many requests were blocked.
+</Warning>
+
+---
+
+## 4. Step-by-Step: Using the Popup to Analyze a Page
+
+<Steps>
+<Step title="Open the uBO Scope Popup">
+Click the uBO Scope icon in the toolbar to open the popup interface while browsing the target page.
+</Step>
+<Step title="Identify the Active Tab Hostname">
+Look at the top heading to confirm the domain and subdomain of the current tab's website.
+</Step>
+<Step title="Check the Domains Connected Count">
+Review the number indicating distinct allowed domains connected to assess third-party exposure.
+</Step>
+<Step title="Examine Each Section">
+- Under "not blocked", scan the list of domains from which resources were successfully loaded.
+- Under "stealth-blocked", see domains that had redirect or stealth blocking applied.
+- Under "blocked", view domains that had network requests blocked or errors occurred.
+</Step>
+<Step title="Use Domain Counts for Insights">
+The count badges next to each domain show how many requests occurred. High counts may indicate heavy use of resources from a domain.
+</Step>
+</Steps>
+
+---
+
+## 5. Practical Examples
+
+### Example: Viewing Connections on a News Website
+1. Visit a news website.
+2. Open the uBO Scope popup.
+3. Notice the badge number shows "5", meaning 5 distinct third-party domains had allowed connections.
+4. The "not blocked" section lists domains like `cdn.examplecdn.com` with a count of 12, indicating multiple resource requests.
+5. The "stealth-blocked" section lists `tracking.exampletracker.net`, showing some stealth blocking was applied.
+6. The "blocked" section might show `ads.badads.com` with a count of 3, listing blocked ad servers.
+
+This snapshot helps you verify what external entities your browser connects to and which are blocked or filtered.
+
+### Example: Diagnosing Unexpected High Badge Count
+- After loading a site, the badge shows a surprisingly large number.
+- Open the popup and review domains under "not blocked."
+- Identify any unexpected third-party domains with large request counts.
+- Use this information to adjust content blocker settings or investigate those domains.
+
+---
+
+## 6. Best Practices and Tips
+
+- **Refresh the Popup:** Opening the popup after page load ensures data is current.
+
+- **Pay Attention to the Domains Connected Count:** Use this as your primary privacy health indicator.
+
+- **Understand Stealth Blocking:** Some requests may be redirected or silently blocked, so the popup helps reveal these hidden outcomes.
+
+- **Correlate with Other Tools:** Use uBO Scope in conjunction with content blockers to validate blocking effectiveness.
+
+- **Regularly Inspect Hostnames and Domains:** Some subdomains may mask as first-party but connect to unrelated third parties.
+
+<Tip>
+Remember, not all third parties are malicious; CDNs and trusted services often appear in allowed connections. The goal is transparency, not alarm.
+</Tip>
+
+---
+
+## 7. Troubleshooting Common Popup Issues
+
+<AccordionGroup title="Troubleshooting Popup Issues">
+<Accordion title="No Data Displayed in Popup">
+- Verify that uBO Scope is installed and active.
+- Refresh the active tab or navigate to a different website.
+- Check browser permissions, especially access to "webRequest".
+- Restart the browser if issues persist.
+</Accordion>
+<Accordion title="Badge Count Remains Empty or Incorrect">
+- Ensure you have loaded a page that makes network requests.
+- Check that the extension’s background script is running (refer to browser extension console).
+- Confirm that other blockers or browser settings are not interfering.
+</Accordion>
+<Accordion title="Unexpectedly High or Low Domain Counts">
+- Understand this count depends on successful allowed connections, not block counts.
+- Clear browser cache or reload the page to reset counts.
+- Compare with other network monitoring tools if needed.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. What’s Next?
+
+- Explore the guide [Your First Session: Exploring Website Connections](https://docs.example.com/guides/getting-started/first-look) to learn how to perform initial analysis.
+- Review [Debunking Ad Blocker Myths with uBO Scope](https://docs.example.com/guides/advanced-usage/debunking-adblock-myths) to deepen understanding of network request outcomes.
+- Consult [Prerequisites & System Requirements](https://docs.example.com/getting_started/installation_and_setup/prerequisites_and_requirements) if the popup is not functioning as expected.
+
+
+---
+
+## References
+- [Public Suffix List](https://publicsuffix.org) — to understand domain parsing logic
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) — source code and issue tracker
+- [Popup HTML Source](https://github.com/gorhill/uBO-Scope/blob/main/popup.html) — popup interface structure
+
+---
+
+Understanding the popup interface empowers you to make informed judgments about web privacy, tracking, and content blocking effectiveness. The numbers and sections in uBO Scope’s popup are designed to make complex network interactions transparent and actionable.
+
+
+
