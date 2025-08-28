@@ -1,0 +1,212 @@
+---
+title: "Testing, Verifying, and Debunking Adblock Claims"
+description: "Follow actionable workflows for using uBO Scope to verify the effectiveness of content blockers, debunk misleading ad blocker scoreboards, and gain clarity into what is truly being blocked or allowed—backed by real network traffic monitoring."
+---
+
+# Testing, Verifying, and Debunking Adblock Claims with uBO Scope
+
+## Overview
+
+This guide empowers you to confidently use uBO Scope to validate content blocker effectiveness, unravel misleading ad blocker scoreboards, and gain an accurate understanding of what network connections are truly being blocked or allowed. By leveraging real network traffic monitoring directly from your browser, you will cut through confusion caused by fabricated test sites and superficial block counts.
+
+---
+
+## 1. Understanding the Problem
+
+- **Myth: Higher Block Counts Mean Better Blocking** – A high number on an extension's block badge does not necessarily imply better privacy protection. More blocks can indicate more attempts, or even more third-party servers being contacted.
+  
+- **Myth: Ad Blocker Test Sites Are Reliable** – Many adblock test pages generate artificial or unrealistic network requests that don't reflect typical web browsing, leading to false conclusions.
+
+uBO Scope addresses these misconceptions by reporting the number of **distinct third-party domains** connected to and categorizing which were blocked or allowed, based on actual network activity.
+
+---
+
+## 2. Prerequisites
+
+Before running the verification workflows, ensure:
+
+- You have installed uBO Scope and the content blocker(s) you want to test in your browser.
+- The browser version is supported: Chrome 122+, Firefox 128+, or Safari 18.5+.
+- uBO Scope has the necessary permissions granted for active network tracking.
+- You understand basic uBO Scope UI elements such as the toolbar badge count and popup domain categories.
+
+Refer to the guides on [Installing uBO Scope](../guides/getting-started/installation), [Understanding the Popup and Badge](../guides/getting-started/understanding-ui-badge), and [System Requirements](../getting-started/installation-setup/prerequisites) if needed.
+
+---
+
+## 3. Workflow: Verifying Content Blocker Effectiveness
+
+<Steps>
+<Step title="Open Website With Content Blocker Active">
+Start by navigating to the website you want to assess, ensuring your content blocker is enabled and active.
+
+- Expected Result: The site loads with content blocker enabled.
+- Tip: Use popular sites known to load various third-party resources for meaningful testing.
+</Step>
+
+<Step title="Open uBO Scope Popup">
+Click the uBO Scope icon on your browser toolbar to open the popup panel.
+
+- Outcome: The popup displays the current tab's hostname and connection data.
+- Confirm the popup has finished loading (no "NO DATA" or loading indicators).
+</Step>
+
+<Step title="Analyze Domain Outcomes">
+Review the domain categories:
+
+- **Not Blocked (Allowed)**: Third-party domains where connections were allowed.
+- **Stealth-Blocked**: Domains where blocking was performed stealthily by the content blocker.
+- **Blocked**: Domains fully blocked.
+
+Focus on the number and identity of third-party domains, not just block counts.
+
+- Action: Note high numbers in "Not Blocked"; these represent connections not prevented.
+</Step>
+
+<Step title="Compare Against Expected Blocking Behavior">
+Cross-reference with your content blocker's intended blocking policies.
+
+- If allowed third-party domains are unexpectedly high, the blocker may be allowing connections.
+- Stealth-blocked entries may indicate subtle blocking that doesn’t show in other metrics.
+
+- Tip: Repeat tests on different sites to see consistent blocker behavior.
+</Step>
+
+<Step title="Check Toolbar Badge Number">
+Observe the badge count on uBO Scope's toolbar icon.
+
+- This represents distinct third-party domains connected to by the active tab.
+- Lower numbers typically indicate better privacy.
+
+- Note discrepancies between blocker’s own badge counts and uBO Scope’s badge to understand real impact.
+</Step>
+
+<Step title="Document Findings">
+Record findings including domain counts and any surprising allowed or stealth-blocked connections.
+
+- Use this to inform your content blocker settings or switch to more effective filters.
+</Step>
+</Steps>
+
+---
+
+## 4. Practical Example
+
+Suppose you want to verify if a blocker truly limits third-party requests on example.com:
+
+1. Visit `https://www.example.com` with your blocker enabled.
+2. Open the uBO Scope popup.
+3. You see 3 allowed third-party domains, 1 stealth-blocked, and 2 fully blocked.
+
+Interpretation:
+
+- The 3 allowed domains indicate connections that went through despite block lists.
+- The stealth-blocked domain tells you the blocker prevented requests silently.
+- Use this information rather than raw block counts to judge effectiveness.
+
+Adjust blocker settings to investigate impact on these counts.
+
+---
+
+## 5. Best Practices for Testing
+
+- **Test Real-World Websites**: Focus on typical sites you visit rather than synthetic test pages.
+- **Clear Cache and Reload**: To avoid stale data, clear browser cache and reload pages before testing.
+- **Use Incognito/Private Mode**: Minimize interference from other extensions or cached data.
+- **Repeat Tests**: Testing multiple times ensures consistent observations.
+- **Correlate Results**: Cross-check with your blocker’s own UI and uBO Scope for a clearer picture.
+
+---
+
+## 6. Debunking Common Misconceptions
+
+<u>Myth 1: Block Count = Quality</u>
+
+- Block counts often reflect total network requests attempted, not distinct third-party entities connected.
+- More blocks can mean more attempts or broader allowance of benign connections.
+- uBO Scope’s focus on distinct third-party domains connected gives a better privacy metric.
+
+<u>Myth 2: Adblock Test Sites Are Authoritative</u>
+
+- These sites may generate unrealistic or fabricated network calls.
+- Many blockers adopt stealth techniques that fool such tests.
+- uBO Scope monitors network connections directly in the browser, showing actual behavior.
+
+<u>Myth 3: Higher Block Count Means More Blocking</u>
+
+- A blocker with many blocked requests might be slower or less efficient.
+- The number of distinct third-party domains fetched is the fundamental privacy consideration.
+
+---
+
+## 7. Troubleshooting Testing Issues
+
+<AccordionGroup title="Troubleshooting Common Testing Issues">
+<Accordion title="Popup Not Showing Data or Displays NO DATA">
+- Refresh the active tab and reopen the popup.
+- Ensure the tab is active and uBO Scope has permissions.
+- Restart the browser if the problem persists.
+</Accordion>
+<Accordion title="Badge Count Does Not Update">
+- Reload the page to trigger new network data collection.
+- Verify content blocker is active on the site.
+- Check for conflicts with other privacy extensions.
+</Accordion>
+<Accordion title="Stealth-Blocked Section Is Empty Despite Blocking">
+- Some blockers may not report stealth blocking properly; verify blocker settings.
+- Use private browsing mode to reduce interference.
+</Accordion>
+<Accordion title="Results Seem Inconsistent Across Refreshes">
+- Network conditions and site behavior can vary.
+- Disable caching or use developer tools to monitor requests.
+- Run multiple tests before conclusions.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 8. Understanding uBO Scope’s Network Reporting
+
+- Uses browser `webRequest` API to listen to network lifecycle events such as redirects, errors, and successful responses.
+- Categorizes connections per tab into:
+  - Allowed: Successful network connections.
+  - Stealth: Redirected or subtly blocked connections.
+  - Blocked: Requests that failed or were explicitly blocked.
+
+- Counts distinct domains using the Public Suffix List to group subdomains meaningfully.
+
+Refer to the [Interpreting Network Request Data](../guides/deep-dive-analysis/interpreting-network-data) guide for detailed understanding.
+
+---
+
+## 9. Next Steps
+
+- Explore the [Basic Usage: Analyzing Site Connections](../guides/getting-started/basic-usage) guide to learn how to read and interpret domain connection info more effectively.
+- Consult [Troubleshooting Common Issues](../getting-started/validation-troubleshooting/common-issues) for resolving setup or runtime problems.
+- Dive deeper with [Core Concepts & Terminology](../overview/core-concepts-arch/core-concepts-terminology) to grasp foundational ideas behind the data presented.
+
+---
+
+## 10. References
+
+- [Purpose & Value Proposition](../overview/product-intro-value/purpose-and-value)
+- [Who Should Use uBO Scope?](../overview/product-intro-value/target-audience-use-cases)
+- [Understanding the Popup and Badge](../guides/getting-started/understanding-ui-badge)
+- [Quick Validation Checklist](../getting-started/validation-troubleshooting/quick-validation)
+
+---
+
+# Summary
+This guide equips you to use uBO Scope to verify content blocker effectiveness and debunk common misleading metrics and test sites. By focusing on real network connections and distinct third-party domains, it helps clarify true privacy impacts.
+
+Key sections include:
+- Understanding myths about blocker metrics
+- Step-by-step workflows for testing
+- Practical examples and best practices
+- Troubleshooting testing issues
+- Explanation of uBO Scope's network data handling
+- Next steps and related documentation for mastery
+
+Refer to the broader [Core Concepts & Terminology](../overview/core-concepts-arch/core-concepts-terminology) and [Interpreting Network Request Data](../guides/deep-dive-analysis/interpreting-network-data) guides for foundational knowledge. Use [Basic Usage](../guides/getting-started/basic-usage) to learn everyday operational details. Consult [Troubleshooting](../getting-started/validation-troubleshooting/common-issues) if you face issues.
+
+Your next practical action: open uBO Scope on active tabs and start analyzing the allowed, stealth-blocked, and blocked third-party connection data to better understand your content blocker's real-world performance.
