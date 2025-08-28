@@ -1,0 +1,132 @@
+---
+title: "Requirements & Supported Browsers"
+description: "Lists the minimal prerequisites: compatible browsers (Chrome, Firefox, Safari), required permissions, and highlights any known limitations around network request reporting. Ensures users understand what is needed for a successful setup."
+---
+
+# Requirements & Supported Browsers
+
+Ensure your setup meets the necessary prerequisites to guarantee a smooth, transparent experience with uBO Scope. This page clarifies compatible browsers, essential permissions, and highlights known constraints related to network request reporting.
+
+---
+
+## 1. Browser Compatibility
+
+uBO Scope is designed to operate consistently across major modern browsers. For reliable operation, confirm that you use one of the supported browsers with the appropriate minimum versions:
+
+- **Google Chrome (Chromium-based browsers)**: Version 122.0 or higher
+- **Mozilla Firefox**: Version 128.0 or higher (including Firefox for Android)
+- **Apple Safari**: Version 18.5 or higher
+
+Using browsers older than these minimum versions may result in incomplete or no data being reported due to API limitations.
+
+The extension uses browser native APIs to monitor network requests, which are supported differently depending on the browser and version.
+
+---
+
+## 2. Required Permissions
+
+When you install uBO Scope, it requests specific permissions to function effectively. These include:
+
+- **Access to all HTTP and WebSocket traffic:**
+  - Permissions to read requests to URLs matching these patterns: `http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*` (availability of WebSocket monitoring varies by browser).
+- **Active Tab Access:** To correlate network activity with the current browsing tab.
+- **Storage Access:** To save session-related data locally in your browser.
+- **webRequest API Permission:** Core to intercept and record network request outcomes, including allowed, blocked, and stealth-blocked requests.
+
+<u>Permissions by browser platform:</u>
+
+| Browser  | Host Permissions                      | API Permissions               | Notes                                   |
+|----------|-------------------------------------|------------------------------|-----------------------------------------|
+| Chromium | `http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*` | `activeTab`, `storage`, `webRequest` | Full WebSocket monitoring supported      |
+| Firefox  | `http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*` | `activeTab`, `storage`, `webRequest` | Full WebSocket monitoring supported      |
+| Safari   | `http://*/*`, `https://*/*`          | `activeTab`, `storage`, `webRequest` | WebSocket monitoring limited or unavailable |
+
+
+---
+
+## 3. Known Limitations in Network Request Reporting
+
+Understanding the boundaries of what uBO Scope can report helps set realistic expectations and avoid confusion.
+
+### 3.1 Coverage of Network Requests
+
+- uBO Scope relies exclusively on the browser's `webRequest` API to monitor traffic.
+- Network requests made outside the scope of `webRequest` (such as some internal browser requests or operating system processes) will not be reported.
+- Some browsers impose restrictions on monitoring WebSocket connections. Safari, for example, does not support WebSocket monitoring fully, so uBO Scope cannot capture those requests there.
+
+### 3.2 Network Request Outcomes
+
+uBO Scope classifies network requests into three categories:
+
+- **Allowed:** Requests that were successfully made and allowed by the browser and any active content blockers.
+- **Blocked:** Requests that failed or were explicitly blocked.
+- **Stealth-blocked:** Requests affected by stealth techniques such as redirects used by content blockers to hide blocking from detection.
+
+### 3.3 Network Request Reporting Details
+
+- The extension reports only distinct third-party **remote servers** contacted by your browser tabs, not every single request.
+- The toolbar badge displays the count of distinct allowed third-party domains contacted.
+- A lower badge count usually indicates fewer third-party connections, which typically represents higher privacy or stricter blocking.
+
+---
+
+## 4. Practical Tips for a Successful Setup
+
+- Verify you are using one of the supported browser versions before installation.
+- Review the permissions requested at install time to ensure you allow access to network traffic and active tab.
+- Note the variance in WebSocket monitoring across browsers and adjust expectations accordingly.
+
+<Tip>
+If you experience missing or incomplete network data, first verify your browser version meets the minimum requirements and that the extension permissions include "webRequest" and full host access.
+</Tip>
+
+---
+
+## 5. Summary Checklist
+
+Before proceeding with installation or use, confirm the following:
+
+- [ ] Browser: Chrome ≥ 122, Firefox ≥ 128, or Safari ≥ 18.5
+- [ ] Permissions granted for `webRequest`, `activeTab`, and `storage`
+- [ ] Host permissions enabled for HTTP and HTTPS traffic URLs
+- [ ] Understand that WebSocket reporting might be limited depending on the browser
+
+---
+
+## 6. Next Steps
+
+With compatibility and permission requirements met, continue with the [Installation Instructions](/getting-started/introduction-installation/installation) to add uBO Scope to your browser.
+
+Then, check out the [First Launch and Initial Configuration](/getting-started/first-run-validation/first-run) guide to learn how to run your first tests and interpret the data.
+
+---
+
+## 7. Additional Resources
+
+- [Understanding the Popup and Toolbar Badge](/guides/getting-started/understanding-the-ui): Learn how to interpret the user interface indicators.
+- [Tracking Third-Party Server Connections](/guides/core-workflows/tracking-3rd-party-requests): Practical examples of network connections monitoring.
+- [Common Myths and Realities](/overview/introduction_and_principles/mythbusting): Avoid misconceptions around content blockers.
+
+---
+
+For detailed version and permission configurations, refer to the [manifest files](https://github.com/gorhill/uBO-Scope/tree/main/platform) within the official repository.
+
+---
+
+### Example: Viewing Required Permissions in Chrome Manifest
+```json
+{
+  "permissions": ["activeTab", "storage", "webRequest"],
+  "host_permissions": ["https://*/*", "http://*/*", "wss://*/*", "ws://*/*"]
+}
+```
+
+---
+
+<Tip>
+Keeping your browser updated ensures compatibility with uBO Scope’s network monitoring capabilities and access to the latest browser APIs.
+</Tip>
+
+<Note>
+Network requests that do not pass through the browser's `webRequest` API, such as some WebRTC connections or browser internal communications, will not be detected by uBO Scope.
+</Note>
