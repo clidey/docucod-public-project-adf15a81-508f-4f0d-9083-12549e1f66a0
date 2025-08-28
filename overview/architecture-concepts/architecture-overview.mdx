@@ -1,0 +1,185 @@
+---
+title: "High-Level Architecture"
+description: "Explore a mermaid diagram and narrative that outlines how uBO Scope’s background script, popup panel, and core data sources interact. Understand how network request monitoring is performed using browser APIs, how outcomes are categorized (allowed, blocked, stealth), and how data flows from the browser to the UI. A clear visual map demystifies the system’s moving parts."
+---
+
+# High-Level Architecture of uBO Scope
+
+Discover how uBO Scope orchestrates its core components to provide real-time, transparent visibility into all network requests originating from the browser. This page guides you through a detailed yet accessible architecture overview, explaining how the extension's background script, popup panel, and data sources interact seamlessly.
+
+---
+
+## Introduction
+
+uBO Scope is designed to offer privacy-conscious users an insightful window into the network activities of their web browser. This High-Level Architecture page illustrates the flow of data and control between the essential elements of the extension, shedding light on how monitored network requests are categorized and visually presented.
+
+Understanding this architecture empowers you to appreciate how uBO Scope maintains independence from content blockers and still captures comprehensive connection outcomes.
+
+---
+
+## Core Components and Their Roles
+
+### Background Script
+
+- Acts as the heart of uBO Scope.
+- Listens to browser network events via the `webRequest` API.
+- Records every network request's details, including URLs, request types, and outcome events such as `success`, `error`, or `redirect`.
+- Aggregates request data per browser tab using comprehensive session data storage.
+- Processes logged requests asynchronously to maintain browser performance.
+- Classifies requests into three categories:
+  - **Allowed**: Requests that succeeded.
+  - **Blocked**: Requests that failed or were blocked.
+  - **Stealth-blocked**: Redirects that result in hidden requests.
+- Updates the browser toolbar badge count reflecting the number of distinct third-party domains contacted.
+- Responds to UI queries, supplying aggregated data for the popup panel.
+
+### Popup Panel
+
+- Provides the user interface that displays the categorized network data.
+- Queries the background script asynchronously for the current active tab's data.
+- Renders domain lists grouped by outcome categories (Allowed, Blocked, Stealth-blocked).
+- Offers live summaries including the count of connected domains.
+- Supports internationalized domain names through Unicode conversion.
+
+### Data Sources & Utilities
+
+- Utilizes the **Public Suffix List** to accurately extract registered domain names from fetched hostnames.
+- Applies domain parsing and normalization to aggregate counts precisely per domain.
+- Employs serialization/deserialization mechanisms to efficiently store session data.
+
+---
+
+## Data Flow and Interaction
+
+The following flowchart presents an overview of how uBO Scope's components collaborate to monitor, categorize, save, and display network connection data.
+
+```mermaid
+flowchart TD
+
+  subgraph Browser Extension
+    direction TB
+
+    WS["WebRequest API Events"]
+    BG["Background Script"]
+    PUP["Popup Panel UI"]
+  end
+
+  subgraph Data and Utilities
+    PSL["Public Suffix List"]
+    SES["Session Storage"]
+    SER["Serialization/ Deserialization"]
+  end
+
+  %% Event listening
+  WS -->|"network request events (onResponseStarted, onErrorOccurred, onBeforeRedirect)"| BG
+
+  %% Background processing
+  BG -->|"processes and categorizes requests (allowed, blocked, stealth)"| BG
+  BG -->|"uses Public Suffix List to parse domains"| PSL
+
+  %% Data storage
+  BG -->|"serialize and save session data"| SER
+  SER --> SES
+  SES --> SER
+  SER --> BG
+
+  %% UI interaction
+  PUP -->|"requests current tab data"| BG
+  BG -->|"returns serialized tab connection data"| PUP
+  PUP -->|"renders categorized domains"| PUP
+
+  %% User Flow
+  click BG "js/background.js" "Background script source"
+  click PUP "popup.html" "Popup panel html"
+
+  classDef extension fill:#e0f7fa,stroke:#006064,stroke-width:2px;
+  class Browser Extension extension;
+
+  classDef data fill:#fff8e1,stroke:#f9a825,stroke-width:2px;
+  class Data and Utilities data;
+
+```
+
+---
+
+## How Network Monitoring Works
+
+1. **Event Listening:** The background script registers listeners for key browser network events such as successful response starts, errors, and redirects.
+
+2. **Request Categorization:** Each network request is analyzed:
+   - The hostname is extracted and converted into a registered domain using the Public Suffix List.
+   - Requests are categorized based on event type: allowed, blocked, or stealth-blocked.
+
+3. **Data Aggregation:** Requests are grouped by browser tab, aggregating counts of unique third-party domains, enabling precise badge counts per tab.
+
+4. **Session Persistence:** Serialized session data is stored and retrieved across browser sessions ensuring continuity in monitoring.
+
+5. **UI Update:** When users open the popup panel, it queries the background script for the active tab's data, which is then deserialized and rendered cleanly, showing categorized domains along with their request counts.
+
+---
+
+## Practical Understanding: User Journey Context
+
+Imagine you navigate to a new website:
+
+- As the page loads, the background script listens for every network connection attempt from that page's tab.
+- It captures each request's hostname, converts it to a domain, counts multiple requests to the same domain, and notes whether the request succeeded or was blocked.
+- Upon opening uBO Scope's popup panel, you see a clear, color-coded list of all domains contacted, grouped by outcome.
+- The extension's toolbar badge updates dynamically, reflecting the current number of allowed third-party domains – an immediate privacy indicator.
+
+---
+
+## Tips for Effective Use
+
+- **Keep the popup panel open during browsing sessions** to watch live updates and understand your network connections as they happen.
+- **Pay attention to the badge count** on the browser action icon as a quick measure of how many unique external domains are accessed.
+- **Use the domain grouping to spot unexpected connections** to obscure or unwanted third-party domains.
+
+---
+
+## Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Common Issues in Network Monitoring">
+<Accordion title="Why do some network requests not appear in uBO Scope?">
+Not all network requests are visible to the `webRequest` API, especially those made outside browser APIs or in privileged contexts. This limitation means some network activity may be invisible to uBO Scope.
+</Accordion>
+<Accordion title="Badge count does not update correctly">
+The badge count updates asynchronously and per tab. Ensure the background script has processed recent network events and that you are viewing the correct tab. Try refreshing the page or toggling the extension.
+</Accordion>
+<Accordion title="Domain names look encoded or incorrect">
+uBO Scope uses Unicode conversion for international domain names. However, some rare domain formats or temporary hostnames may appear encoded or malformed. This is normal and does not affect functionality.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+This High-Level Architecture page demystifies how uBO Scope captures, categorizes, and presents network request data through a tight collaboration between its background monitoring script, a responsive popup UI, and domain processing utilities. This architecture ensures that users receive reliable, real-time insights into their web browsing network activity without relying on content blocking mechanisms.
+
+For detailed usage, troubleshooting, and advanced analysis, refer to related documentation in the Getting Started and Guides sections.
+
+---
+
+## Next Steps
+
+- Explore [What is uBO Scope?](../getting-started-core-overview/product-introduction) for foundational context.
+- Review the [Core Features at a Glance](../getting-started-core-overview/quick-feature-overview) page to understand feature details.
+- Dive into [Key Concepts & Terminology](../architecture-concepts/core-concepts-terminology) to master the extension's language and data models.
+- For practical workflows, see guides under [Core Workflows](../../guides/core-workflows).
+
+
+---
+
+## Source Reference
+- Background Script: [js/background.js](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js)
+- Popup Panel HTML & JS: [popup.html](https://github.com/gorhill/uBO-Scope/blob/main/popup.html), [js/popup.js](https://github.com/gorhill/uBO-Scope/blob/main/js/popup.js)
+- Public Suffix List Utilization: package source
+
+
+---
+
+Thank you for engaging with uBO Scope's architecture. This understanding equips you to maximize your privacy insights and empowers troubleshooting and feature exploration across the extension.
+
+
+
