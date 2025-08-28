@@ -1,0 +1,135 @@
+---
+title: "Investigating Stealth Blocking Behaviors"
+description: "Explores how uBO Scope detects stealth-blocked requests (those not easily visible to web pages). Offers practical advice for uncovering invisible network interactions, even when content blockers hide their actions."
+---
+
+# Investigating Stealth Blocking Behaviors
+
+uBO Scope reveals network connection attempts made by your browser, including those stealth-blocked by content blockers—requests hidden from web pages and difficult to detect. This guide empowers you to understand, detect, and analyze stealth-blocked requests, giving you unparalleled visibility into invisible network activity affecting your browsing privacy.
+
+---
+
+## 1. Understanding Stealth Blocking
+
+Stealth blocking refers to network requests prevented by content blockers in ways that are not apparent to the web page itself. Unlike traditional blocking where a request simply fails or is blocked visibly, stealth blocking "silently" stops or redirects requests so they don’t appear in page contexts or standard network logs.
+
+**Key points:**
+- Stealth-blocked requests do not generate visible network errors or failures in the webpage.
+- These requests often redirect or disappear before the page can detect them.
+- They help content blockers avoid website breakage and detection by thwarting anti-ad-block techniques.
+
+uBO Scope categorizes stealth-blocked requests separately in its popup UI and toolbar badge counts, helping you identify hidden blockers in action.
+
+<Tip>
+Stealth blocking is a strategic protection layer employed by advanced privacy tools. Without tools like uBO Scope, these stealthy network interactions remain invisible even to savvy users.
+</Tip>
+
+---
+
+## 2. How uBO Scope Detects Stealth-Blocked Requests
+
+uBO Scope utilizes browser `webRequest` APIs to listen to all web requests from tabs and classifies their outcomes:
+
+- **Allowed:** Networks requests successfully fetched.
+- **Blocked:** Requests visibly blocked with errors.
+- **Stealth:** Requests redirected or blocked without page visibility.
+
+uBO Scope's background script( `background.js` ) captures events from listeners like `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` to categorize outcomes, including stealth blocking inferred from redirects that evade normal network status reporting.
+
+The extension’s popup then displays domains by these categories per active tab for clear, actionable insights.
+
+---
+
+## 3. Workflow: Investigate Stealth Blocking on a Webpage
+
+Follow these steps to uncover and analyze stealth-blocked requests in your browsing session.
+
+<Steps>
+<Step title="Open uBO Scope Popup">
+Click the uBO Scope toolbar icon to open the popup panel that summarizes network request outcomes for the active browser tab.
+</Step>
+<Step title="Review the Stealth Section">
+Locate the "stealth-blocked" section. This lists domains whose requests were prevented stealthily. Note the domain names and request counts.
+</Step>
+<Step title="Compare with Allowed and Blocked">
+Compare stealth-blocked domains against allowed and blocked domains to understand what network calls are invisible to the page yet prevented.
+</Step>
+<Step title="Refresh or Navigate the Page">
+Reload the active tab to trigger a fresh set of network requests. Observe any changes in stealth-blocked counts, which can indicate blocking behavior variability.
+</Step>
+<Step title="Use Browser Dev Tools in Tandem">
+Open your browser’s Developer Tools (Network tab) alongside uBO Scope. Notice requests shown in Dev Tools but missing or flagged stealth in uBO Scope — this highlights stealth blocking in effect.
+</Step>
+</Steps>
+
+<Check>
+For reliable detection, ensure uBO Scope is granted all required permissions (`webRequest`, `activeTab`, `storage`) and is properly installed as per your browser’s guidelines.
+</Check>
+
+---
+
+## 4. Practical Tips & Best Practices
+
+- **Interpret Stealth Counts Carefully:** Some stealth-blocked domains may correspond to redirections to non-network URLs or internal browser handling, not malicious activity.
+- **Use in Combination with Content Blockers:** uBO Scope complements blockers like uBlock Origin by visualizing blocking effectiveness stealthily applied.
+- **Regularly Refresh Tab Data:** Network activity is dynamic; reloading pages or switching tabs updates insights and reveals intermittent stealth blocking.
+- **Analyze Third Party Domains:** Focus on third-party domains in the stealth-blocked list to identify less obvious privacy risks.
+
+<Tip>
+A lower number of stealth-blocked domains generally indicates fewer stealth suppressions, but the impact depends on the nature of those connections and your privacy goals.
+</Tip>
+
+---
+
+## 5. Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Troubleshooting Stealth Blocking Detection">
+<Accordion title="Why Is the Stealth Section Empty?">
+- Ensure you have navigated to a multi-domain page with real network activity.
+- Confirm uBO Scope has permissions to access network traffic.
+- Check that no other extension or setting is preventing network monitoring.
+- If persistent, restart the browser to reset the extension’s background scripts.
+</Accordion>
+<Accordion title="Stealth Count Never Changes After Reload">
+- Verify you are visiting websites with active third-party content.
+- Check for conflicts with other privacy or ad-blocking extensions.
+- Confirm uBO Scope is up to date and compatible with your browser version.
+</Accordion>
+<Accordion title="Popup Shows No Data or 'NO DATA' Message">
+- This means no network data is currently associated with the active tab.
+- Switch tabs or refresh the page.
+- Check for errors in the browser console.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Example Scenario
+
+Imagine you load a news website with many tracker domains. Without stealth blocking, these trackers load normally and appear in your network logs. With stealth blocking enabled (e.g., by uBlock Origin configured with stealth features), many tracker domains are stealth-blocked — redirecting or hiding requests before webpage scripts are aware.
+
+Using uBO Scope’s popup, you see:
+- **Allowed:** CDN domains serving legitimate site content.
+- **Stealth:** Tracker domains stealthily blocked — shown clearly.
+- **Blocked:** Domains blocked with visible network errors.
+
+This lets you confirm your privacy tool actually blocks trackers invisibly, even if your browser’s Dev Tools don’t show these distinctions.
+
+---
+
+## 7. Next Steps & Related Guides
+
+- Explore the [Interpreting Allowed, Blocked, and Stealth Outcomes](/guides-main/everyday-use-patterns/interpreting-request-outcomes) guide to deepen your understanding of what these categories mean.
+- Use [Analyzing Site Connections & Outcomes](/guides-main/everyday-use-patterns/analyzing-network-connections) to learn practical evaluation methods using uBO Scope.
+- For technical troubleshooting, visit [Troubleshooting Common Issues](/getting-started/validation-support/troubleshooting).
+
+---
+
+## 8. Additional Resources
+
+- Source code and implementation details are available at the [uBO-Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+- Review the [README.md](README.md) for general purpose and foundational knowledge.
+
+---
+
+<uBO Scope empowers you to uncover the hidden world of stealth-blocked network requests, giving you transparent insight into privacy protections silently at work during your browsing experience. Use this guide to confidently investigate and interpret stealth blocking and maximize your privacy awareness.>
