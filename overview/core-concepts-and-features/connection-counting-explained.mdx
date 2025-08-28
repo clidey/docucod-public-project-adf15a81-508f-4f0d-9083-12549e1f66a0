@@ -1,0 +1,129 @@
+---
+title: "Understanding Connection Counting"
+description: "Explains the badge count on the toolbar and its significance, clarifying how uBO Scope measures connected third-party remote servers and why this metric is more revealing than traditional block counts."
+---
+
+# Understanding Connection Counting
+
+### What Does the Badge Count Mean?
+
+The badge count displayed on the uBO Scope toolbar icon is a key metric designed to provide meaningful insight into your browser's network activity. Specifically, it shows **the number of distinct third-party remote servers** your browser connected to while loading a web page.
+
+Unlike simple counts of blocked or allowed network requests, this metric focuses on distinct remote domains, offering a clearer, more actionable picture of your exposure to third-party servers.
+
+---
+
+### Why Count Distinct Third-Party Servers?
+
+Web pages today frequently load resources from a multitude of external servers—such as content delivery networks (CDNs), analytics services, advertising platforms, and social media widgets. Measuring the sheer number of network requests or blocks can be misleading because:
+
+- A single third-party domain might be contacted multiple times.
+- Some requests may be redirects or retries.
+- Block counts alone do not reveal if the connection was ultimately allowed or blocked.
+
+uBO Scope counts unique third-party domains that your browser communicates with, regardless of how many individual requests occur per domain. This approach:
+
+- Helps you understand the *reach* of external servers your browser is exposed to
+- Reflects actual connection attempts rather than just filtering actions
+- Encourages better privacy awareness by highlighting potential points of tracking or data exchange
+
+---
+
+### How uBO Scope Identifies Third-Party Domains
+
+The extension listens to your browser's `webRequest` API, monitoring all network requests initiated from web pages. It extracts hostnames from URLs and calculates their **registrable domain** using the Public Suffix List to recognize domain boundaries accurately.
+
+This means uBO Scope groups requests from subdomains under the same registered domain (e.g., `ads.example.com` and `cdn.example.com` both count as `example.com`). This domain-level grouping provides a consistent and meaningful count of distinct third parties.
+
+Note that the count excludes first-party servers to focus attention on external entities.
+
+---
+
+### What Counts Towards the Badge?
+
+uBO Scope categorizes network requests into three outcomes:
+
+- **Allowed:** Requests that successfully connected to third-party domains.
+- **Stealth-blocked:** Requests that were silently blocked or redirected, often by content blockers operating stealthily.
+- **Blocked:** Requests explicitly blocked due to errors or filters.
+
+The badge count specifically reflects the number of distinct third-party domains in the **allowed** category, representing actual network connections your browser established.
+
+---
+
+### Why Is This More Revealing Than Traditional Block Counts?
+
+Traditional content blockers often display a block count representing the number of blocked requests. However, this measure can be deceptive:
+
+- A blocker with a high block count may still allow numerous connections to distinct third parties, resulting in greater exposure.
+- Focusing on block counts ignores allowed connections that may leak private data.
+
+By contrast, uBO Scope's badge count highlights how many different external domains are actually contacted. A lower badge count generally indicates stronger containment of third-party connections.
+
+---
+
+### Real-World Scenario: Using Connection Counting
+
+Imagine loading a news website. Your browser makes requests to:
+
+- The website's own servers (first-party)
+- A CDN for images (`cdn.news.com`)
+- Analytics services (`analytics.tracker.com`)
+- Ad networks (`ads.adcompany.net`)
+
+If your content blocker blocks the ads but not analytics and CDN, traditional block counts might be high. Yet, your browser still connects to two third-party domains.
+
+uBO Scope's badge count will show **2**, indicating the actual distinct third-party connections. This helps you see your true exposure beyond block statistics.
+
+---
+
+### Tips for Interpreting Connection Counts
+
+- **Lower counts are better.** Aim to minimize the number of distinct third-party domains your browser connects to.
+- **Recognize legitimate third parties.** Some domains, like trusted CDNs, are common and generally safe.
+- **Consider stealth-blocked and blocked lists** in the popup for detailed domain breakdowns.
+- **Refresh pages to observe changes.** Dynamic content may cause domain counts to fluctuate.
+
+---
+
+### Common Pitfalls to Avoid
+
+- **Don't equate block counts with privacy strength.** Higher block counts don’t guarantee fewer connections.
+- **Ignore synthetic ad blocker test pages.** They do not reflect realistic network patterns and can mislead.
+- **Remember limitations of `webRequest` API.** Some network requests might not be observable depending on browser restrictions.
+
+---
+
+### How to View Detailed Data
+
+Clicking the uBO Scope toolbar icon opens the popup, revealing domain-level details:
+
+- **Not blocked:** Domains with successful connections
+- **Stealth-blocked:** Domains blocked silently
+- **Blocked:** Domains with explicit block errors
+
+The badge count corresponds to the total distinct domains in the "not blocked" section.
+
+---
+
+### Conclusion
+
+Understanding connection counting via uBO Scope lets you:
+
+- Gain transparent insight into your third-party exposure
+- Assess content blocker effectiveness by focusing on distinct connections, not just blocked requests
+- Make informed decisions about your online privacy
+
+For hands-on guidance, explore related documentation on [Monitoring Network Connections](../guides/getting-started/monitoring-network-connections) and [Interpreting Domain Data and Counts](../guides/practical-guides/interpreting-domain-data).
+
+---
+
+## Additional Resources
+
+- [What is uBO Scope?](../overview/introduction-and-value/product-highlights) — Overview and value proposition
+- [Supported Browsers & Integration Points](../overview/architecture-and-system-overview/platform-support-integration) — Platform compatibility details
+- [Validating Content Blocker Effectiveness](../guides/practical-guides/validating-content-blocker-effectiveness) — Practical advice on blocking strategies
+
+<Info>
+Remember: The badge count is your window into third-party connections — use it as a compass for safer browsing.
+</Info>
