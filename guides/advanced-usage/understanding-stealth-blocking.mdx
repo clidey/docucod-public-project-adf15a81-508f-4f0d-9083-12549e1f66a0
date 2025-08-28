@@ -1,0 +1,133 @@
+---
+title: "Understanding and Detecting Stealth-Blocked Requests"
+description: "Explore how stealth-blocked requests work, why they're not visible to webpages, and how uBO Scope exposes these hidden blocks. Practical tips for filter list maintainers and privacy researchers."
+---
+
+# Understanding and Detecting Stealth-Blocked Requests
+
+uBO Scope offers a unique window into the world of network requests that are typically invisible to both webpages and conventional content blockers. This guide explains what stealth-blocked requests are, why they remain hidden in usual web monitoring scenarios, and how uBO Scope exposes these hidden blocks. It also provides practical advice for filter list maintainers and privacy researchers seeking to better understand or detect stealth-blocking behavior.
+
+---
+
+## 1. Introduction to Stealth-Blocked Requests
+
+### What Are Stealth-Blocked Requests?
+Stealth-blocked requests are network requests that are intentionally blocked by content blockers but do so in a way that leaves **no direct trace visible to the webpage**. Unlike simply blocked requests which the page may detect via failed network calls or blocked resources, stealth-blocking tricks the browser or network stack to prevent the request from executing or appearing in ways detectable by the webpage scripts.
+
+### Why Do Stealth-Blocked Requests Exist?
+Content blockers use stealth-blocking to avoid:
+- Breaking web functionality by silently blocking risky third-party requests without raising errors visible to the webpage.
+- Detection attempts by anti-adblock scripts that try to identify if resources are being blocked.
+
+This method helps maintain user privacy and enhanced blocking without tipping off the webpage, preserving a seamless browsing experience.
+
+---
+
+## 2. Why Webpages Can’t See Stealth-Blocked Requests
+
+Modern content blockers have evolved to block requests without signaling failures to web scripts. Stealth-blocking achieves this by:
+
+- **Preventing the request from leaving the browser's network stack in a detectable way.**
+- Avoiding the usual browser error events or HTTP error codes that a page might catch.
+- Not triggering `onerror` or similar events on page elements that initiate network activity.
+
+This makes stealth-blocked requests effectively invisible to the webpage, which is why ordinary page scripts or adblock “test” pages cannot reliably measure or detect them.
+
+---
+
+## 3. How uBO Scope Detects Stealth-Blocked Requests
+
+Unlike webpages, uBO Scope leverages deep browser APIs available through the `webRequest` event listeners, which operate at the browser extension level and can observe all network requests attempted by the browser regardless of page visibility.
+
+- uBO Scope listens to the network lifecycle events such as `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted`.
+- Upon stealth-blocking—which typically manifests as a redirect cancellation or error before the request completes—uBO Scope classifies such requests as `stealth-blocked`.
+- These stealth-blocked requests are aggregated by domain and hostname and made visible within uBO Scope’s popup interface, which distinguishes them from allowed and fully blocked requests.
+
+This enables users and researchers to audit **all** network attempts and understand which requests were stealthily blocked.
+
+---
+
+## 4. Practical Workflow: Using uBO Scope to Identify Stealth-Blocking
+
+### Prerequisites
+- Have uBO Scope installed and activated in your supported browser (Chromium 122+, Firefox 128+, or Safari 18.5+).
+- Familiarity with opening the uBO Scope popup interface.
+
+### Step-by-Step Guide
+
+<Steps>
+<Step title="Open the uBO Scope Popup">
+Locate the uBO Scope icon in your browser toolbar and click it to open the popup.
+</Step>
+<Step title="Observe the List of Domains">
+Within the popup, network requests are grouped under three headings: `not blocked`, `stealth-blocked`, and `blocked`.
+
+- The `stealth-blocked` section displays domains for which network requests were prevented silently.
+- Each domain entry shows how many requests were stealth-blocked, offering visibility into hidden blocks.
+</Step>
+<Step title="Analyze Stealth-Blocked Domains">
+Use the stealth-blocked list to identify which third parties are being stealth-blocked on the current page.
+
+- This is invaluable for filter maintainers to improve rule precision.
+- It reveals potential undetected trackers or ads inhibited invisibly.
+</Step>
+<Step title="Cross-Verify with Content Blocker Behavior">
+Compare stealth-blocked entries against your content blocker's block logs or filter rules to verify matching behavior.
+
+- If stealth-blocked domains are unexpected, investigate filter rules or blocking criteria.
+</Step>
+</Steps>
+
+### Expected Result
+You will see a categorized and accurate list of stealth-blocked requests that are normally hidden from webpages, providing transparency into your content blocker's stealth blocking.
+
+---
+
+## 5. Tips and Best Practices for Filter List Maintainers and Researchers
+
+- **Regularly monitor stealth-blocked requests** using uBO Scope to catch hidden connections that might need rule refinement.
+- **Understand stealth-blocked domains in context**: Some might be false positives or require exceptions to prevent website breakage.
+- **Leverage the domain and hostname counts** in the popup to prioritize which stealth-blocked third parties appear most frequently.
+- **Beware of misinterpreting high block counts** as better blocking; stealth-blocking often means better, not more aggressive, blocking.
+- **Use uBO Scope as a debugging tool** for understanding when stealth blocking masks complex browser or filter behaviors.
+
+<Tip>
+Stealth-blocked requests are often the reason some adblock “test” pages fail to detect your content blocker’s effectiveness. Trust uBO Scope’s invisibility into these requests over results from such test webpages.
+</Tip>
+
+---
+
+## 6. Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Common Issues">
+<Accordion title="No Stealth-Blocked Requests Showing Up">
+- Stealth-blocked requests depend on your content blocker actually using stealth techniques.
+- If none show, verify that your blocking rules include stealth blocking methods.
+- Ensure uBO Scope is running with the right permissions and is not restricted by other extensions.
+- Confirm the browser supports the necessary `webRequest` APIs (see supported browsers in the installation guide).
+</Accordion>
+<Accordion title="Interpreting Redirect Events as Stealth-Blocked">
+- Some redirects are legitimate and not stealth blocks; uBO Scope distinguishes based on network event details.
+- Be cautious not to confuse transient network errors or redirects with stealth blocking.
+</Accordion>
+<Accordion title="Popup Data Not Updating in Real Time">
+- There might be a short delay due to batching of events (around 1 second).
+- Refresh the active tab or reopen the popup to force update.
+- Check in the installation or troubleshooting guide about extension service worker status.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Additional Resources and Next Steps
+
+- For more on how stealth-blocked requests relate to overall network auditing, see the [Audit Third-Party Network Connections](https://example.com/guides/core-workflows/audit-network-connections) guide.
+- To understand basic terminology and network request categorizations, consult [Core Concepts & Terminology](https://example.com/overview/foundation-architecture/core-concepts-terminology).
+- Learn to install and activate uBO Scope in supported browsers via the [Install and Activate Guide](https://example.com/guides/getting-started/install-activate).
+- Investigate myths about content blocker metrics in [Validate Content Blockers with uBO Scope](https://example.com/guides/core-workflows/validate-blockers).
+
+For source code and latest updates, visit the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope).
+
+---
+
+<u>Understanding stealth blocking is essential to grasp what happens beneath the surface when content blockers guard your privacy silently. uBO Scope reveals that hidden world with precision and clarity.</u>
