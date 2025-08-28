@@ -1,0 +1,161 @@
+---
+title: "Core Concepts & Terminology"
+description: "Explains foundational terms and ideas, such as third-party servers, domain outcomes (allowed, blocked, stealth), browser tab sessions, badge counts, and how these surface within the user interface."
+---
+
+# Core Concepts & Terminology
+
+Understanding the foundational concepts behind uBO Scope empowers you to fully grasp how the extension reports and categorizes network activity. This page demystifies key terms such as third-party servers, domain outcomes (allowed, blocked, stealth), browser tab sessions, and badge counts, explaining how these elements are reflected in the user interface.
+
+---
+
+## What You Need to Know
+
+### Third-Party Servers
+
+When you visit a webpage, the browser often connects not only to that site’s main server but also to numerous external (third-party) servers. These third parties can provide content like ads, analytics, fonts, or other resources. Tracking these connections is essential for privacy and security insights.
+
+### Domain Outcomes
+
+uBO Scope classifies these network requests into three distinct outcomes based on how they are handled by your browser or any blocking mechanisms in place:
+
+- **Allowed**: Requests that successfully connected and fetched resources from third-party domains.
+- **Blocked**: Requests that were prevented from connecting, typically by your content blockers or network-level filters.
+- **Stealth-Blocked**: Requests that were quietly prevented (stealth-blocked) without the blocking being visible to the page, often done to minimize webpage breakage or detection of blocking.
+
+These outcomes provide a clear, realistic picture of what third-party connections are actually taking place, rather than what might be reported by unreliable or misleading blocking counters.
+
+### Browser Tab Sessions
+
+uBO Scope tracks third-party network activity on a per-tab basis. Each browser tab maintains its own session of recorded connections, detailing which third-party domains were contacted and how those connections ended (allowed, blocked, stealth-blocked).
+
+When a tab is closed, its session data is discarded, ensuring that badge counts and popup data always reflect the current browsing context.
+
+### Badge Counts
+
+The badge displayed on the browser toolbar icon shows a **count of distinct third-party domains allowed** for the active tab’s session. 
+
+For example, if a webpage loaded resources from five different third-party domains that were allowed, the badge will show '5'.
+
+> **Lower badge counts indicate fewer third-party exposures, which is typically better for privacy.**
+
+The badge does not count blocked or stealth-blocked domains—it exclusively reports allowed distinct domain connections.
+
+### How Terms Surface in the User Interface
+
+In the extension popup, you will see three main sections, each reflecting one of the domain outcome categories:
+
+- **Not Blocked**: Lists allowed third-party domains with counts indicating how often they were connected to.
+- **Stealth-Blocked**: Shows domains whose requests were quietly blocked to avoid detection by webpages.
+- **Blocked**: Displays domains whose network requests were explicitly blocked and failed to connect.
+
+Each section summarizes the domain-level connection counts, helping you quickly understand your current privacy exposure.
+
+---
+
+## From Network Events to User-Facing Information
+
+The extension listens to browser network events (`webRequest` API) including request successes, errors, and redirects. It then records these in a session associated with the current tab. These recorded outcomes dynamically update the badge count and popup view.
+
+### Example Scenario
+
+Imagine you visit example.com:
+
+1. The main site loads successfully (allowed).
+2. The page requests an analytics script from analytics.example.net, which is allowed.
+3. An ad request to ads.adnetwork.com is stealth-blocked silently.
+4. A tracking pixel from tracker.badtracker.com is blocked explicitly by your content blocker.
+
+uBO Scope will:
+
+- Mark `example.com` as the main domain.
+- List `analytics.example.net` under **Not Blocked**.
+- List `ads.adnetwork.com` under **Stealth-Blocked**.
+- List `tracker.badtracker.com` under **Blocked**.
+- Show a badge count indicating only 1 allowed third-party domain (`analytics.example.net`).
+
+This clarity lets you quickly assess which external domains are active and what blocking is effective.
+
+---
+
+## Practical Tips & Best Practices
+
+- **Monitor badge counts** to understand how many distinct third-party domains you connect to with each site you visit. Lower counts usually indicate better privacy.
+- **Check the popup’s detailed view** regularly to get deeper insights into which domains are allowed or blocked.
+- **Use stealth-blocked domains list** to recognize attempts that content blockers hide to prevent webpage breakage or anti-blocker detection.
+- **Understand tab sessions** — each tab’s third-party domains are tracked separately, so switching tabs changes the badge and popup data accordingly.
+- **Avoid relying solely on block counts from other blockers**; uBO Scope provides independent, transparent verification of actual network outcomes.
+
+---
+
+## Summary
+
+- **Third-party domains** represent all external remote servers contacted by the webpage.
+- **Outcomes:**
+  - Allowed (not blocked)
+  - Blocked (explicitly prevented)
+  - Stealth-blocked (silently prevented)
+- **Browser tab sessions** keep track of these domains individually per tab.
+- **Badge counts** reflect the total number of distinct allowed third-party domains per active tab.
+- The **popup interface** displays categorized lists of connected domains with counts.
+
+---
+
+For comprehensive understanding of how these core concepts play into the overall extension architecture and user experience, please consult the [High-Level System Architecture](../architecture-group/system-architecture) and the [What is uBO Scope?](../introduction-group/what-is-ubo-scope) pages.
+
+
+---
+
+## Code Snippet: Domain Outcome Tracking Logic (Simplified)
+
+```javascript
+function recordOutcome(tabId, request) {
+  const tabDetails = getOrCreateTabDetails(tabId);
+  const hostname = extractHostname(request.url);
+  if (request.event === 'success') {
+    addDomainCount(tabDetails.allowed, hostname);
+  } else if (request.event === 'error') {
+    addDomainCount(tabDetails.blocked, hostname);
+  } else if (request.event === 'redirect') {
+    addDomainCount(tabDetails.stealth, hostname);
+  }
+  updateBadge(tabId, tabDetails.allowed.domains.size);
+}
+```
+
+This function illustrates how uBO Scope records the outcome of requests per tab and updates user-visible counts.
+
+---
+
+## Troubleshooting Common Confusions
+
+<AccordionGroup title="Troubleshooting Core Concepts">
+  <Accordion title="Why doesn't the badge count blocked domains?">
+    The badge exclusively reflects allowed third-party domains to show actual exposures, not block attempts.
+  </Accordion>
+  <Accordion title="What is the difference between stealth-blocked and blocked?">
+    Stealth-blocked requests are silently prevented without alerting the webpage, while blocked requests are explicitly denied.
+  </Accordion>
+  <Accordion title="Are main site domains included in badge counts?">
+    No, the badge counts only third-party domains, excluding the main site domain.
+  </Accordion>
+  <Accordion title="Why is tab session data cleared when I close a tab?">
+    To ensure badge and popup data reflect only the active browsing context, session data is discarded on tab close.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+After familiarizing yourself with these core concepts and terminology, you can proceed to:
+
+- [Understanding the Toolbar Badge and Popup Data](/guides/analyzing-results/understanding-badge-popup) to learn how to interact with and interpret the UI.
+- [High-Level System Architecture](/overview/architecture-group/system-architecture) for insight into the extension’s internal workflow.
+- [Installation Guide](/getting-started/setup-introduction/installation) if you have not installed uBO Scope yet.
+
+---
+
+**Empower your privacy toolkit by mastering these fundamentals—now you are ready to see the true network footprint of your browsing activity.**
+
+---

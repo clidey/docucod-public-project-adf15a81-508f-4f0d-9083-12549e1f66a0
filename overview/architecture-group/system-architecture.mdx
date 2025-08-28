@@ -1,0 +1,96 @@
+---
+title: "High-Level System Architecture"
+description: "Presents a simple, clear architecture diagram (using Mermaid) mapping the relationships among the extension's background script, popup UI, browser APIs, and data storage. Provides a concise explanation of the key architectural workflow."
+---
+
+# High-Level System Architecture
+
+Understanding the architecture of uBO Scope is key to appreciating how this extension reliably monitors and reports network connections made by webpages. This page presents a straightforward architectural overview, highlighting the primary components, their interactions, and the data flow that powers the extension’s privacy transparency.
+
+---
+
+## Architecture Overview
+
+At its core, uBO Scope leverages the modern browser extension model to monitor network activity through dedicated scripts and browser APIs. The main components include:
+
+- **Background Script**: The central controller that listens to network requests via the `webRequest` API. It records, classifies, and manages data related to allowed, stealth-blocked, and blocked third-party connections.
+- **Popup UI**: The user interface that presents collected data to users in a clear, categorized manner. It dynamically requests tab-specific network data from the background script.
+- **Browser APIs**: Interfaces provided by the browser enabling real-time monitoring (`webRequest`), data storage (`storage.local` and `storage.session`), badge updates on the toolbar icon, and messaging between background and popup contexts.
+- **Data Storage**: Persistent and session-based storage used to cache network details and the public suffix list to efficiently process host and domain information.
+
+This architecture ensures that uBO Scope reliably tracks network requests within a tab’s lifetime, updating the user and visually reflecting network activity through the toolbar badge and detailed popup.
+
+---
+
+## Architectural Workflow
+
+1. **Network Event Listening**: The background script registers listeners on network events such as redirects, errors, and successful responses. These events correspond to every HTTP(S) and WebSocket network request falling under the extension's host permissions.
+
+2. **Request Classification and Record Keeping**: Each network request is analyzed to determine its outcome — allowed, stealth-blocked (e.g., invisible redirects), or blocked. These outcomes are stored and aggregated per tab, maintaining maps of hostnames and domains.
+
+3. **Badge Update**: The background script calculates the count of distinct allowed third-party domains for each tab and updates the toolbar icon badge accordingly. This immediate visual feedback signals the privacy exposure level of the current page.
+
+4. **Popup Interaction**: When a user opens the extension popup, it requests the current tab’s detailed data from the background script. The popup script then deserializes, formats, and renders the categorized lists of domains and counts.
+
+5. **Data Persistence**: To maintain context across browser sessions and improve performance, the background script persists session data and the public suffix list using the browser's storage APIs, facilitating accurate domain parsing and fast lookup.
+
+---
+
+## Simplified Diagram
+
+```mermaid
+flowchart TD
+    subgraph Browser Extension Context
+        BG["Background Script\n(webRequest listeners, data processing, storage)"]
+        POPUP["Popup UI\n(displays collected data)"]
+    end
+
+    subgraph Browser
+        WEBREQ["webRequest API\n(network event interface)"]
+        STORAGE["Storage API\n(local & session storage)"]
+        BADGE["Toolbar Badge\n(icon with connection count)"]
+        TABS["Browser Tabs"]
+    end
+
+    TABS -->|makes network requests| WEBREQ
+    WEBREQ -->|events (success, error, redirect)| BG
+    BG -->|stores session data| STORAGE
+    BG -->|updates badge count| BADGE
+    POPUP -->|requests tab data| BG
+    BG -->|sends serialized tab data| POPUP
+```
+
+---
+
+## Practical Considerations
+
+- The architecture accounts for the ephemeral nature of service workers/background scripts by batching network events and processing them asynchronously, ensuring data integrity without performance degradation.
+- Using the public suffix list internally enables uBO Scope to correctly recognize and categorize domains, preventing inaccurate counts due to subdomains.
+- The messaging architecture between popup and background scripts is robust, featuring serialization and deserialization of complex data structures for efficient communication.
+
+---
+
+## Key Benefits
+
+- **Real-Time Insight**: Users get immediate updates on network exposures through the toolbar badge and detailed popup information.
+- **Accurate Third-Party Counting**: The use of authoritative domain parsing guarantees precise measurement of distinct third-party connections.
+- **Data Persistence**: Even after browser restarts or tab closures, recorded information is preserved, giving users continuity when auditing privacy.
+- **Modular Design**: Separation of concerns between background processing and UI presentation allows for clear maintenance and potential future extensibility.
+
+---
+
+## Next Steps
+
+To deepen your understanding and start using uBO Scope effectively, explore the following pages:
+
+- [What is uBO Scope?](/overview/introduction-group/what-is-ubo-scope) — to understand the core purpose and value
+- [Understanding the Popup and Badge](/getting-started/getting-going/exploring-popup) — to familiarize yourself with the user interface
+- [Installation Guide](/getting-started/setup-introduction/installation) — to set up the extension
+
+For advanced users and maintainers, reviewing the [Core Concepts & Terminology](/overview/architecture-group/core-concepts-terminology) page will provide additional context on how outcomes and network events are interpreted.
+
+---
+
+_Last updated in the `main` branch._
+
+<Source url="https://github.com/gorhill/uBO-Scope" paths={[{"path": "js/background.js", "range": "1-229"}, {"path": "popup.html", "range": "1-39"}]} />
