@@ -1,0 +1,197 @@
+---
+title: "Analyzing Blocking and Stealth Outcomes"
+description: "Tutorial for advanced users and filter list maintainers to dig deeper into the network request outcomes reported by uBO Scope. Highlights how blocked and stealth outcomes are detected regardless of content blocker in effect, and how to use this info for debugging or validation."
+---
+
+# Analyzing Blocking and Stealth Outcomes
+
+Unlock the deeper insights behind uBO Scope's network connection reports. This guide is tailored for advanced users and filter list maintainers who want to understand exactly how uBO Scope detects and classifies network request outcomes — particularly the nuanced "blocked" and "stealth-blocked" categories — regardless of which content blocker is active.
+
+---
+
+## Workflow Overview
+
+**What this guide helps you accomplish:**
+- Understand how uBO Scope identifies blocked and stealth outcomes even when other content blockers are present.
+- Use this knowledge to debug network request behaviors and validate filter lists or blocker configurations.
+- Gain confidence in analyzing results regardless of your browser’s content blocking setup.
+
+**Prerequisites:**
+- Have uBO Scope installed and running in your supported browser (Chrome ≥ 122, Firefox ≥ 128, Safari ≥ 18.5).
+- Basic familiarity with browser network requests and extension popup interface.
+- Access to the popup interface to review domain outcome lists.
+
+**Expected Outcome:**
+- Ability to interpret blocked vs. stealth-blocked distinctions.
+- Skill in leveraging uBO Scope data for troubleshooting and filter evaluation.
+
+**Estimated Time Commitment:** 15-30 minutes
+
+**Difficulty Level:** Intermediate to Advanced
+
+---
+
+## Understanding Outcomes: What uBO Scope Reports
+
+uBO Scope categorizes third-party domains contacted by your browser into three outcome types shown in the popup:
+
+1. **Allowed (Not Blocked):** Network requests which succeeded and were allowed.
+2. **Blocked:** Requests that failed due to explicit blocking or network error.
+3. **Stealth-Blocked:** Requests that were redirected away or modified stealthily by content blockers, often invisible to the webpage.
+
+### How Detection Works
+
+- uBO Scope listens to browser `webRequest` events for network request lifecycle stages: redirects, errors, and successful responses.
+- All detected requests are queued and processed to update per-tab domain outcome statistics.
+- Outcomes are determined by analyzing the request event types: 
+  - **redirect** requests increment "stealth" counts, 
+  - **error** requests increment "blocked" counts, 
+  - **success** requests increment "allowed" counts.
+- These counts are aggregated separately by domain and hostname for clarity.
+
+<Tip>
+Stealth-blocking is often used to silently neutralize requests without making them obviously fail, so webpages can’t easily detect filtering. uBO Scope’s ability to report stealth outcomes helps reveal these otherwise invisible interventions.
+</Tip>
+
+---
+
+## Step-by-Step Guide to Analyzing Outcomes
+
+<Steps>
+  <Step title="Open the uBO Scope Popup Interface">
+    Click the uBO Scope icon in your browser toolbar to open the popup.
+
+    <Check>
+    The popup displays three sections with domains categorized as "not blocked", "stealth-blocked", and "blocked".
+    </Check>
+  </Step>
+
+  <Step title="Review Allowed Domains">
+    Look at the "not blocked" list to see third-party domains that your browser successfully connected to.
+
+    These represent live connections where resources were fully loaded.
+
+    <Tip>
+    A larger number here indicates more remote servers supplying content.
+    </Tip>
+  </Step>
+
+  <Step title="Inspect Blocked Domains">
+    Examine the "blocked" list to identify domains where requests failed outright.
+
+    This could signal filter rules or network errors blocking resource loading.
+
+    <Warning>
+    A high blocked count does not necessarily correlate with better privacy—it may reflect more network requests being initiated overall.
+    </Warning>
+  </Step>
+
+  <Step title="Understand Stealth-Blocked Domains">
+    The "stealth-blocked" section includes domains for which requests were redirected or altered silently.
+
+    These requests did not error out openly but were stopped or rerouted by content blockers without explicit failures.
+
+    <Info>
+    Stealth blocking prevents detection by webpages, enhancing filter effectiveness while avoiding breakage.
+    </Info>
+  </Step>
+
+  <Step title="Correlate Outcomes with Browser Activity">
+    Use the domain lists together with your browsing activity to interpret site behavior.
+
+    For example, if a known ad domain appears under stealth-blocked, your content blocker is actively neutralizing tracking requests without errors.
+
+    <Tip>
+    Use this insight to fine-tune filters or validate that stealth-block filters are effective.
+    </Tip>
+  </Step>
+</Steps>
+
+---
+
+## Practical Scenarios
+
+### Scenario 1: Debugging Unexpected Network Failures
+
+If you notice important site functionality failing, cross-check the popup blocked list:
+- Domains unexpectedly blocked may indicate over-aggressive filters or network issues.
+- Stealth-blocked entries might point to stealthy filtering silently impacting requests.
+
+Use this to whitelist or adjust filter lists accordingly.
+
+### Scenario 2: Validating a Filter List
+
+Filter list maintainers can:
+- Monitor stealth-blocked domains to ensure stealth rules work.
+- Check blocked domains to detect false positives or gaps.
+
+This testing flow helps maintain filter quality and balance privacy with site usability.
+
+### Scenario 3: Comparing Content Blockers
+
+Because uBO Scope reports all network request outcomes regardless of the active content blocker:
+- Compare stealth and blocked domains across different blocker setups.
+- Identify which filters silently stealth block versus causing open blocking.
+
+---
+
+## Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Common Challenges in Analyzing Outcomes">
+<Accordion title="Popup Shows No Data or 'NO DATA'">
+Check if uBO Scope is active and has permission to access webRequest API.
+Reload the tab or restart the browser to reset tracking.
+Ensure you have visited sites that generate network requests.
+</Accordion>
+
+<Accordion title="Badge Count Does Not Update">
+Badge updates only on network requests to third-party domains.
+If browsing static or local content, count may remain zero.
+Check for extension conflicts or permission restrictions.
+</Accordion>
+
+<Accordion title="Blocked Domains Seem Inaccurate">
+Remember that network errors beyond filtering can trigger blocked outcomes.
+Review network connectivity and firewall settings as well.
+Use stealth-blocked data to cross-validate.
+</Accordion>
+
+<Accordion title="Stealth-Blocked Domains Missing">
+Not all blocking solutions use stealth techniques.
+uBO Scope only reports stealth outcomes based on redirects caught.
+Ensure your content blocker supports stealth blocking for this category to populate.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Best Practices and Tips
+
+- Regularly consult the popup to keep track of evolving network requests per site.
+- Use stealth outcome analysis to refine filter lists toward silent blocking.
+- Combine uBO Scope data with browser developer tools if deeper inspection is needed.
+- Remember that a lower badge count generally means fewer third-party connections, enhancing privacy.
+
+---
+
+## Technical Insight (For Reference)
+
+uBO Scope maintains session state tracking network request events:
+- Each tab has a `tabDetails` entity that maps allowed, stealth, and blocked outcomes separately.
+- Results are updated asynchronously after batching network request events to avoid performance hits.
+- A public suffix list and domain parsing help aggregate results accurately.
+
+Though technical, this model enables uBO Scope to reliably detect outcomes across diverse browser content blockers.
+
+---
+
+## Next Steps & Related Content
+
+- Explore [Tracking Third-Party Server Connections](guides/core-workflows/tracking-3rd-party-requests) to understand how uBO Scope groups domains.
+- Review [Interpreting Badge Counts and Site Safety](guides/core-workflows/interpreting-badge-counts) for evaluating connection metrics.
+- Visit [Common Myths and Realities](overview/introduction_and_principles/mythbusting) to avoid misinterpreting block counts.
+- For installation or UI onboarding, see [Installing uBO Scope](guides/getting-started/installing-ubo-scope) and [Understanding the Popup and Toolbar Badge](guides/getting-started/understanding-the-ui).
+
+---
+
+<u>By mastering the analysis of blocking and stealth outcomes, you unlock uBO Scope’s full potential as your trustworthy companion in network transparency and filter maintenance.</u>

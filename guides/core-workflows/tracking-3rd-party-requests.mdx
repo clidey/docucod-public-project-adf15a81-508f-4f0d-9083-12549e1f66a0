@@ -1,0 +1,147 @@
+---
+title: "Tracking Third-Party Server Connections"
+description: "Step-by-step example of how to use uBO Scope to reveal all connections (attempted or successful) to third-party remote servers for a webpage. Covers reading the domain list and differentiating between allowed, blocked, and stealth outcomes."
+---
+
+# Tracking Third-Party Server Connections with uBO Scope
+
+## Overview
+This guide walks you through the process of using **uBO Scope** to uncover and analyze all network connections a webpage attempts or successfully makes to third-party remote servers. It focuses specifically on how to read and interpret the domain connection lists within the uBO Scope popup interface, categorizing connections into **allowed**, **blocked**, and **stealth-blocked** outcomes.
+
+Understanding these categories empowers you to gain clear visibility into your browser's network footprint, better assess your content blockers’ effectiveness, and improve your privacy and security awareness.
+
+---
+
+## Prerequisites
+- uBO Scope must be installed and enabled in your supported browser (Chrome v122+, Firefox v128+, Safari v18.5+).
+- The extension should have the necessary permissions (`webRequest`, `activeTab`, `storage`, and host permissions) granted during installation.
+- Basic familiarity with browsing and opening browser extensions from the toolbar.
+- An active tab with a webpage loaded to analyze.
+
+---
+
+## Expected Outcome
+After completing this guide, you will:
+- Understand how uBO Scope records and categorizes third-party server connections.
+- Be able to open and interpret the uBO Scope popup for your active tab.
+- Distinguish allowed, blocked, and stealth-blocked domains and what these imply.
+- Accurately read domain names and their connection counts.
+
+---
+
+## Time Estimate
+Approximately 5–10 minutes.
+
+---
+
+## Step-by-Step Instructions
+
+### 1. Open the uBO Scope Popup Panel
+1. Click the uBO Scope icon in your browser’s toolbar.
+2. The popup will open showing the data relevant to the currently active tab.
+3. If the active tab has been analyzed, you’ll see:
+   - The _tab hostname_ at the top.
+   - A summary count of distinct third-party domains connected.
+   - Three distinct sections: **not blocked**, **stealth-blocked**, and **blocked** domains.
+
+### 2. Understand the Domain List Sections
+The connections are grouped into three categories:
+
+- **Not Blocked (Allowed)**: Domains where network requests succeeded or were allowed to connect.
+- **Stealth-Blocked**: Domains where requests were interrupted via a redirection or stealth blocking technique, meaning the connection attempt was hidden or obfuscated.
+- **Blocked**: Domains where connection attempts failed outright due to blocking or errors.
+
+Each section lists third-party domains with the number of individual connection events observed.
+
+### 3. Read the Domain Names and Counts
+- Domains are presented in their Unicode form for readability, including internationalized domain names (IDN).
+- The number next to each domain indicates how many requests were made to that domain during the tab's lifespan.
+- The **summary count** at the top reflects the number of **distinct** allowed third-party domains contacted.
+
+### 4. Interpreting Outcomes in Context
+- A **lower summary count** indicates fewer third-party connections, which generally implies higher privacy and better content blocking.
+- **Allowed** domains often include legitimate third-party services such as Content Delivery Networks (CDNs).
+- **Stealth-blocked** domains reflect sophisticated blocking that avoids direct failure responses, preserving webpage functionality while cutting unwanted connections.
+- **Blocked** domains reveal explicit blocking by content blockers or network restrictions.
+
+### 5. Verify the Active Tab Data
+1. Ensure your current tab is the one you want to analyze.
+2. Reload the page if necessary to capture fresh connection data.
+3. Update the uBO Scope popup to see real-time or recently captured connection details.
+
+---
+
+## Practical Examples
+
+### Example 1: Identifying Tracking Domains
+You navigate to a news website and open uBO Scope popup.
+
+- The **allowed** section shows domains like `cdn.examplecdn.com` and `images.news-site.com`.
+- The **stealth-blocked** section reveals `tracker.adnetwork.com` indicating your blocker stealthily blocked trackers.
+- The **blocked** section lists `ads.badexample.com` where requests were fully rejected.
+
+This indicates your content blocker allows essential resources while quietly blocking trackers and ads.
+
+### Example 2: Confirming Content Blocker Effectiveness
+Visiting a webpage with many third-party scripts:
+
+- You observe a large **allowed** count, indicating many third-party contacts.
+- Evaluate whether these are expected or if your blocker needs enhancement.
+
+---
+
+## Tips & Best Practices
+- Regularly check uBO Scope after visiting new or suspicious sites to review third-party connections.
+- Use the connection count per domain to spot heavily contacted domains that may be invasive.
+- Refresh the page and popup to capture dynamic connections made during complex page loads.
+- Familiarize yourself with common CDNs and service domains to avoid unnecessary blocking.
+
+---
+
+## Common Pitfalls & Troubleshooting
+
+<AccordionGroup title="Troubleshooting Common Issues">
+<Accordion title="Popup Shows 'NO DATA' or Empty List">
+Make sure the active tab has fully loaded and generated network requests. Try reloading the page and reopening the popup. Verify that uBO Scope is enabled and has requisite permissions.
+</Accordion>
+<Accordion title="Badge Count Does Not Update">
+The badge reflects allowed distinct domain counts. If it remains empty, check if the page blocked all network requests or if the extension has storage permission issues. Restart the browser or reload the extension.
+</Accordion>
+<Accordion title="Domains Appear Missing or Incorrect">
+uBO Scope uses the browser’s `webRequest` API, which might not capture requests made outside this scope. Some network requests or third-party connections via WebSockets or other protocols may not be fully visible.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Under the Hood (How It Works)
+While this guide focuses on usage, it is helpful to briefly understand:
+
+- uBO Scope listens to browser network events (`onBeforeRedirect`, `onErrorOccurred`, `onResponseStarted`) to track every attempted connection in real-time.
+- Every connection attempt is analyzed by hostname and aggregated by domain using the Public Suffix List to correctly group subdomains.
+- Outcomes are categorized as **allowed**, **blocked**, or **stealth** based on event type and connection result.
+- The popup displays real-time aggregated data to the user per browser tab.
+
+---
+
+## Next Steps & Further Reading
+- Explore the [Understanding the Popup and Toolbar Badge](/guides/getting-started/understanding-the-ui) guide for detailed UI walkthroughs.
+- Validate your installation and functionality with [Validating That uBO Scope Is Working](/getting-started/first-run-validation/validating-functionality).
+- Learn more about the terminology and outcomes with [Core Concepts and Terminology](/overview/technical_overview/core_concepts).
+- Read about myths and how to interpret content blocker metrics in [Common Myths and Realities](/overview/introduction_and_principles/mythbusting).
+
+---
+
+## Resources
+- uBO Scope GitHub repository: [https://github.com/gorhill/uBO-Scope](https://github.com/gorhill/uBO-Scope)
+- Browser extension stores: Chrome Web Store, Firefox Add-ons, Safari Extensions
+- Public Suffix List for domain aggregation: [https://publicsuffix.org](https://publicsuffix.org)
+
+---
+
+## Summary
+This guide has shown you how to use uBO Scope to track and analyze third-party server connections for any webpage, emphasizing actionable reading of domain lists and understanding network request outcomes.
+
+Through this practical approach, you gain control and insight into your browser’s external communications, enhancing privacy awareness and improving your content blocking strategy.
+
+---
