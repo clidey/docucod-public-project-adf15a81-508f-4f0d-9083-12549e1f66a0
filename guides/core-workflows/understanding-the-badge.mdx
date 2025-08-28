@@ -1,0 +1,129 @@
+---
+title: "Understanding the Badge Count"
+description: "Demystifies the extension’s toolbar badge: how the count is determined, what it signals about distinct third-party servers, and its proper use in evaluating web privacy and content blockers. Myths and pitfalls are addressed with clear examples and best practices."
+---
+
+# Understanding the Badge Count
+
+## Overview
+
+This guide demystifies the uBO Scope browser extension's toolbar badge count. You will learn how the badge count is calculated, what it signifies about third-party server connections, and how to correctly interpret it when evaluating the privacy and effectiveness of content blockers. By dispelling common myths and highlighting pitfalls, this guide empowers you to use the badge as a reliable signal for web privacy assessment.
+
+---
+
+## What the Badge Count Represents
+
+The badge count displayed on the uBO Scope extension icon is **the number of distinct third-party remote servers to which your browser successfully connected while loading the current tab**. Specifically, this count reflects the total unique third-party domains for which network requests were allowed and completed.
+
+- **Third-party remote servers** refer to domains different from the main website you are visiting.
+- The badge intentionally **does not count blocked or stealth-blocked domains**, focusing only on successful allowed connections.
+
+### Why This Matters
+
+A lower badge count generally indicates a smaller exposure to third-party servers, potentially leading to better privacy and less tracking. Conversely, higher counts usually imply more third-party connections, increasing privacy concerns.
+
+<Tip>
+Remember: a low badge count is desirable and suggests that your content blocker or privacy setup is effectively minimizing third-party network activity.
+</Tip>
+
+---
+
+## How the Badge Count Is Determined
+
+uBO Scope leverages the browser's `webRequest` API to monitor all network requests initiated by the webpage, tracking outcomes based on three possible events:
+
+- **Allowed / Success:** Requests that completed and fetched resources from third-party servers.
+- **Blocked:** Requests explicitly blocked by content blockers.
+- **Stealth-blocked:** Requests silently redirected or blocked in a way that typical content blockers may not reveal.
+
+For each successful network request that reaches a distinct third-party domain, the domain is counted once per tab, aggregating to the badge count.
+
+The internal mechanism respects the following rules:
+
+- Only distinct third-party domains are counted, ignoring multiple requests to the same third-party domain.
+- The count resets on navigation to a new main frame domain.
+- First-party domain accesses are excluded from the badge.
+
+---
+
+## Common Myths and Pitfalls Addressed
+
+### Myth 1: "More Blocks Mean Better Blocking"
+
+Many users believe that an extension showing a high number of blocked requests is automatically better. This is **incorrect**. A high block count does not guarantee that fewer third-party servers are connected:
+
+- It's possible for a content blocker to block many requests but still allow connections to numerous distinct third-party servers, resulting in a high badge count.
+- The badge count focuses on **distinct allowed third-party servers**, a more meaningful signal regarding actual network exposure.
+
+<Tip>
+Use the badge count, not block counts, to evaluate whether a content blocker effectively reduces third-party connections.
+</Tip>
+
+### Myth 2: "Ad Blocker Test Pages Are Reliable"
+
+Websites designed to test ad blockers often create contrived network requests unlikely to occur in real browsing sessions. These tests:
+
+- Can misrepresent how extensions behave under real-world conditions.
+- Fail to expose stealth-blocking or nuanced content blocker behaviors.
+
+<Tip>
+Avoid relying on ad blocker test pages. Instead, use uBO Scope's badge count as a real-time, accurate reflection of network connections during your typical browsing.
+</Tip>
+
+---
+
+## Practical Examples
+
+Suppose you visit `example.com`. The extension monitors network requests:
+
+| Outcome            | Domain Example                | Badge Count Impact          |
+|--------------------|------------------------------|----------------------------|
+| Allowed            | cdn.examplecdn.com            | +1 (distinct third-party)   |
+| Allowed            | analytics.thirdpartytracker.net | +1 (distinct third-party)   |
+| Blocked            | ads.adserver.com             | 0 (not counted)            |
+| Stealth-blocked    | tracking.stealthblocker.io  | 0 (not counted)            |
+| Allowed (same domain as earlier) | cdn.examplecdn.com  | 0 (not distinct)           |
+
+At the end, the badge would show **2**, reflecting the two distinct third-party domains successfully contacted.
+
+---
+
+## How to Use the Badge Effectively
+
+1. **Monitor the Badge When Browsing:** Use the badge as a quick, live indicator of third-party exposure on any webpage.
+2. **Investigate Unexpected High Counts:** High badge counts on trusted sites may reveal unexpected trackers or poorly configured blockers.
+3. **Compare Content Blockers Wisely:** Evaluate content blockers by comparing badge counts rather than block counts or claims.
+4. **Use with the Popup Panel:** Click the extension icon to open the popup panel for detailed breakdowns of allowed, stealth-blocked, and blocked domains.
+
+<Check>
+Keep in mind that some legitimate third-party services (like common CDNs) contribute to the badge count, which is normal and not a cause for concern.
+</Check>
+
+---
+
+## Troubleshooting Common Badge Issues
+
+| Issue                       | Cause                                      | Solution                                            |
+|-----------------------------|--------------------------------------------|----------------------------------------------------|
+| Badge shows zero or no count | No network requests detected or extension disabled | Ensure extension is active; reload the tab; check permissions |
+| Badge count seems too high   | Legitimate but many third-party domains contacted | Use the popup to analyze which domains are counted; consider adjusting blocker rules |
+| Badge doesn't update         | Network requests not reported properly      | Refresh the page; restart the browser; verify browser supports required APIs |
+
+---
+
+## Tips and Best Practices
+
+- Use uBO Scope in combination with privacy-focused filter lists and tools to minimize unnecessary third-party connections effectively.
+- Understand that the badge count summarizes per tab and resets when you navigate to a new site.
+- Regularly review the popup panel details to spot unexpected domains and refine your content blocking strategy.
+
+---
+
+## Related Resources
+
+- [Core Concepts & Terminology](/overview/introduction-and-concepts/core-concepts-and-terminology): Deep dive into terms like "allowed," "stealth-blocked," and domain structures.
+- [Using the Popup Panel](/guides/core-workflows/using-the-popup): How to interpret detailed domain lists behind the badge.
+- [Troubleshooting & Quick Validation](/getting-started/first-use-validation/troubleshooting-and-validation): Steps to resolve badge or extension issues.
+- [What is uBO Scope?](/overview/introduction-and-concepts/what-is-ubo-scope): Overview of the extension's purpose and functionality.
+
+---
