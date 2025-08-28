@@ -1,0 +1,130 @@
+---
+title: "Fundamental Concepts & Terminology"
+description: "Clarify key terms like ‘third-party remote server’, ‘blocked’, ‘stealth’, and ‘allowed’ domains. Explain the criteria used for counting connections and why focusing on distinct third-party servers provides a superior measure of privacy risk."
+---
+
+# Fundamental Concepts & Terminology
+
+Understanding the terminology and foundational concepts is crucial to mastering how uBO Scope works and interpreting its data accurately. This page unpacks key terms such as ‘third-party remote server’, ‘blocked’, ‘stealth’, and ‘allowed’ domains. It also explains the criteria behind connection counting and the rationale for focusing on distinct third-party domains as a superior indicator of privacy exposure.
+
+---
+
+## What is a Third-Party Remote Server?
+
+In the context of uBO Scope, a third-party remote server is any web server whose domain is different from the main domain of the website you are visiting. This encompasses all external domains contacted via network requests initiated by the web page, including subresources like scripts, images, and trackers.
+
+- **First-party domain:** The domain of the website you are actively visiting.
+- **Third-party domain:** Any other domain different from the first-party domain.
+
+For example, if you visit `example.com` and the page loads resources from `cdn.example.net` or `tracker.analytics.com`, both `example.net` and `analytics.com` are considered third parties relative to `example.com`.
+
+This distinction matters because third-party connections often signal data sharing or tracking across sites.
+
+---
+
+## Clarifying Key Outcomes: Blocked, Allowed, and Stealth Connections
+
+uBO Scope categorizes each detected third-party connection attempt into one of three outcomes, providing a transparent status for every observed network request:
+
+- **Allowed:** Connections that successfully reached the third-party server and completed without error. These are resources actually delivered and potentially able to collect data.
+- **Blocked:** Connections that the browser or content blocker actively prevented from completing, often through filtering rules or network errors.
+- **Stealth-blocked:** Connections that were intercepted or redirected invisibly by stealthy content blockers in a way that does not generate typical observable block events. These requests are made but are silently handled (e.g., canceled or redirected) to avoid detection by websites.
+
+These distinctions allow users to see not only which connections were outright blocked but also those stealthily neutralized, reflecting the nuanced behavior of modern privacy tools.
+
+---
+
+## Domain Counting Criteria: Why Distinct Third-Party Domains?
+
+Rather than tallying every individual network request, uBO Scope focuses on the number of *distinct third-party domains* contacted. Here’s why this approach provides a clearer and more meaningful measure:
+
+- **Avoids inflated counts:** Some domains serve multiple resources, and counting each request could exaggerate actual exposure.
+- **Privacy risk relevance:** Each unique third-party domain represents a separate external party potentially receiving your data. Counting distinct domains aligns with real privacy concerns.
+- **Consistent metric:** Helps compare web page exposures regardless of complex resource request patterns or content blocker behavior.
+
+### How domains are extracted and counted:
+
+uBO Scope uses the [Public Suffix List](https://publicsuffix.org) to accurately derive the registrable domain name from hostnames. This means subdomains are normalized properly, so requests to `ads.example.com` and `cdn.example.com` relate to a single counted domain `example.com`.
+
+---
+
+## Definitions and Examples
+
+| Term             | Definition                                                  | Example                                  |
+|------------------|-------------------------------------------------------------|------------------------------------------|
+| Third-party domain | Domains different from the web page’s main domain          | Visiting `site.com` loading from `tracker.net` |
+| Allowed          | Network requests that completed successfully                | Image loaded from `cdn.site.com`          |
+| Blocked          | Requests stopped due to content blocking or errors          | Script from `ads.badsite.org` blocked by filter |
+| Stealth          | Requests neutralized silently by blockers without error     | Tracker request canceled invisibly         |
+| Distinct domain  | Unique external domains counted once per page load          | Counting `example.com` only once despite multiple resources|
+
+---
+
+## Why This Matters: Privacy Measurement & User Perspective
+
+Traditional block counts often mislead users by focusing on the number of blocked requests rather than the actual network exposure — i.e., how many different third-party servers are contacted and allowed to receive requests.
+
+uBO Scope’s domain-centric counting provides a precise indicator of:
+
+- **Real privacy exposure:** A lower count of allowed third-party domains implies less web tracking and data sharing.
+- **Content blocker effectiveness:** Measuring distinct domains contacted reveals how well a blocker reduces cross-domain connections.
+- **Transparency:** Users can see a clear breakdown of network connections' outcomes, uncovering stealth blocking which other tools may hide.
+
+### Practical Scenario
+Imagine you visit a news site that loads content from three third-party domains. A content blocker may block many individual requests but still allow connections to two of these domains, exposing your browsing data to multiple trackers. uBO Scope reflects this reality by showing exactly these two allowed domains, guiding you to better understand and tune your protections.
+
+---
+
+## Internal Logic Behind Counting Connections
+
+Each network request tracked by uBO Scope is processed as follows:
+
+1. **Identify Hostname:** Extracts the hostname of the requested URL.
+2. **Determine Domain:** Maps the hostname to its registrable domain via the Public Suffix List.
+3. **Outcome Categorization:** Assigns the request to allowed, blocked, or stealth categories based on network response, browser events, or redirects.
+4. **Count Increment:** Updates counts separately for domains and hostnames, ensuring domains remain the primary metric displayed.
+
+This approach ensures that the badge count and report provide an accurate, user-oriented view of privacy-relevant third-party exposure.
+
+---
+
+## Best Practices & Tips
+
+- Use uBO Scope alongside your preferred content blocker to understand actual network exposure rather than relying on block counts alone.
+- Pay close attention to stealth-blocked domains, as these indicate silent blocking that some tools do not report.
+- Regularly monitor the distinct third-party domain count to assess whether privacy has improved or worsened on frequently visited sites.
+- Understand that some third-party domains (e.g., CDN providers) are common and necessary; focus on unusual or tracking-related domains.
+
+---
+
+## Troubleshooting Common Confusions
+
+<AccordionGroup title="Common Misunderstandings About Domain Counts">
+<Accordion title="Why are some domains counted but don’t show in my content blocker’s block list?">
+Stealth-blocked connections are intercepted without triggering standard observable block notifications, so they may not appear in your blocker's logs. uBO Scope reports them transparently so you get a full picture.
+</Accordion>
+<Accordion title="Why does the badge count differ from the number of network requests I see?">
+The badge represents distinct domains contacted, not every network request. Multiple requests to the same domain count as one to keep the metric meaningful for privacy evaluation.
+</Accordion>
+<Accordion title="How can I be sure domain extraction is accurate?">
+uBO Scope uses the Public Suffix List to map hostnames to registrable domains accurately, ensuring subdomains and complex URL structures aggregate correctly.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Summary
+
+This page equips you with essential definitions and the reasoning behind uBO Scope’s focus on distinct third-party domains as the primary measurement of web tracking exposure. With clear distinctions between blocked, allowed, and stealth connections, you gain a transparent, actionable perspective on your web privacy.
+
+For further exploration:
+- Learn how uBO Scope captures and processes network requests on the [How Does uBO Scope Work? (Architecture & Data Flow)](/overview/core-concepts-architecture/architecture-dataflow) page.
+- See how to interpret the domain statistics and badges in the [Interpreting Domain Statistics](/getting-started/first-use-and-verification/interpreting-domain-stats) guide.
+
+---
+
+For source code reference on counting logic and domain parsing, review the [background.js](https://github.com/gorhill/uBO-Scope/blob/main/js/background.js) file in the repository.
+
+---
+
+<u>By mastering these fundamental concepts, you are better positioned to leverage uBO Scope effectively for improved privacy awareness and control.</u>
