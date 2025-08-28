@@ -1,0 +1,83 @@
+---
+title: "Browser & System Integration"
+description: "Describe how uBO Scope integrates with Chromium, Firefox, and Safari browsers. Highlight its reliance on the browser's webRequest API and its independence from specific content blockers, ensuring accurate connection visibility regardless of user configuration."
+---
+
+# Browser & System Integration
+
+## Introduction
+
+uBO Scope is designed to seamlessly integrate with the Chromium, Firefox, and Safari browsers by leveraging their native `webRequest` API. This integration allows uBO Scope to observe and report all network connections initiated by webpages, providing a clear picture of remote server communication regardless of the user's content blocker setup.
+
+## How uBO Scope Integrates with Browsers
+
+### Core Integration via the `webRequest` API
+
+uBO Scope relies exclusively on the browser's `webRequest` API to track network requests. This API provides detailed lifecycle events such as request redirects, errors, and responses, which the extension listens to in order to record connection outcomes. As a result, uBO Scope accurately reports:
+
+- All attempted connections to third-party remote servers
+- Whether those connections were allowed, blocked, or stealth-blocked
+
+This approach ensures that uBO Scope’s monitoring is independent and comprehensive, unaffected by the content blocking software the user employs.
+
+### Browser-Specific Details
+
+| Browser  | Notes on Integration and Permissions |
+| -------- | ----------------------------------- |
+| **Chromium**  | uBO Scope uses a service worker background script, requiring the `webRequest` permission and specifying host permissions for http(s) and websocket schemes. Minimum Chrome version supported is 122.0 to guarantee compatibility with Manifest V3 and `webRequest` events. |
+| **Firefox**   | uBO Scope uses a module-based background script, with permissions for `webRequest` and broad host access including websocket protocols. Minimum Firefox version supported is 128.0 to support the extension's requirements. |
+| **Safari**    | uBO Scope operates as a strict mode Safari Web Extension (minimum version 18.5). It includes the necessary `webRequest` permission and broad host permissions for capturing network requests. It relies on Safari’s support for service worker and module background scripts to function effectively. |
+
+### Independence From Content Blocker Implementations
+
+Unlike extensions bundled with or integrated into content blockers, uBO Scope does not depend on any specific content blocker’s internal filtering mechanisms or configurations. It detects web connections as reported by the browser itself. This design ensures:
+
+- **Accurate visibility:** It reports network requests even if filtered by DNS-based or network-level blocking, provided these requests are still visible via the `webRequest` API.
+- **Reliable count metrics:** The toolbar badge accurately reflects the total number of distinct third-party remote domains connected, regardless of the blocking method.
+
+
+## Benefits of the Integration Model
+
+- **Cross-browser consistency:** Since the extension leverages a standardized API, users enjoy consistent monitoring across Chromium, Firefox, and Safari.
+- **Resilience to stealth blocking:** uBO Scope can detect stealthy connection attempts not otherwise visible to webpages or content blockers.
+- **No configuration conflicts:** The extension’s independence means it does not interfere with or depend upon any existing privacy or content blocking setup.
+
+## Practical Example: Observing Connections
+
+When you visit a webpage, uBO Scope registers its connection attempts as follows:
+
+1. The browser emits `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` events during network activity.
+2. uBO Scope queues these events and processes them asynchronously, categorizing outcomes as allowed, blocked, or stealth-blocked.
+3. The tab’s badge updates to show the count of unique third-party domains connected.
+4. When the popup opens, detailed lists categorize and display domains by outcome.
+
+This flow guarantees real-time, accurate connection reporting aligned with the browser’s actual network requests.
+
+## Permissions and Requirements Summary
+
+- **Common permissions across browsers:** `webRequest`, `storage`, and `activeTab`.
+- **Host permissions:** Broad access to all HTTP, HTTPS, and WebSocket URLs (`http://*/*`, `https://*/*`, `ws://*/*`, `wss://*/*` where supported).
+- **Minimum browser versions:** Chromium 122.0, Firefox 128.0, Safari 18.5.
+
+## Troubleshooting & Considerations
+
+- If you notice connections missing from the reports, verify that your browser version supports `webRequest` for all relevant URL schemes.
+- Connections made outside the reach of `webRequest` (e.g., some browser internal system calls) will not appear.
+- DNS-level blocking that prevents connections before requests reach the browser may cause discrepancies but these network requests simply do not surface in the browser API.
+
+## Next Steps
+
+To make the most of uBO Scope’s browser integration capabilities:
+
+- Ensure the extension is installed from the proper web store for your browser.
+- Confirm the required permissions are granted when prompted during installation.
+- Use the popup interface to monitor and analyze active connections.
+- Refer to the [Architecture & Data Flow](overview/architecture-core-concepts/system-architecture) page for a detailed understanding of how the browser events and extension components interact.
+
+---
+
+[Install uBO Scope for Chromium](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp) | [Install uBO Scope for Firefox](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+
+---
+
+_For more on browser permissions and manifest details, see the source manifests for [Chromium](platform/chromium/manifest.json), [Firefox](platform/firefox/manifest.json), and [Safari](platform/safari/manifest.json)._
