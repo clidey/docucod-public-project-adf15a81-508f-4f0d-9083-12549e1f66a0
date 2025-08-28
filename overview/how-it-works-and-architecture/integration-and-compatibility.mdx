@@ -1,0 +1,164 @@
+---
+title: "Integration and Compatibility"
+description: "Explains uBO Scope's integration with browser APIs and how it complements (rather than replaces) existing content blockers. Includes practical guidance on installation and cross-browser compatibility (Chromium, Firefox, Safari)."
+---
+
+# Integration and Compatibility
+
+uBO Scope is designed as a complementary companion extension that works seamlessly alongside existing content blockers, utilizing native browser APIs to deliver accurate network connection insights without replacing your current blocking setup.
+
+---
+
+## Why Integration Matters
+
+Unlike content blockers that actively block or filter web requests, uBO Scope operates in parallel, using browser APIs to monitor network requests and report their outcomes. This design ensures you receive a transparent and comprehensive view of all remote server connections—allowed, blocked, or stealth-blocked—regardless of the content blocker in use.
+
+This approach avoids conflicts or interference with your existing privacy tools and respects the user's blocking preferences while providing invaluable visibility into network activity.
+
+---
+
+## How uBO Scope Integrates with Browser APIs
+
+At its core, uBO Scope leverages the browser's `webRequest` API to listen for network events such as request initiations, errors, redirects, and completions. This method allows it to:
+
+- Track every network request made by your browser within the scope of the specified host permissions.
+- Categorize network outcomes into three distinct groups: **allowed**, **blocked**, and **stealth-blocked**.
+- Update the extension's badge dynamically with the number of distinct third-party servers contacted successfully.
+
+By tapping into this official API, uBO Scope maintains compatibility and respects browser security boundaries without bypassing or conflicting with other blocking extensions.
+
+---
+
+## Complementing (Not Replacing) Content Blockers
+
+It's important to understand that uBO Scope does not perform filtering or blocking itself. Instead, it provides transparency into the effectiveness of your existing blockers by showing:
+
+- Which remote servers your browser actually connects to.
+- Counts of domains that were allowed or blocked.
+- Cases where blocking happened stealthily without direct browser indications.
+
+This insight helps users validate their content blockers’ performance and debunk misconceptions based on simple block count metrics.
+
+<Info>
+The badge number reflects **the count of distinct third-party remote servers with successful connections**, emphasizing quality over quantity in network privacy.
+</Info>
+
+---
+
+## Installation and Cross-Browser Compatibility
+
+uBO Scope supports the three main browser platforms — Chromium-based browsers, Firefox, and Safari — ensuring broad accessibility with consistent behavior.
+
+### Chromium-Based Browsers
+
+- Utilizes a service worker background script (`background.js`) and `webRequest` permission to gather network data.
+- Requires minimum Chrome version 122.0.
+- Host permissions include HTTP, HTTPS, and WebSocket protocols.
+- Installation is available via the [Chrome Web Store](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp).
+
+### Firefox
+
+- Uses a module-based background script for compatibility.
+- Similar host and active tab permissions apply for comprehensive coverage.
+- Includes special browser-specific settings for version 128.0 and above.
+- Available from [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/ubo-scope/).
+
+### Safari
+
+- Packaged as a Safari Web Extension using `manifest.json` with `background` module and minimal version 18.5.
+- Limited host permissions to https and http.
+- Employs native Safari extension APIs along with the core network request listeners.
+
+<Check>
+Ensure you install uBO Scope from your platform's official extension store for safe, updated versions.
+</Check>
+
+---
+
+## Practical Guidance for Using uBO Scope Alongside Other Blockers
+
+1. **Installation**: Install uBO Scope in your preferred browser without uninstalling your content blocker.
+2. **Permissions**: Grant requested permissions to enable network monitoring.
+3. **Usage**: Visit websites and open the uBO Scope popup to view the domains contacted and their connection statuses.
+4. **Interpretation**: Use insights to verify if your content blocker effectively limits connections to unwanted third parties.
+
+### Example Scenario
+
+Suppose you're running uBlock Origin as your primary blocker. Installing uBO Scope enables you to:
+
+- Monitor real-time third-party connections silently blocked by uBlock Origin.
+- Validate false negatives or overlooked domains that slip through.
+- Understand the network behavior behind the scenes for each visited site.
+
+---
+
+## Common Pitfalls and Tips
+
+- **API Limitations**: uBO Scope relies on the browser's `webRequest` API. Some connections made outside this API's scope (e.g., direct DNS queries, certain WebSocket calls in some browsers) won't be tracked.
+- **Permission Scope**: Ensuring full host permissions (http, https, ws, wss) is essential for comprehensive monitoring.
+- **Overlap Handling**: Since uBO Scope does not block, its presence alongside multiple content blockers may not cumulatively increase network privacy but provides a clarifying visibility layer.
+
+<Warning>
+If you notice no network activity in uBO Scope, verify that required permissions are granted and no browser privacy setting is blocking the `webRequest` API.
+</Warning>
+
+---
+
+## Summary
+
+uBO Scope harnesses native browser APIs to transparently report every remote connection, working compatibly alongside existing content blockers without interfering. Its cross-browser support ensures a consistent privacy auditing tool accessible on Chromium, Firefox, and Safari platforms.
+
+Leverage uBO Scope to enhance your understanding of browser network behavior, validate blocker efficiency, and gain actionable insights into third-party connections.
+
+---
+
+## Next Steps
+
+- For browser-specific installation instructions, refer to the respective guides:
+  - [Installing on Chromium-based Browsers](../getting-started/installation-and-setup/install-on-chromium)
+  - [Installing on Firefox](../getting-started/installation-and-setup/install-on-firefox)
+  - [Installing on Safari](../getting-started/installation-and-setup/install-on-safari)
+- Discover how network connections are categorized in [Core Concepts & Terminology](../overview/product-intro-and-basics/core-concepts-and-terminology)
+- Understand how this integration fits within uBO Scope’s system through the [System Architecture Overview](../overview/how-it-works-and-architecture/system-architecture-overview)
+
+---
+
+## References
+
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- Browser extension manifests for [Chromium](../../platform/chromium/manifest.json), [Firefox](../../platform/firefox/manifest.json), and [Safari](../../platform/safari/manifest.json)
+- The Public Suffix List used internally to identify domain boundaries (see `public_suffix_list.dat`)
+
+---
+
+## Sample Manifest Snippet for Chromium
+
+```json
+{
+  "manifest_version": 3,
+  "name": "uBlock Origin Scope",
+  "version": "1.0.1",
+  "permissions": ["activeTab", "storage", "webRequest"],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+  ],
+  "background": {
+    "service_worker": "/js/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "img/browsericons/logo16.png",
+      "32": "img/browsericons/logo32.png",
+      "64": "img/browsericons/logo64.png",
+      "128": "img/browsericons/logo128.png"
+    }
+  }
+}
+```
+
+This manifest represents typical permissions and setup that enable uBO Scope’s integration with Chromium-based browsers.
