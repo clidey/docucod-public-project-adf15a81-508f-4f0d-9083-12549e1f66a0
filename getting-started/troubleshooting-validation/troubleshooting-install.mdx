@@ -1,0 +1,152 @@
+---
+title: "Troubleshooting Installation Problems"
+description: "Common pitfalls and quick fixes for installation failures, permission issues, or missing functionality. Directs users to address browser settings, extension permissions, and other gotchas unique to uBO Scope’s model and webRequest dependencies."
+---
+
+# Troubleshooting Installation Problems
+
+Encountering issues while installing or running uBO Scope can be frustrating, but most common problems stem from browser settings, permission configurations, or the nature of the webRequest API itself. This guide walks you through practical troubleshooting steps and quick fixes to resolve installation failures, missing functionality, or unexpected behavior in uBO Scope.
+
+---
+
+## 1. Verify Browser Compatibility and Version
+
+uBO Scope requires modern browsers with support for Manifest Version 3 and the webRequest API impact needed for its operation.
+
+- **Supported browsers and minimum versions:**
+  - Chromium-based browsers: version 122.0 or later
+  - Firefox: version 128.0 or later
+  - Safari: version 18.5 or later
+
+<Check>
+Always check your browser version via its About page or Help menu before troubleshooting further.
+</Check>
+
+## 2. Confirm Proper Installation
+
+- Install uBO Scope from official sources:
+  - Chrome Web Store: [uBO Scope for Chromium](https://chromewebstore.google.com/detail/ubo-scope/bbdpgcaljkaaigfcomhidmneffjjjfgp)
+  - Firefox Add-ons: [uBO Scope for Firefox](https://addons.mozilla.org/firefox/addon/ubo-scope/)
+
+- After installation, verify the extension icon appears in the toolbar with the correct uBO Scope icon.
+
+- Open the popup by clicking the icon to ensure it loads without errors.
+
+<Tip>
+If you installed from a developer build or unpacked source, double-check the manifest and background scripts are loaded correctly.
+</Tip>
+
+## 3. Check Required Permissions
+
+uBO Scope depends on the following permissions to monitor network requests:
+
+- **activeTab**: To access current tab information
+- **storage**: To save session and configuration data
+- **webRequest**: To observe network request events
+- **host_permissions**: To monitor requests to all HTTP, HTTPS (and optionally WS/WSS) URLs
+
+### How to confirm permissions:
+
+- Navigate to your browser's extensions page (e.g., `chrome://extensions/` or `about:addons` for Firefox).
+- Locate uBO Scope and click Details.
+- Verify listed permissions include all above items.
+
+<Warning>
+Missing any of these permissions will prevent uBO Scope from functioning correctly.
+</Warning>
+
+## 4. Understand Limitations Due to webRequest API
+
+uBO Scope works by observing network requests using the webRequest API. Some limitations are inherent:
+
+- Requests initiated outside of the browser or that do not trigger webRequest events cannot be tracked.
+
+- Some browsers may restrict webRequest event access on certain protocols or private browsing sessions.
+
+- webRequest API behavior can vary subtly between browsers, potentially causing partial visibility loss.
+
+<Note>
+Ensure your browser’s privacy features or other extensions do not block or interfere with webRequest events for uBO Scope.
+</Note>
+
+## 5. Troubleshoot Common Issues
+
+### Issue: Popup shows "NO DATA" or empty report
+
+- Ensure you are viewing an active tab that has loaded network resources.
+- Some pages (chrome://, file:// URLs) may not report data.
+- Wait a few seconds after page load for metrics to populate.
+- Reload the tab to reset network tracking.
+
+### Issue: Badge count never changes or shows zero
+
+- Check that the extension is enabled and active in the browser.
+- Make sure no conflicting privacy settings or other extensions block webRequest events.
+- Verify host permissions cover all URLs you browse.
+
+### Issue: Installation fails or extension is disabled by browser
+
+- Check for browser-specific installation restrictions (e.g., enterprise policies).
+- Reboot the browser or computer to clear state issues.
+- Reinstall the extension from official stores.
+
+<Tip>
+Use your browser's developer tools Console and Extension background page console (where available) to check for error messages.
+</Tip>
+
+## 6. Adjust Browser Settings If Necessary
+
+- In Chromium browsers, visit `chrome://extensions/` and click "Details" for uBO Scope.
+- Enable "Allow access to file URLs" if you want to monitor local files.
+- Review "Site access" permissions to ensure coverage across all sites or “On all sites” selection.
+
+In Firefox, similar permissions are under about:addons > uBO Scope > Permissions.
+
+## 7. Clear Extension Storage Data
+
+If strange behavior or stale data is visible, clearing extension local and session storage can help.
+
+- Use the browser’s storage inspection tools or uninstall then reinstall the extension.
+- Note: Clearing storage resets all current network tracking and session data.
+
+## 8. Diagnose Using Developer Tools
+
+For advanced users:
+
+- Open the browser’s extension background service worker or page console.
+- Look for errors loading `background.js`, issues with the Public Suffix List loading, or failed network request logging.
+
+### Example troubleshooting commands in Console:
+```javascript
+// Manually check if session data exists
+browser.storage.session.get('sessionData').then(console.log);
+
+// Force reload Public Suffix List
+// ...requires extension reload or manual debug modifications
+```
+
+## 9. Frequently Asked Questions
+
+<AccordionGroup title="Frequently Asked Questions (FAQs)">
+<Accordion title="Why does uBO Scope not track requests on all sites?">
+Some internal or special browser pages do not emit network events through webRequest. uBO Scope cannot monitor connections outside webRequest reach.
+</Accordion>
+<Accordion title="My badge count seems too high or too low. Is this normal?">
+uBO Scope counts distinct 3rd-party domains, not total blocks. Variations reflect actual network exposure, which may differ from your expectations or other content blockers.
+</Accordion>
+<Accordion title="Is uBO Scope compatible with other content blockers?">
+Yes, it works independently by observing network events and is not blocked or altered by most content blockers.
+</Accordion>
+</AccordionGroup>
+
+## 10. Getting Further Help
+
+- Check the [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope) for issues, discussions, and source code.
+- Review related documentation:
+  - [Supported Browsers & Requirements](/getting-started/setup-installation/prerequisites-browsers)
+  - [Validating uBO Scope Functionality](/getting-started/troubleshooting-validation/quick-validation-steps)
+  - [First Launch and Basic Configuration](/getting-started/setup-installation/first-launch-evaluation)
+
+---
+
+By following these steps, most installation and early usage issues with uBO Scope can be resolved swiftly. If problems persist, consider filing a detailed issue report with browser version, extension version, and specific symptoms for further support.
