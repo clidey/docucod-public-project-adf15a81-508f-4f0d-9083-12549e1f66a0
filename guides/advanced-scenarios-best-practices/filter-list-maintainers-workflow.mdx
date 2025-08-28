@@ -1,0 +1,176 @@
+---
+title: "Workflow for Filter List Maintainers"
+description: "Optimize your workflow as a filter list maintainer: monitor changes in connection data, validate filter effectiveness, and leverage session state tracking even in environments with limited browser devtools access. Includes integration pointers."
+---
+
+# Workflow for Filter List Maintainers
+
+Optimize your workflow as a filter list maintainer by using uBO Scope to monitor connection data, validate filter effectiveness, and leverage session state tracking—even in environments where browser developer tools are limited or unavailable. This guide focuses specifically on how to integrate uBO Scope effectively into your maintenance routine.
+
+---
+
+## 1. Workflow Overview
+
+### Purpose
+This guide helps filter list maintainers consistently track how their filters interact with real-world web requests. It shows you how to:
+
+- Monitor changes in connection activity per browser tab
+- Analyze allowed, stealth-blocked, and blocked connection data
+- Utilize session-based tracking for persistent insight across reloads
+- Work seamlessly even on devices or browsers with limited devtools
+
+### Prerequisites
+
+- uBO Scope installed and running in a supported browser (Chrome ≥ 122, Firefox ≥ 128, Safari ≥ 18.5)
+- Basic familiarity with filter lists and their expected behavior
+- Access to the uBO Scope popup interface via the browser toolbar
+
+### Expected Outcome
+
+By following this workflow, you will be able to:
+
+- Detect which third-party domains are contacted or blocked by your filters
+- Identify stealth blocking (redirected or suppressed connections) effectively
+- Maintain your filter list with data-backed decisions
+- Use session state tracking to maintain context even when traditional browser logging is unavailable
+
+### Time Estimate
+
+Setting up and performing an effective session monitoring workflow typically takes 10–20 minutes per testing cycle.
+
+### Difficulty Level
+
+Intermediate—requires understanding of browser networking and basic filter list principles.
+
+---
+
+## 2. Step-by-Step Instructions
+
+### Step 1: Enable and Verify uBO Scope
+
+1. Ensure uBO Scope is installed and granted all necessary permissions, including `webRequest`, `activeTab`, and storage access.
+2. Make sure the extension badge is visible in the browser toolbar.
+3. Open uBO Scope's popup by clicking the toolbar icon.
+
+> If no connection data appears, confirm permissions and browser version as described in the [Troubleshooting Setup Issues](/getting-started/quickstart-verification/troubleshooting-setup) guide.
+
+
+### Step 2: Load the Target Webpage
+
+1. Navigate to the website or webpage where you want to test your filter list.
+2. Interact as needed to trigger dynamic content loading or user-driven connections.
+3. Open the uBO Scope popup to view live connection data.
+
+
+### Step 3: Interpret Connection Outcomes
+
+The popup categorizes third-party connections into three sections:
+
+- **Not Blocked (Allowed):** Domains for which requests succeeded and were not blocked.
+- **Stealth-Blocked:** Connections that were redirected or quietly suppressed.
+- **Blocked:** Domains where requests were explicitly blocked by filters.
+
+Pay attention to the counts and unique domains presented in each section.
+
+
+### Step 4: Validate Filter Effectiveness
+
+1. Compare the popup data against your filter list expectations.
+2. Confirm that known trackers or unwanted domains fall under `blocked` or `stealth-blocked`.
+3. Keep note of any unexpected allowed domains that may require additional filter entries.
+
+
+### Step 5: Leverage Session State Tracking
+
+1. uBO Scope automatically maintains session data mapping browser tabs to connection outcomes.
+2. This allows accumulative tracking even if you navigate within the site or reload the page.
+3. Use this to monitor persistent connection patterns over time or during extended tests.
+
+
+### Step 6: Export and Analyze Data
+
+Although uBO Scope doesn’t directly export data, you can manually note domains or screenshots for use in your filter list maintenance.
+
+
+### Step 7: Integrate Into Your Maintenance Cycle
+
+- Regularly repeat these steps on various sites to evolve filter efficacy.
+- Use insights from stealth-blocked and blocked domains to refine rule precision.
+- Report or submit new filter rules based on empirical connection patterns observed with uBO Scope.
+
+
+---
+
+## 3. Examples & Use Cases
+
+### Example: Validating a New Rule
+
+Suppose you added a new domain to your filter list targeting a tracking server `track.example.com`. After loading your target site:
+
+1. Open uBO Scope popup.
+2. Check if `track.example.com` appears under `blocked` or `stealth-blocked`.
+3. If it appears under `allowed`, adjust your filter rule or investigate why it did not get blocked.
+
+
+### Example: Tracking Connection Changes Across Navigation
+
+Navigating within a site often triggers new connections:
+
+- Use uBO Scope's session tracking to continuously monitor these without losing data on reloads or tab switches.
+- You can see connections accumulating and adjust filters accordingly.
+
+
+---
+
+## 4. Troubleshooting & Tips
+
+### Common Issues
+
+- **No Data Display:** Check extension permissions and browser version compatibility.
+- **Badge Count Incorrect:** Sometimes badge updates lag—try refreshing the tab or restarting the browser.
+- **Filtered Domains Still Allowed:** Confirm your filter rules are correctly formatted and active.
+- **Stealth Blocking Confusion:** Remember that stealth blocks involve redirects or hidden filtering, so a domain may appear under stealth without explicit block rules.
+
+
+### Best Practices
+
+- Test on real user scenarios rather than synthetic “test” pages to get meaningful data.
+- Combine uBO Scope data with other diagnostic tools where possible.
+- Document notable findings during your maintenance process.
+
+
+### Performance Considerations
+
+uBO Scope’s lightweight design ensures minimal impact but extensive logging sessions may incur slight delays in badge updates.
+
+
+### Alternative Approaches
+
+- Use network logs from browser devtools alongside uBO Scope where available for richer data.
+- For limited devtools access environments, rely heavily on uBO Scope’s session tracking.
+
+---
+
+## 5. Next Steps & Related Content
+
+- Explore the [Interpreting Connection and Blocked Server Data](/guides/getting-started-essentials/interpreting-connection-data) to deepen understanding of connection outcome categories.
+- Review [Analyzing Third-party Server Behaviors](/guides/advanced-scenarios-best-practices/analyzing-third-party-behavior) for advanced filter analysis techniques.
+- Consult [Troubleshooting Setup Issues](/getting-started/quickstart-verification/troubleshooting-setup) if you encounter operational problems.
+- Refer to overview pages like [Core Concepts & Terminology](/overview/concepts-architecture/core-concepts-terminology) for foundational knowledge.
+
+---
+
+## Appendix: How uBO Scope Tracks Connections Internally
+
+While this guide is user-focused, understanding the basis helps:
+
+- The extension listens to `webRequest` events (redirect, error, success).
+- It records allowed, stealth-blocked, and blocked domains and groups them by effective domains using the public suffix list.
+- Session data is keyed by tab ID for continuous tracking.
+- The popup.js script renders categorized domain lists for review.
+
+This architecture ensures the blocker’s performance and transparency, key to filter list maintainer trust.
+
+---
+
+<u>uBO Scope GitHub Repository and further developer resources are available at https://github.com/gorhill/uBO-Scope</u>
