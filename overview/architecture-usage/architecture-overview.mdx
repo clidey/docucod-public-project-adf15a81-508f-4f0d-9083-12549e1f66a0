@@ -1,0 +1,128 @@
+---
+title: "System Architecture Overview"
+description: "Visually and narratively describes the main system components of uBO Scope, from background network listeners to popup UI, and outlines how data flows between browser APIs, scripts, and the user interface. Includes a simple mermaid diagram to illustrate these relationships."
+---
+
+# System Architecture Overview
+
+Discover the core architecture of uBO Scope and how its components seamlessly work together to provide reliable and real-time insights into your browser's remote server connections. This page visualizes and explains the essential parts of the system, focusing on user goals—understanding and managing network connections per browser tab—through an intuitive data flow from background listeners to the popup user interface.
+
+---
+
+## Architecture at a Glance
+
+uBO Scope’s architecture centers around monitoring network activity at the browser level and making these insights easily accessible to the user. It achieves this using three main components, each with specific roles:
+
+- **Background Script (Service Worker / Background Module):** Continuously listens to network events such as DNS requests, HTTP fetches, redirections, and errors across all browser tabs. It gathers detailed connection outcomes and organizes data by tab.
+
+- **Popup UI (User Interface):** Activated on user interaction with the toolbar icon, it queries the background script for processed connection data relevant to the active tab, then renders this data clearly, revealing distinct allowed, stealth-blocked, and blocked third-party connections.
+
+- **Browser APIs:** Provide the foundational interfaces for observing network requests (`webRequest` API), storage capabilities (`storage.local` and `storage.session`), and tab management.
+
+The communication between these components relies on message passing, allowing the popup UI to request updated tab data on demand while the background script manages asynchronous event processing and data persistence.
+
+---
+
+## How Data Flows Through uBO Scope
+
+Imagine browsing a website and wanting to see which third-party domains your browser contacts behind the scenes. Here's how uBO Scope tracks and reports this:
+
+1. **Network Event Capture:** The background script registers listeners to the browser's `webRequest` API, capturing every network request event, including successful connections, redirects, or errors.
+
+2. **Request Outcome Classification:** For each request captured, the background script determines whether the connection was allowed, blocked, or stealth-blocked (redirected silently). It organizes these outcomes by domain and hostname, mapping them against the tab from which the request originated.
+
+3. **Session Aggregation and Persistence:** Detected data is stored temporarily in session memory and periodically saved to persistent browser storage to maintain state across browser lifecycles.
+
+4. **Popup Data Retrieval:** When the user opens the popup interface, it sends a message to the background script requesting details about the current tab's domain connections.
+
+5. **UI Rendering:** The popup receives serialized tab data, deserializes it, and renders domain counts grouped by outcome status (allowed, stealth-blocked, blocked), giving clear insight into the current page’s third-party connection activity.
+
+---
+
+## Core Components Explained
+
+### Background Script
+
+- **Role:** Acts as the extension's brain, operating in the background to monitor network requests globally.
+- **Responsibilities:**
+  - Registering `webRequest` listeners for `onBeforeRedirect`, `onErrorOccurred`, and `onResponseStarted` events.
+  - Classifying network request outcomes based on event type.
+  - Aggregating domain and hostname counts per tab.
+  - Managing session data persistence and cleanup when tabs are closed.
+
+### Popup UI
+
+- **Role:** Provides an immediately accessible summary of per-tab network activities.
+- **Responsibilities:**
+  - Querying the background for the current tab’s network statistics.
+  - Transforming raw serialized data into human-readable domain lists.
+  - Displaying groups of domains by connection outcome with counts.
+  - Offering a user-friendly navigable interface with visual cues.
+
+### Browser APIs
+
+- **`webRequest` API:** Captures detailed network events needed for precise connection tracking.
+- **`storage` API:** Enables session and local storage of network data.
+- **`runtime` Messaging:** Facilitates asynchronous communication between the popup and background components.
+
+---
+
+## Visual Representation
+
+```mermaid
+flowchart TD
+
+    BrowserAPIs["Browser APIs"]
+    Background["Background Script\n(Service Worker / Module)"]
+    PopupUI["Popup UI (popup.html + popup.js)"]
+
+    subgraph Network Monitoring
+      Background -. webRequest Listeners .-> BrowserAPIs
+      Background -->|Aggregates & Stores| Storage["Storage (session & local)"]
+    end
+
+    subgraph User Interaction
+      PopupUI -->|Message: getTabData| Background
+      Background -->|Serialized tab connection data| PopupUI
+      PopupUI -->|Render domain & outcome lists| User["User"]
+    end
+
+    BrowserAPIs -. Handles Tabs Events .-> Background
+    Background -->|Saves state| Storage
+
+    click Background href="js/background.js" "Open background script source"
+    click PopupUI href="js/popup.js" "Open popup UI source"
+```
+
+---
+
+## Practical Insights
+
+- The **background script** works persistently but unobtrusively, even as tabs open and close, ensuring connection data remains up-to-date for every active page.
+- The **popup UI** provides real-time insights, empowering you to instantly see which third-party domains your current tab communicates with and which connections were blocked or allowed.
+- Data is organized by **distinct domains** — not just raw URLs — to give clearer privacy insights and make connection counts meaningful.
+- The architecture’s **modular message-based design** ensures scalability and responsiveness without compromising browser performance.
+
+---
+
+## Tips for Users and Developers
+
+- When using the extension, open the popup on a tab of interest to instantly access detailed connection data.
+- Developers can explore extending the background script to include more nuanced network event types or enhancing the popup UI with additional filtering options.
+- Persisted session data allows offline analysis or debugging after browser restarts.
+
+---
+
+For a deeper dive into how each component works, see the specific documentation:
+
+- [Background Script Details](js/background.js)
+- [Popup UI Behavior](js/popup.js)
+- [Extension Manifest and Permissions](platform/*/manifest.json)
+
+---
+
+Navigate back to [Architecture & Usage Overview](../architecture-usage/architecture-overview) for a broad understanding or explore [Primary Use Cases](../architecture-usage/primary-use-cases) to see how this architecture supports real user needs.
+
+---
+
+By understanding this architecture, you gain clarity on how uBO Scope reliably reports network connections—empowering you with transparent insights for better privacy control.
