@@ -1,0 +1,180 @@
+---
+title: "Troubleshooting: Missing or Unexpected Network Requests"
+description: "Helps users explain why some network requests may not appear, understand browser API limitations, and uncover issues with extensions or filter lists that may affect reporting accuracy. Shares best practices for reliable testing."
+---
+
+# Troubleshooting: Missing or Unexpected Network Requests
+
+## Overview
+This guide helps you understand why some network requests may not appear in uBO Scope, explains the inherent limitations due to browser APIs, and shows how external factors like extensions or filter lists can affect network request visibility. You'll also find best practices to reliably test and interpret network request data.
+
+---
+
+## 1. Understanding Request Visibility in uBO Scope
+
+### Why Some Network Requests May Not Appear
+
+uBO Scope relies on the browser’s `webRequest` API to monitor network requests initiated by webpages. However, not all network activity passes through this API. Specifically:
+
+- **Browser API Limitations:** Some network requests are outside the scope of the `webRequest` API. Examples include network activities triggered by browser internals or extensions that do not emit visible network request events.
+
+- **Unreported Requests:** Requests that are performed by technologies not supported by the `webRequest` API, or by other browser features, will not appear in uBO Scope.
+
+- **Network Protocols:** uBO Scope monitors HTTP(S) and WebSocket request schemes (`http`, `https`, `ws`, `wss`). Other schemes won't be captured.
+
+### How uBO Scope Tracks Requests
+
+uBO Scope categorizes network connections per browser tab and tracks:
+
+- **Allowed Requests:** Requests which succeeded and were not blocked.
+- **Blocked Requests:** Requests that were actively blocked.
+- **Stealth-Blocked Requests:** Requests silently blocked in ways that avoid detection by webpages.
+
+The badge on the toolbar icon summarizes the number of distinct third-party remote servers connected per tab.
+
+<Tip>
+Always remember that a missing network request in uBO Scope does not necessarily mean the request did not happen—it might be a limitation of browser visibility.
+</Tip>
+
+---
+
+## 2. Common Causes for Missing or Unexpected Requests
+
+### a) Browser API Limitations and Behavior
+
+- Some requests, especially those triggered by browser extensions or internal browser features, do not generate events in the `webRequest` API, and will not show up.
+
+- Requests using non-HTTP protocols or data URIs are inherently invisible to uBO Scope.
+
+### b) Impact of Other Extensions and Filter Lists
+
+- **Content Blockers or Privacy Extensions:** Other installed extensions may block or alter network requests, sometimes stealthily, preventing uBO Scope from seeing those requests.
+
+- **Filter Lists:** Active filter lists can prevent certain requests from ever leaving the browser, thus they might be categorized as 'blocked' or cause some network activity to disappear.
+
+### c) Caching and Reloads
+
+- Cached resources that load without network activity will not trigger new network requests and may seem missing.
+
+- Hard reloads or bypassing cache can help ensure network requests are visible.
+
+### d) Tab or Window Focus
+
+- uBO Scope tracks requests per browser tab. Background tabs or inactive windows might behave differently with respect to network priorities or request visibility.
+
+---
+
+## 3. Best Practices for Reliable Testing
+
+Follow these actionable steps to ensure the most accurate network request visibility:
+
+<Steps>
+<Step title="Load a Test Page">
+Navigate to a webpage you want to analyze, preferably one with known network activity or third-party requests.
+</Step>
+<Step title="Open uBO Scope Popup">
+Click the extension's toolbar icon to open the popup panel and monitor allowed, blocked, and stealth-blocked domains.
+</Step>
+<Step title="Perform a Hard Reload">
+Use Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac) to reload the page while bypassing cache to force network traffic.
+</Step>
+<Step title="Disable Conflicting Extensions Temporarily">
+If you suspect interference, temporarily disable other content blockers or privacy extensions to isolate uBO Scope's monitoring.
+</Step>
+<Step title="Review Logs in uBO Scope">
+Analyze the categorized domain lists to confirm requests are appearing as expected.
+</Step>
+<Step title="Check for Network Protocols">
+Recognize that only HTTP(S) and WebSocket requests appear; requests using unsupported protocols won’t show up.
+</Step>
+</Steps>
+
+<Tip>
+For debugging unexpected missing requests, try running a fresh browser profile with only uBO Scope installed to rule out extension conflicts.
+</Tip>
+
+---
+
+## 4. Diagnosing Extension or Configuration Issues
+
+### Identifying Issues Related to Other Extensions
+
+- Temporarily disable all other extensions.
+- Restart the browser and test if network requests appear correctly in uBO Scope.
+- Re-enable extensions one by one and observe changes.
+
+### Checking uBO Scope Permissions
+
+- Verify that uBO Scope is granted necessary permissions to monitor `webRequest` and access active tabs.
+- Confirm that the extension version matches your browser version requirements (e.g., Chrome 122+, Firefox 128+, Safari 18.5+).
+
+### Common Pitfall: Misinterpreting Cache and Reload Behaviors
+
+- Cached requests don’t produce network events.
+- Use hard reload to force fresh network requests.
+
+---
+
+## 5. Interpreting Network Request Categories in uBO Scope Popup
+
+The popup panel classifies domains according to the outcome of requests:
+
+- **Not Blocked (Allowed):** Domains from which resources successfully loaded.
+- **Stealth-Blocked:** Domains where network requests were blocked in a way that integrates stealthily with browser behavior.
+- **Blocked:** Domains actively prevented from connecting.
+
+Understanding these categories enables you to diagnose whether missing connections are due to blocking or lack of network visibility.
+
+---
+
+## 6. Troubleshooting Checklist
+
+<AccordionGroup title="Troubleshooting Checklist">
+<Accordion title="Network Requests Not Showing Up">
+- Ensure you are viewing the active tab where network requests are happening.
+- Perform a hard reload to avoid cached results.
+- Confirm uBO Scope has proper permissions.
+- Disable other extensions that might interfere.
+</Accordion>
+<Accordion title="Unexpected Lower or Higher Badge Counts">
+- Badge counts reflect unique third-party remote servers, not the total requests.
+- Legitimate CDN usage causes counts to be higher but is normal.
+- High block counts do not necessarily mean more effective blocking.
+</Accordion>
+<Accordion title="Requests Missing Despite Activity">
+- Check if requests are using unsupported schemes (non-http/ws).
+- Assess if extensions or DNS-based blocklists stealthily block connections.
+- Verify if browser prefetching or prerendering causes requests that don’t appear.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 7. Additional Tips & Best Practices
+
+- Regularly update uBO Scope to profit from bug fixes and feature improvements.
+- Use incognito or private browsing mode with minimal extensions for testing complex scenarios.
+- Avoid relying on “ad blocker test” websites as benchmarks; they often produce unrealistic results.
+- For filter list maintainers, use uBO Scope to confirm real-world third-party requests and debug stealth blocking.
+
+---
+
+## 8. Related Documentation & Resources
+
+- [Understanding the Toolbar Badge and Popup](../getting-started/first-steps-usage/interpreting-results.md) — Learn how to read connection counts and categorized domains.
+- [How uBO Scope Works: Architecture & Data Flow](../overview/concepts-architecture/architecture-overview.md) — Deep dive into the data capture and processing flow.
+- [Common Installation Problems & Fixes](../getting-started/troubleshooting/common-install-problems.md) — Resolve permission and setup issues.
+- [Extension Not Showing Data?](../getting-started/troubleshooting/extension-not-showing-data.md) — Address missing data or no network activity.
+- [Public Suffix List](https://publicsuffix.org/list/) — External reference on domain parsing used for accurate domain grouping.
+
+---
+
+## 9. Getting Further Help
+
+If after following this guide you still experience missing or unexpected network requests:
+
+- Submit an issue on the [uBO Scope GitHub repository](https://github.com/gorhill/uBO-Scope/issues).
+- Include browser version, extension version, and steps to reproduce.
+
+
+---
