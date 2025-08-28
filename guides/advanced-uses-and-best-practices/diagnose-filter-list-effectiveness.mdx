@@ -1,0 +1,146 @@
+---
+title: "Diagnosing Filter List Effectiveness on Locked-Down Devices"
+description: "For filter list maintainers and advanced users: see how uBO Scope provides visibility into remote server connections and request outcomes even on locked-down platforms. This guide shows how to leverage the extension to validate whether filters are working and to troubleshoot unexpected network activity without browser dev tools."
+---
+
+# Diagnosing Filter List Effectiveness on Locked-Down Devices
+
+## Overview
+For filter list maintainers and advanced users working on restricted or locked-down devices where access to browser developer tools is limited or unavailable, uBO Scope offers critical visibility into remote server connections and their outcomes. This guide explains how to leverage uBO Scope's real-time network request monitoring and request categorization to validate filter list effectiveness and troubleshoot unexpected network activity.
+
+uBO Scope operates independently of the browser's built-in content blockers and can reveal the actual state of network connections, making it invaluable in locked-down scenarios where traditional debugging tools are inaccessible.
+
+---
+
+## What You Will Achieve
+- Understand how to use uBO Scope to monitor third-party requests on locked-down devices.
+- Diagnose whether filters are effectively blocking unwanted connections.
+- Identify and troubleshoot stealth-blocked, allowed, and blocked connections.
+- Gain actionable insights to refine filter lists remotely without needing full browser dev tool access.
+
+## Prerequisites
+- uBO Scope must be installed and activated on the target browser (Chrome, Firefox, or Safari).
+- Necessary permissions granted for the extension to monitor network requests.
+- The target webpage or site actively loaded in the browser tab you intend to diagnose.
+
+<Tip>
+If you have not installed or configured uBO Scope yet, please see [Installing uBO Scope](https://github.com/gorhill/uBO-Scope) and related Getting Started guides.
+</Tip>
+
+---
+
+## Step-by-Step Workflow to Diagnose Filter List Effectiveness
+
+<Steps>
+<Step title="Open the uBO Scope Popup Panel">
+Launch the uBO Scope extension by clicking its toolbar icon. The popup displays real-time data for the active browser tab, listing all connected third-party domains grouped by connection outcome.
+
+Expected Result: Popup shows the domain of the current page and a summary count of unique third-party domains.
+</Step>
+
+<Step title="Interpret Domain Connection Outcomes in the Popup">
+The popup categorizes domains into three groups:
+
+- **Not Blocked (Allowed):** Domains where network requests succeeded.
+- **Stealth-Blocked:** Domains where requests were intercepted and redirected, commonly representing stealth blocking.
+- **Blocked:** Domains where network requests failed or were explicitly blocked.
+
+Focus on third-party domains under **Not Blocked** to assess which servers your filters currently allow.
+
+Expected Result: Clearly segmented domain lists showing counts and domain names.
+</Step>
+
+<Step title="Validate Filter List Behavior">
+Cross-reference domains listed in the popup with your filter list expectations:
+
+- Are all known trackers or undesired domains appearing under **Blocked** or **Stealth-Blocked**?
+- Are any suspicious or unrecognized domains appearing under **Not Blocked**?
+
+Use this information to identify potential filter gaps or incorrect allow rules.
+
+Decision Point: If unexpected domains are allowed, proceed to refine your filter list to block them; if filters behave as expected, no action needed.
+</Step>
+
+<Step title="Use uBO Scope Without Dev Tools">
+Because uBO Scope uses the browser's webRequest API, you can diagnose and monitor network connections even on devices where browser developer tools or console access is disabled or limited.
+
+Practical Tip: For locked-down environments, rely entirely on the uBO Scope toolbar badge count and popup panel domain lists to infer filter effectiveness in real time.
+</Step>
+
+<Step title="Refresh to Re-Test Filters">
+Reload the page or load a different tab to see updated network connection information.
+
+Expected Result: Popup panel updates with fresh data reflecting current filter behavior.
+</Step>
+</Steps>
+
+---
+
+## Practical Examples
+
+### Example 1: Detecting Leaked Connections
+Imagine your filter list is supposed to block `trackingexample.com`. If you see `trackingexample.com` listed under **Not Blocked (Allowed)** domains in uBO Scope's popup on a real webpage, this reveals filter leakage. You should update your filter list to block this domain explicitly.
+
+### Example 2: Identifying Stealth Blocking
+Some filters use redirection or blocking mechanisms that show domains under **Stealth-Blocked**. If important domains appear here unexpectedly, investigate whether stealth blocking is affecting normal site behavior.
+
+### Example 3: Using uBO Scope on a Device Without Dev Tools
+On a corporate or locked-down device where developer tools are blocked, you can still open uBO Scope's popup to verify if your filters are working properly by analyzing the badge counts and popup domain lists, eliminating reliance on more complex debugging tools.
+
+---
+
+## Tips and Best Practices
+
+- **Always use real browsing sessions:** Measure connections on active websites rather than test pages to get authentic filter performance insights.
+- **Focus on third-party domains:** uBO Scope shows distinct third-party servers. Fewer allowed third parties generally indicate stronger filter effectiveness.
+- **Regularly clear session data:** Restart browsing sessions or clear session data if persistent old data interferes with diagnosis.
+- **Combine with badge counts:** The toolbar badge count provides an at-a-glance indicator of the number of unique allowed domains and helps track filter improvements quantitatively.
+- **Use domain normalization:** uBO Scope normalizes hostnames to domains, avoiding confusion with subdomains and helping maintain clarity.
+
+---
+
+## Troubleshooting Common Scenarios
+
+<AccordionGroup title="Common Issues When Diagnosing Filters on Locked-Down Devices">
+<Accordion title="Popup Shows 'NO DATA' or Empty Domain Lists">
+This indicates uBO Scope cannot access network request data. Possible causes:
+- Browser permissions not granted.
+- Extension not activated or properly installed.
+- The active tab is not loading web content.
+
+
+**Solution:** Verify extension installation, reload the page, and confirm permissions using the [Quick Validation Checklist](https://github.com/gorhill/uBO-Scope).
+</Accordion>
+
+<Accordion title="Unexpected Domains Listed as Allowed">
+The presence of domains in the allowed list, which your filters should block, means those filters are missing or incorrectly configured.
+
+**Solution:** Update your filter rules accordingly and reload the page.
+</Accordion>
+
+<Accordion title="Stealth-Blocked Domains Are Unknown or Unexpected">
+Stealth blocking sometimes uses redirection or errors to block requests invisibly, which may cause site breakage or inconsistent behavior.
+
+
+**Solution:** Review stealth-blocked domains for false positives, and adjust filters to whitelist necessary services if needed.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+- Review your filter lists using the insights gained from uBO Scope.
+- Explore [Comparing Different Content Blockers Objectively](https://github.com/gorhill/uBO-Scope/guides/advanced-uses-and-best-practices/compare-content-blockers) to expand your analysis.
+- Learn to interpret the badge and popup in detail via the [Badge Counter and Popup Interpretation guide](https://github.com/gorhill/uBO-Scope/guides/getting-started-usage/interpret-badge-and-popup).
+- If facing installation or permission issues, consult [Troubleshooting Common Installation Issues](https://github.com/gorhill/uBO-Scope/getting-started/first-use-validation/troubleshooting-installation).
+
+---
+
+## Additional Resources
+- [uBO Scope GitHub Repository](https://github.com/gorhill/uBO-Scope)
+- [Public Suffix List](https://publicsuffix.org/list/): Used by uBO Scope for domain normalization
+- [Browser Developer Documentation on webRequest API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest)
+
+---
+
+Feel empowered to pinpoint exactly which third-party connections slip through your filters, even in challenging locked-down environments. uBO Scope turns invisible network behavior into transparent, actionable data.
