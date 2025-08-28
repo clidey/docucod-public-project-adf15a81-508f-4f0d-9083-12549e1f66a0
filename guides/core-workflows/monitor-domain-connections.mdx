@@ -1,0 +1,197 @@
+---
+title: "Monitoring Domain Connections in Real Time"
+description: "Step through using the extension's popup to view all outgoing connections per tab, understand the breakdown of allowed, blocked, and stealth connections, and see how sessions are tracked. Emphasis is on practical workflow and immediate feedback for privacy assessment."
+---
+
+# Monitoring Domain Connections in Real Time
+
+Explore and understand how to use uBO Scope’s popup interface to monitor all outgoing network connections for each browser tab. Learn how to interpret the counts and types of connections—allowed, blocked, and stealth-blocked—and how sessions track connection activity, empowering you to assess privacy in real time.
+
+---
+
+## 1. Understanding the Monitoring Workflow
+
+### What This Guide Will Help You Do
+
+This guide walks you through using the uBO Scope extension's popup panel to inspect all remote servers contacted by the active browser tab. You will learn how to:
+
+- View the full list of domains connected by a web page in real time.
+- Distinguish between allowed, blocked, and stealth-blocked connections.
+- Understand how the extension tracks connection sessions per tab.
+- Interpret the data immediately for privacy assessment.
+
+### Prerequisites
+
+- Ensure uBO Scope is installed and activated in your browser.
+- Have an active browser tab loaded with a web page.
+- Understand basic domain terminology (refer to the [Key Concepts & Terminology](https://docs.example.com/overview/architecture-concepts/core-concepts-terminology) page).
+
+### Expected Outcome
+
+By the end of this guide, you will be able to confidently open the popup to:
+
+- Assess which third-party domains your current webpage connects to.
+- Identify how many domains are allowed versus blocked.
+- Recognize stealth-blocked connections indicating invisible redirects or filters.
+- Use this insight to better evaluate privacy exposure on visited sites.
+
+### Time Estimate
+
+Approximately 5-10 minutes to familiarize yourself and interpret the popup data.
+
+### Difficulty Level
+
+Beginner to Intermediate
+
+---
+
+## 2. Navigating the Popup Interface
+
+### Step 1: Open the uBO Scope Popup
+
+- Click the uBO Scope toolbar icon in your browser near the address bar.
+- The popup appears showing connection details scoped to the current tab.
+
+### Step 2: Locate the Tab Hostname Header
+
+- At the top, you will see the domain of the active tab displayed.
+- The domain is split into the hostname prefix and the registered domain using the Public Suffix List for accuracy.
+
+### Step 3: Review the Summary Section
+
+- Below the header, the "domains connected" count shows **the total number of distinct third-party domains** contacted by the page.
+- This count reflects domains from the allowed sections only.
+
+### Step 4: Explore the Connection Outcome Sections
+
+- **Not Blocked:** Lists domains from which resources were successfully loaded.
+- **Stealth-Blocked:** Lists domains involved in redirects or connections blocked invisibly (stealth block).
+- **Blocked:** Lists domains where network requests were explicitly blocked, avoiding data flow.
+
+Each section lists connected domains with a badge showing the number of connections made to that domain.
+
+### Step 5: Understand Domain Counts and Sorting
+
+- Domains are listed alphabetically for easier scanning.
+- The count indicates how many different connections were observed to each domain under that outcome.
+
+### Step 6: Interpret the Connection Data
+
+Use the counts and outcome breakdowns to gauge:
+
+- **Privacy Exposure:** Fewer allowed third-party domains typically means better privacy.
+- **Potential Tracking:** High allowed or stealth-blocked domains may indicate tracking behavior.
+- **Effectiveness of Blocking:** Check the blocked section to verify filtering is active.
+
+---
+
+## 3. Practical Usage Tips and Examples
+
+### Example Scenario: Checking a News Website
+
+1. Visit a news website tab.
+2. Click the uBO Scope icon.
+3. Observe the domains listed:
+    - You might see domains like `cdn.newswebsite.com` under Not Blocked (allowed).
+    - Some ad and tracking domains might appear under Blocked or Stealth-Blocked.
+4. Note the total distinct domains; a high number could indicate many third-party connections.
+
+### Real-World Value
+
+- Detect unexpected third-party content delivery networks (CDNs).
+- Spot stealth redirects hiding tracking or ad delivery.
+- Confirm your content blocking setup is actively preventing some requests.
+
+---
+
+## 4. How uBO Scope Tracks and Updates Data
+
+- uBO Scope tracks network requests per tab using browser `webRequest` APIs.
+- The popup displays **session-specific data** for the active tab only.
+- A tab's domain data resets on main frame navigation, keeping information relevant to the current page.
+- Counts are kept for domains and hostnames, aggregated by connection outcome type.
+
+### What the Outcomes Mean
+
+| Outcome       | Meaning                                                  |
+|---------------|----------------------------------------------------------|
+| Allowed       | Requests successful or allowed by content/blocker       |
+| Stealth-Blocked | Redirected or filtered requests invisible to site scripts |
+| Blocked       | Requests explicitly blocked by filtering                 |
+
+---
+
+## 5. Troubleshooting Common Issues
+
+<AccordionGroup title="Troubleshooting the Popup Interface">
+<Accordion title="No Data Shown or 'NO DATA' Displayed">
+- Ensure the active tab has network activity; some pages may not generate remote connections immediately.
+- Reload the page and reopen the popup.
+- Confirm uBO Scope has permissions and is activated on the current site.
+</Accordion>
+<Accordion title="Counts Don't Update After Navigation">
+- Close and reopen the popup after navigating to a new page.
+- Wait a moment to allow network requests to be captured and processed.
+</Accordion>
+<Accordion title="Unexpected Domains in Allowed List">
+- Some CDN domains are commonly allowed and not necessarily a threat.
+- Review your content blocker settings if suspicious domains appear.
+</Accordion>
+</AccordionGroup>
+
+---
+
+## 6. Best Practices for Monitoring Connections
+
+- Regularly check the popup when visiting unfamiliar sites to get instant privacy insight.
+- Use the breakdown of allowed, blocked, and stealth-blocked domains to understand filtering impact.
+- Combine uBO Scope insights with other privacy and content blocking tools for comprehensive protection.
+
+---
+
+## 7. Next Steps
+
+- Explore [Understanding and Using the Toolbar Badge Count](https://docs.example.com/guides/core-workflows/understanding-the-badge-count) to contextualize the popup data.
+- Review [Interpreting Allowed, Blocked, and Stealth Outcomes](https://docs.example.com/guides/advanced-usage-patterns/interpreting-network-outcomes) for deeper analysis.
+- Consult [Validating the Extension Works](https://docs.example.com/getting-started/getting-productive/validating-extension-works) if you suspect data is not being reported correctly.
+
+---
+
+## Appendix: Popup Interface Structure
+
+```html
+<h2 id="tabHostname"><span></span><span>NO DATA</span></h2>
+<section id="summary">
+domains connected: <span>?</span>
+</section>
+<section class="outcome allowed">
+    <h3>not blocked</h3>
+    <div class="domains"></div>
+</section>
+<section class="outcome stealth">
+    <h3>stealth-blocked</h3>
+    <div class="domains"></div>
+</section>
+<section class="outcome blocked">
+    <h3>blocked</h3>
+    <div class="domains"></div>
+</section>
+<template id="domainRow">
+    <div class="row"><span class="domain">_</span><span class="count badge">_</span></div>
+</template>
+```
+
+This confirms that the popup displays domain lists separated by outcome categories with counts.
+
+---
+
+## Additional Resources
+
+- [Product Introduction](https://docs.example.com/overview/getting-started-core-overview/product-introduction)
+- [Key Concepts & Terminology](https://docs.example.com/overview/architecture-concepts/core-concepts-terminology)
+- [Troubleshooting Common Setup Issues](https://docs.example.com/getting-started/getting-productive/troubleshooting-common-setup-issues)
+
+
+<Check>
+For complete privacy assessment, always combine real-time monitoring with careful domain analysis and filter list management.
+</Check>
