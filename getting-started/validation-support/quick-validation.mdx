@@ -1,0 +1,171 @@
+---
+title: "Validating Your Setup"
+description: "Quick tests so users can confirm their installation and ensure the extension is monitoring connections. Includes checking the badge count, opening websites, and interpreting allowed/blocked domain displays in the popup."
+---
+
+# Validating Your Setup
+
+After installing uBO Scope, it's crucial to verify that the extension is properly monitoring your browser’s network connections. This guide walks you through quick tests to confirm your setup, interpret the toolbar badge count, and understand the popup UI's domain status categories.
+
+---
+
+## 1. Confirm the Toolbar Badge Count
+
+The badge count on the uBO Scope toolbar icon reflects the **number of distinct third-party domains** contacted by the active browser tab. A lower count usually indicates fewer external connections and potentially stronger privacy.
+
+### Steps to Validate:
+
+1. Ensure uBO Scope is installed and enabled.
+2. Open a webpage with known third-party content (for example, https://example.com).
+3. Look at the uBO Scope icon in your browser toolbar:
+   - The number displayed indicates distinct third-party remote servers contacted.
+   - If the badge is blank or zero, the page may have no detected third-party connections or the extension is not functioning.
+
+### What to Expect:
+
+- The count will increase when the page loads resources from third-party domains (e.g., CDNs, analytics).
+- The badge updates in real-time as network requests complete.
+
+<Tip>
+If the badge shows no count despite browsing sites with external resources, the extension might not be correctly installed or lacks necessary permissions. Verify your installation (see installation docs) and browser permissions.
+</Tip>
+
+## 2. Open uBO Scope Popup to Inspect Domains
+
+Click the uBO Scope toolbar icon to open the popup interface, which provides a detailed summary of third-party domains connected by the current tab.
+
+### Understanding the Popup Interface:
+
+- **Hostname Header:** Shows the current tab's hostname and domain.
+- **Summary Count:** Displays the total number of distinct third-party domains connected.
+- **Domain Lists Categorized into Three Outcomes:**
+  - **Not Blocked:** Domains for which connections succeeded.
+  - **Stealth-Blocked:** Domains where requests were redirected stealthily.
+  - **Blocked:** Domains where connections failed, likely blocked by content blockers or network filters.
+
+### Steps to Inspect:
+
+1. Load a variety of websites and open the uBO Scope popup.
+2. Observe the domain lists under each category. They list domains and the count of requests made.
+3. The summary count matches the badge number on the toolbar icon.
+
+<Note>
+The popup lists domains using Unicode-friendly names, handling international domain names for accurate readability.
+</Note>
+
+## 3. Run a Simple Connection Test
+
+To verify everything is working, follow this real scenario:
+
+<Steps>
+<Step title="Navigate to a popular website">
+Open a well-known site such as https://news.ycombinator.com in your browser.
+</Step>
+<Step title="Check the toolbar badge">
+Observe the badge count on uBO Scope’s toolbar icon—it should display a number greater than zero reflecting active third-party connections.
+</Step>
+<Step title="Open the popup and review domains">
+Click the toolbar icon and check if the popup displays allowed, stealth-blocked, and blocked domains corresponding to the site.
+</Step>
+<Step title="Test with multiple sites">
+Repeat the process on multiple sites to further validate consistent operation.
+</Step>
+</Steps>
+
+## 4. Troubleshooting Common Setup Issues
+
+<AccordionGroup title="Troubleshooting Tips">
+<Accordion title="No badge count appears">
+- **Cause:** Extension might not have proper permissions or failed to activate.
+- **Solution:**
+  - Reinstall uBO Scope following the installation guide.
+  - Ensure `webRequest` and `activeTab` permissions are granted.
+  - Restart your browser.
+</Accordion>
+<Accordion title="Popup shows 'NO DATA' or empty sections">
+- **Cause:** No network connections detected for the current tab or popup failed to fetch data.
+- **Solution:**
+  - Reload the page to generate new network requests.
+  - Confirm the webpage actually loads third-party content.
+  - Check for conflicting extensions that might interfere.
+</Accordion>
+<Accordion title="Badge count seems incorrect or never updates">
+- **Cause:** Browser or extension service worker may have paused or crashed.
+- **Solution:**
+  - Restart the browser.
+  - Verify browser version compatibility with uBO Scope.
+  - Check if your browser’s network request monitoring APIs are available and enabled.
+</Accordion>
+</AccordionGroup>
+
+## 5. What to Do Next
+
+Once your setup is validated:
+
+- Start exploring how uBO Scope displays network connections in depth on the [First Steps & Popup UI Overview](/guides-main/getting-started-ubo-scope/first-steps-and-ui-overview) page.
+- Understand connection outcomes and details by reviewing [Interpreting Allowed, Blocked, and Stealth Outcomes](/guides-main/everyday-use-patterns/interpreting-request-outcomes).
+- For any persistent issues, consult [Troubleshooting Common Issues](/getting-started/validation-support/troubleshooting).
+
+---
+
+By following these steps, you’ll confirm that uBO Scope is correctly installed and actively monitoring network connections, enabling you to gain insight and control over your browsing privacy and security.
+
+---
+
+## Appendix: How uBO Scope Gathers Connection Data (For Context)
+
+uBO Scope uses the browser’s `webRequest` API to listen for three key network events:
+
+- **Redirects:** Marked as stealth-blocked connections.
+- **Errors:** Marked as blocked connections.
+- **Successful responses:** Marked as allowed connections.
+
+This categorization populates the popup and drives the toolbar badge count for each browser tab.
+
+
+
+---
+
+*This validation guide complements the installation steps and first launch documentation to ensure a smooth onboarding experience.*
+
+
+---
+
+## Code Reference (Popup Data Rendering)
+
+```javascript
+// Example snippet: rendering domains in categories
+const { allowed, blocked, stealth } = data;
+// Domains appear sorted with counts
+for ( const [ domain, count ] of allowed.domains.toSorted() ) {
+  // Render each allowed domain
+}
+for ( const [ domain, count ] of stealth.domains.toSorted() ) {
+  // Render each stealth-blocked domain
+}
+for ( const [ domain, count ] of blocked.domains.toSorted() ) {
+  // Render each blocked domain
+}
+```
+
+This organization helps users quickly assess which third-party domains were contacted and their request status.
+
+---
+
+## Helpful Links
+- [Installation on Supported Browsers](/getting-started/onboarding/install-browsers)
+- [Launching uBO Scope for the First Time](/getting-started/onboarding/first-launch)
+- [First Steps & Popup UI Overview](/guides-main/getting-started-ubo-scope/first-steps-and-ui-overview)
+- [Troubleshooting Common Issues](/getting-started/validation-support/troubleshooting)
+
+
+---
+
+## Support & Bug Reports
+For help or to report issues, visit the uBO Scope GitHub repository:
+https://github.com/gorhill/uBO-Scope
+
+
+---
+
+*End of Validating Your Setup guide.*
